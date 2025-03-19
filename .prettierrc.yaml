@@ -1,0 +1,35 @@
+printWidth: 120
+tabWidth: 2
+useTabs: false
+semi: false
+singleQuote: true
+quoteProps: as-needed
+jsxSingleQuote: false
+trailingComma: all
+bracketSpacing: true
+bracketSameLine: false
+arrowParens: always
+singleAttributePerLine: false
+
+# prettier-plugin-tailwindcss
+tailwindFunctions: [cn]
+
+# prettier-plugin-sort-imports
+importOrder:
+  - '<BUILTIN_MODULES>'
+  - ''
+  - '^(react/(.*)$)|^(react$)'
+  - '^(next/(.*)$)|^(next$)'
+  - '<THIRD_PARTY_MODULES>'
+  - ''
+  - '^@/lib/'
+  - '^@/components/'
+  - '^@/'
+  - ''
+  - '^/'
+  - '^\.'
+importOrderTypeScriptVersion: '5.0.0'
+
+plugins:
+  - '@ianvs/prettier-plugin-sort-imports'
+  - 'prettier-plugin-tailwindcss'
