@@ -8,6 +8,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
 
   return (
     <Sonner
+      richColors
+      closeButton
       theme={theme as ToasterProps['theme']}
       className="toaster group"
       style={
@@ -17,6 +19,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
           '--normal-border': 'var(--border)',
         } as React.CSSProperties
       }
+      toastOptions={{
+        classNames: { closeButton: 'opacity-0 group-hover:opacity-100' },
+      }}
       {...props}
     />
   )
