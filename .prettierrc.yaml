@@ -28,8 +28,6 @@ importOrder:
   - ''
   - '^/'
   - '^\.'
-importOrderCombineTypeAndValueImports: true
-importOrderMergeDuplicateImports: true
 
 plugins:
   - '@ianvs/prettier-plugin-sort-imports'
