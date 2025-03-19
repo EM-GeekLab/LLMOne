@@ -141,6 +141,32 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@theme {
+  --animate-spinner-inner: spinner-inner 2s linear infinite;
+  --animate-spinner-outer: spinner-outer 2s linear infinite;
+
+  @keyframes spinner-inner {
+    0% {
+      stroke-dasharray: 0 150;
+      stroke-dashoffset: 0;
+    }
+    47.5% {
+      stroke-dasharray: 42 150;
+      stroke-dashoffset: -16;
+    }
+    95%, 100% {
+      stroke-dasharray: 42 150;
+      stroke-dashoffset: -59;
+    }
+  }
+
+  @keyframes spinner-outer {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
