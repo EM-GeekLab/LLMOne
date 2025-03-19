@@ -20,7 +20,7 @@ const geistMono = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'Model Machine',
+  title: 'ModelMachine',
   description: '大模型一体机装机工具',
 }
 
@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning lang="zh">
-      <body className={cn(geistSans.variable, geistMono.variable, 'antialiased')}>
+      <body className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <NuqsAdapter>
             <TooltipProvider>{children}</TooltipProvider>
