@@ -1,6 +1,6 @@
 import './globals.css'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
@@ -22,6 +22,13 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: 'ModelMachine',
   description: '大模型一体机装机工具',
+}
+
+export const viewport: Viewport = {
+  initialScale: 1,
+  maximumScale: 1,
+  minimumScale: 1,
+  width: 'device-width',
 }
 
 export default function RootLayout({
