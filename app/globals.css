@@ -3,6 +3,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@custom-variant disabled-all (& :is(:disabled :not(:where([class~="not-disabled"],[class~="not-disabled"] *))));
+@custom-variant not-disabled-all (& :is(:disabled :where([class~="not-disabled"],[class~="not-disabled"] *)));
+
+@custom-variant hover-enabled (&:where(:not(:disabled):hover)) *;
+@custom-variant focus-enabled (&:where(:not(:disabled):focus)) *;
+@custom-variant focus-visible-enabled (&:where(:not(:disabled):focus-visible)) *;
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -181,3 +188,4 @@
     cursor: pointer;
   }
 }
+
