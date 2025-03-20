@@ -12,7 +12,13 @@ export function AppContainer({ children, className, ...props }: ComponentProps<'
 
 export function AppInset({ children, className, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('bg-muted/10 flex flex-1/2 flex-col items-center justify-center p-4', className)} {...props}>
+    <div
+      className={cn(
+        'bg-muted/10 flex-1 shrink-0 p-4 max-xl:p-0 md:flex md:flex-col md:items-center md:justify-center overflow-auto',
+        className,
+      )}
+      {...props}
+    >
       {children}
     </div>
   )
