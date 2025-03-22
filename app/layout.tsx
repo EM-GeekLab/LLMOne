@@ -1,5 +1,7 @@
 import './globals.css'
 
+import { homedir } from 'node:os'
+
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
@@ -42,7 +44,7 @@ export default function RootLayout({
     <html suppressHydrationWarning lang="zh">
       <body className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <EnvProvider cwd={process.cwd()}>
+          <EnvProvider cwd={process.cwd()} home={homedir()}>
             <QueryProvider>
               <NuqsAdapter>
                 <TooltipProvider>{children}</TooltipProvider>

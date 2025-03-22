@@ -1,13 +1,18 @@
 'use client'
 
+import type { ReactNode } from 'react'
+
 import { createSafeContext } from '@/lib/create-safe-context'
 
-const EnvContext = createSafeContext<{
+type EnvContextType = {
   cwd: string
-}>()
+  home: string
+}
 
-export function EnvProvider({ children, cwd }: { children: React.ReactNode; cwd: string }) {
-  return <EnvContext.Provider value={{ cwd }}>{children}</EnvContext.Provider>
+const EnvContext = createSafeContext<EnvContextType>()
+
+export function EnvProvider({ children, cwd, home }: EnvContextType & { children: ReactNode }) {
+  return <EnvContext.Provider value={{ cwd, home }}>{children}</EnvContext.Provider>
 }
 
 export const useEnvContext = EnvContext.useContext

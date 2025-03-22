@@ -71,9 +71,9 @@ const DialogContext = createSafeContext<{
 }>()
 
 export function FileSelector({ path, onSelected, filter, filterDirectory = false, children }: FileSelectorProps) {
-  const { cwd } = useEnvContext()
+  const { home } = useEnvContext()
   const [open, setOpen] = useState(false)
-  const [currentDirectory, setCurrentDirectory] = useState(cwd)
+  const [currentDirectory, setCurrentDirectory] = useState(home)
   const [peekPath, setPeekPath] = useState('')
 
   const [filePath, setFilePath] = useControllableState<string>({
