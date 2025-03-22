@@ -19,7 +19,6 @@ import { match } from 'ts-pattern'
 
 import { commandScore } from '@/lib/command-score'
 import { createSafeContext } from '@/lib/create-safe-context'
-import { getFileDirectory } from '@/lib/file-utils'
 import { cn } from '@/lib/utils'
 import { DebouncedSpinner } from '@/components/base/debounced-spinner'
 import { EasyTooltip } from '@/components/base/easy-tooltip'
@@ -38,6 +37,7 @@ import {
 import { Input } from '@/components/ui/input'
 
 import { checkPath, getParentDirectoryPath, readDirectory, type FileItem } from './file-system-actions'
+import { getDirectoryName, getFileDirectory, getPathParts, joinPathParts } from './file-utils'
 
 interface FileSelectorProps {
   path?: string
@@ -350,12 +350,7 @@ function FileSelectorList() {
             </TooltipButton>
             <h3 className="flex flex-1 items-center gap-1.5 text-sm font-medium [&_svg]:size-4">
               <FolderOpenIcon className="text-info" />
-              {currentDirectory === '/'
-                ? '根目录'
-                : currentDirectory
-                    .split('/')
-                    .filter((p) => !!p)
-                    .slice(-1)[0]}
+              {currentDirectory === '/' ? '根目录' : getDirectoryName(currentDirectory)}
               <DebouncedSpinner show={isFetching} />
             </h3>
             <DialogClose asChild>
@@ -438,6 +433,7 @@ export function FileSelectorValue({ className, ...props }: ComponentProps<'div'>
 function PathBar({ className, ...props }: ComponentProps<'div'>) {
   const { currentDirectory, setCurrentDirectory } = CurrentDirectoryContext.useContext()
   const { setInputPath, ensureQueryFiles, navigateToFirstItem } = FileSelectorListContext.useContext()
+  const parts = getPathParts(currentDirectory)
 
   return (
     <div
@@ -447,34 +443,26 @@ function PathBar({ className, ...props }: ComponentProps<'div'>) {
       )}
       {...props}
     >
-      {currentDirectory.split('/').map(
-        (part, index) =>
-          (index === 0 || part) && (
-            <Fragment key={`${part}-${index}`}>
-              <button
-                tabIndex={-1}
-                className="hover:text-accent-foreground hover:bg-accent -m-1 shrink-0 rounded-sm p-1"
-                onClick={async () => {
-                  const target = part
-                    ? currentDirectory
-                        .split('/')
-                        .slice(0, index + 1)
-                        .join('/')
-                    : '/'
-                  setCurrentDirectory(target)
-                  setInputPath(target)
-                  const items = await ensureQueryFiles(target)
-                  navigateToFirstItem(items)
-                }}
-              >
-                {part || '/'}
-              </button>
-              <div className="last:hidden">
-                <ChevronRightIcon className="size-3" />
-              </div>
-            </Fragment>
-          ),
-      )}
+      {parts.map((part, index) => (
+        <Fragment key={`${part}-${index}`}>
+          <button
+            tabIndex={-1}
+            className="hover:text-accent-foreground hover:bg-accent -m-1 shrink-0 rounded-sm p-1"
+            onClick={async () => {
+              const target = joinPathParts(parts, index + 1)
+              setCurrentDirectory(target)
+              setInputPath(target)
+              const items = await ensureQueryFiles(target)
+              navigateToFirstItem(items)
+            }}
+          >
+            {part}
+          </button>
+          <div className="last:hidden">
+            <ChevronRightIcon className="size-3" />
+          </div>
+        </Fragment>
+      ))}
     </div>
   )
 }
