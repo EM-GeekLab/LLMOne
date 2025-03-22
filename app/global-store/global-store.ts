@@ -16,10 +16,17 @@ export type GlobalStore = GlobalState & GlobalActions
 
 export const defaultGlobalState: GlobalState = {}
 
-export const createGlobalStore = (initState = defaultGlobalState) => {
-  return createStore<GlobalStore>()((set) => ({
+export const createGlobalStore = (
+  initState = defaultGlobalState,
+  listener?: (state: GlobalStore, prev: GlobalState) => void,
+) => {
+  const store = createStore<GlobalStore>()((set) => ({
     ...initState,
     setConnectMode: (mode) => set(() => ({ connectMode: mode })),
     setDeployMode: (mode) => set(() => ({ deployMode: mode })),
   }))
+  if (listener) {
+    store.subscribe(listener)
+  }
+  return store
 }

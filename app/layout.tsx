@@ -13,6 +13,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { GlobalStoreProvider } from '@/app/global-store/global-store-provider'
+import { loadGlobalData } from '@/app/global-store/server-store'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -41,6 +42,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const globalData = loadGlobalData()
   return (
     <html suppressHydrationWarning lang="zh">
       <body className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}>
@@ -48,7 +50,7 @@ export default function RootLayout({
           <EnvProvider cwd={process.cwd()} home={homedir()}>
             <QueryProvider>
               <NuqsAdapter>
-                <GlobalStoreProvider>
+                <GlobalStoreProvider initState={globalData}>
                   <TooltipProvider>{children}</TooltipProvider>
                 </GlobalStoreProvider>
               </NuqsAdapter>

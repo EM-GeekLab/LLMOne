@@ -3,15 +3,18 @@
 import { createContext, ReactNode, useContext, useRef } from 'react'
 import { useStore } from 'zustand/react'
 
-import { createGlobalStore, GlobalStore } from '@/app/global-store/global-store'
+import { createGlobalStore, GlobalState, GlobalStore } from '@/app/global-store/global-store'
+
+import { saveGlobalData } from './server-state-actions'
+import superjson from 'superjson'
 
 type GlobalStoreApi = ReturnType<typeof createGlobalStore>
 export const GlobalStoreContext = createContext<GlobalStoreApi | null>(null)
 
-export function GlobalStoreProvider({ children }: { children: ReactNode }) {
+export function GlobalStoreProvider({ children, initState }: { children: ReactNode; initState?: GlobalState }) {
   const storeRef = useRef<GlobalStoreApi | null>(null)
   if (storeRef.current === null) {
-    storeRef.current = createGlobalStore()
+    storeRef.current = createGlobalStore(initState, (data) => saveGlobalData(superjson.stringify(data)))
   }
   return <GlobalStoreContext.Provider value={storeRef.current}>{children}</GlobalStoreContext.Provider>
 }
