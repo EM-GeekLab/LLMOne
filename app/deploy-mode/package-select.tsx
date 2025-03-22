@@ -10,15 +10,14 @@ import {
   AppCardSectionTitle,
 } from '@/components/app/app-card'
 import { FileSelector, FileSelectorTrigger, FileSelectorValue, type FileItem } from '@/components/base/file-selector'
-
-import { useModeSelect } from './mode-select-provider'
+import { useGlobalStore } from '@/app/global-store/global-store-provider'
 
 function filterPackage(item: FileItem) {
   return !!item.name.match(/\.(tar\.gz|zip|iso)$/)
 }
 
 export function PackageSelect() {
-  const { mode } = useModeSelect()
+  const mode = useGlobalStore((s) => s.deployMode)
 
   return (
     mode === 'offline' && (
