@@ -73,17 +73,33 @@ export function AppCardContent({ children, className, ...props }: ComponentProps
 
 export function AppCardSection({ children, className, ...props }: ComponentProps<'section'>) {
   return (
-    <section className={cn('flex flex-col items-stretch gap-2 px-6 text-sm', className)} {...props}>
+    <section className={cn('flex flex-col items-stretch gap-2.5 px-6 text-sm', className)} {...props}>
       {children}
     </section>
   )
 }
 
+export function AppCardSectionHeader({ children, className, ...props }: ComponentProps<'div'>) {
+  return (
+    <div data-slot="section-header" className={cn('flex flex-col gap-0.5', className)} {...props}>
+      {children}
+    </div>
+  )
+}
+
 export function AppCardSectionTitle({ children, className, ...props }: ComponentProps<'h3'>) {
   return (
-    <h3 className={cn('-my-0.5 text-base font-semibold', className)} {...props}>
+    <h3 data-slot="section-title" className={cn('-my-0.5 text-base font-semibold', className)} {...props}>
       {children}
     </h3>
+  )
+}
+
+export function AppCardSectionDescription({ children, className, ...props }: ComponentProps<'p'>) {
+  return (
+    <p data-slot="section-description" className={cn('text-muted-foreground text-sm', className)} {...props}>
+      {children}
+    </p>
   )
 }
 
