@@ -4,7 +4,7 @@ import { AppCardSidebar } from '@/components/app/app-card'
 import { AppStepper } from '@/components/app/stepper'
 import { useGlobalStore } from '@/app/global-store/global-store-provider'
 
-type StepId = 'connect-mode' | 'deploy-mode' | 'connect-info' | 'select-os' | 'host-info' | 'install-env' | 'select-model' | 'service-config' | 'finish' | 'performance-test'
+export type StepId = 'connect-mode' | 'deploy-mode' | 'connect-info' | 'select-os' | 'host-info' | 'install-env' | 'select-model' | 'service-config' | 'finish' | 'performance-test'
 
 const MODE: Record<string, { title: string; id: StepId }[]> = {
   bmc: [
@@ -31,7 +31,7 @@ const MODE: Record<string, { title: string; id: StepId }[]> = {
   ],
 }
 
-export function StepSidebar({ current }: { current: StepId }) {
+export function StepSidebar({ current }: { current?: StepId }) {
   const mode = useGlobalStore((s) => s.connectMode) || 'bmc'
 
   return (
