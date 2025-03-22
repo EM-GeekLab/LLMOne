@@ -1,4 +1,4 @@
-export function AppStepper({ items, current }: { items: { title: string; id: string }[]; current: string }) {
+export function AppStepper({ items, current }: { items: { title: string; id: string }[]; current?: string }) {
   return (
     <div className="flex flex-col gap-3 p-6">
       {items.map((item, index) => {
