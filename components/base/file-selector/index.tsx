@@ -152,7 +152,7 @@ function FileSelectorList() {
     initialOffset: () => {
       const peekIndex = items.findIndex((item) => item.path === peekPath)
       if (peekIndex === -1) return 0
-      return peekIndex * 32
+      return peekIndex * 32 + 4
     },
   })
 
