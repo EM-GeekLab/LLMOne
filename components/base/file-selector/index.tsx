@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useDebouncedCallback, useDebouncedValue } from '@mantine/hooks'
+import { useDebouncedCallback } from '@mantine/hooks'
 import { useControllableState } from '@radix-ui/react-use-controllable-state'
 import { keepPreviousData, queryOptions, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
@@ -20,6 +20,7 @@ import { match } from 'ts-pattern'
 import { commandScore } from '@/lib/command-score'
 import { createSafeContext } from '@/lib/create-safe-context'
 import { cn } from '@/lib/utils'
+import { DebouncedSpinner } from '@/components/base/debounced-spinner'
 import { EasyTooltip } from '@/components/base/easy-tooltip'
 import { useEnvContext } from '@/components/env-provider'
 import { Button } from '@/components/ui/button'
@@ -34,7 +35,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Spinner } from '@/components/ui/spinner'
 
 import { checkPath, getParentDirectoryPath, readDirectory, type FileItem } from './file-system-actions'
 
@@ -347,7 +347,7 @@ function FileSelectorList() {
                     .split('/')
                     .filter((p) => !!p)
                     .slice(-1)[0]}
-              <DelayedSpinner show={isFetching} />
+              <DebouncedSpinner show={isFetching} />
             </h3>
             <DialogClose asChild>
               <TooltipButton tooltip={{ content: '关闭' }}>
@@ -533,11 +533,6 @@ function ClearableInput({
       )}
     </div>
   )
-}
-
-function DelayedSpinner({ className, show, ...props }: ComponentProps<typeof Spinner> & { show: boolean }) {
-  const [debouncedShow] = useDebouncedValue(show, 200)
-  return debouncedShow && <Spinner className={cn('text-muted-foreground', className)} {...props} />
 }
 
 export type { FileItem }
