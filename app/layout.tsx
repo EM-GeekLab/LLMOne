@@ -5,6 +5,8 @@ import localFont from 'next/font/local'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { cn } from '@/lib/utils'
+import { EnvProvider } from '@/components/env-provider'
+import { QueryProvider } from '@/components/query-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -40,9 +42,13 @@ export default function RootLayout({
     <html suppressHydrationWarning lang="zh">
       <body className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <NuqsAdapter>
-            <TooltipProvider>{children}</TooltipProvider>
-          </NuqsAdapter>
+          <EnvProvider cwd={process.cwd()}>
+            <QueryProvider>
+              <NuqsAdapter>
+                <TooltipProvider>{children}</TooltipProvider>
+              </NuqsAdapter>
+            </QueryProvider>
+          </EnvProvider>
           <Toaster />
         </ThemeProvider>
       </body>
