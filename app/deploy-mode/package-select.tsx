@@ -31,35 +31,62 @@ export function PackageSelect() {
             </a>
           </AppCardSectionDescription>
         </AppCardSectionHeader>
-        <PackageSelectContent>
-          <PackageSelectTitle>系统镜像包</PackageSelectTitle>
-          <FileSelector filter={filterPackage}>
-            <div className="flex items-center gap-2">
-              <FileSelectorTrigger>选择文件</FileSelectorTrigger>
-              <FileSelectorValue className="flex-1" />
-            </div>
-          </FileSelector>
-        </PackageSelectContent>
-        <PackageSelectContent>
-          <PackageSelectTitle>基础环境包</PackageSelectTitle>
-          <FileSelector filter={filterPackage}>
-            <div className="flex items-center gap-2">
-              <FileSelectorTrigger>选择文件</FileSelectorTrigger>
-              <FileSelectorValue className="flex-1" />
-            </div>
-          </FileSelector>
-        </PackageSelectContent>
-        <PackageSelectContent>
-          <PackageSelectTitle>模型包</PackageSelectTitle>
-          <FileSelector filter={filterPackage}>
-            <div className="flex items-center gap-2">
-              <FileSelectorTrigger>选择文件</FileSelectorTrigger>
-              <FileSelectorValue className="flex-1" />
-            </div>
-          </FileSelector>
-        </PackageSelectContent>
+        <SystemImagePackageSelect />
+        <EnvironmentPackageSelect />
+        <ModelPackageSelect />
       </AppCardSection>
     )
+  )
+}
+
+function SystemImagePackageSelect() {
+  const path = useGlobalStore((s) => s.packagePaths.systemImagePath)
+  const setPath = useGlobalStore((s) => s.setSystemImagePath)
+
+  return (
+    <PackageSelectContent>
+      <PackageSelectTitle>系统镜像包</PackageSelectTitle>
+      <FileSelector path={path} onSelected={setPath} filter={filterPackage}>
+        <div className="flex items-center gap-2">
+          <FileSelectorTrigger>选择文件</FileSelectorTrigger>
+          <FileSelectorValue className="flex-1" />
+        </div>
+      </FileSelector>
+    </PackageSelectContent>
+  )
+}
+
+function EnvironmentPackageSelect() {
+  const path = useGlobalStore((s) => s.packagePaths.environmentPath)
+  const setPath = useGlobalStore((s) => s.setEnvironmentPath)
+
+  return (
+    <PackageSelectContent>
+      <PackageSelectTitle>基础环境包</PackageSelectTitle>
+      <FileSelector path={path} onSelected={setPath} filter={filterPackage}>
+        <div className="flex items-center gap-2">
+          <FileSelectorTrigger>选择文件</FileSelectorTrigger>
+          <FileSelectorValue className="flex-1" />
+        </div>
+      </FileSelector>
+    </PackageSelectContent>
+  )
+}
+
+function ModelPackageSelect() {
+  const path = useGlobalStore((s) => s.packagePaths.modelPath)
+  const setPath = useGlobalStore((s) => s.setModelPath)
+
+  return (
+    <PackageSelectContent>
+      <PackageSelectTitle>模型包</PackageSelectTitle>
+      <FileSelector path={path} onSelected={setPath} filter={filterPackage}>
+        <div className="flex items-center gap-2">
+          <FileSelectorTrigger>选择文件</FileSelectorTrigger>
+          <FileSelectorValue className="flex-1" />
+        </div>
+      </FileSelector>
+    </PackageSelectContent>
   )
 }
 
