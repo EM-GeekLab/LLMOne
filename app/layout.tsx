@@ -12,6 +12,7 @@ import { QueryProvider } from '@/components/query-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { GlobalStoreProvider } from '@/app/global-store/global-store-provider'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -47,7 +48,9 @@ export default function RootLayout({
           <EnvProvider cwd={process.cwd()} home={homedir()}>
             <QueryProvider>
               <NuqsAdapter>
-                <TooltipProvider>{children}</TooltipProvider>
+                <GlobalStoreProvider>
+                  <TooltipProvider>{children}</TooltipProvider>
+                </GlobalStoreProvider>
               </NuqsAdapter>
             </QueryProvider>
           </EnvProvider>
