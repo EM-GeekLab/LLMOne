@@ -19,6 +19,7 @@ import { match } from 'ts-pattern'
 
 import { commandScore } from '@/lib/command-score'
 import { createSafeContext } from '@/lib/create-safe-context'
+import { getFileDirectory } from '@/lib/file-utils'
 import { cn } from '@/lib/utils'
 import { DebouncedSpinner } from '@/components/base/debounced-spinner'
 import { EasyTooltip } from '@/components/base/easy-tooltip'
@@ -46,6 +47,7 @@ interface FileSelectorProps {
   // Whether to filter the directory, default is false
   filterDirectory?: boolean
   children?: ReactNode
+  defaultDirectory?: string
 }
 
 const FileSelectorContext = createSafeContext<{
@@ -70,10 +72,17 @@ const DialogContext = createSafeContext<{
   setOpen: (open: boolean) => void
 }>()
 
-export function FileSelector({ path, onSelected, filter, filterDirectory = false, children }: FileSelectorProps) {
+export function FileSelector({
+  path,
+  onSelected,
+  filter,
+  filterDirectory = false,
+  children,
+  defaultDirectory,
+}: FileSelectorProps) {
   const { home } = useEnvContext()
   const [open, setOpen] = useState(false)
-  const [currentDirectory, setCurrentDirectory] = useState(home)
+  const [currentDirectory, setCurrentDirectory] = useState(defaultDirectory || getFileDirectory(path) || home)
   const [peekPath, setPeekPath] = useState('')
 
   const [filePath, setFilePath] = useControllableState<string>({
