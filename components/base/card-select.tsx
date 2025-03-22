@@ -11,9 +11,21 @@ export function CardSelectItem({ className, ...props }: React.ComponentProps<typ
   return (
     <RadioGroupPrimitive.Item
       className={cn(
-        'group bg-card aria-checked:border-primary aria-checked:bg-primary/5 hover-enabled:border-accent-foreground/25 hover-enabled:bg-accent disabled-all:opacity-50 disabled-all:grayscale-100 not-disabled-all:pointer-events-auto relative flex flex-col items-start rounded-lg border p-4 transition-colors disabled:pointer-events-none',
+        'group bg-card aria-checked:border-primary aria-checked:bg-primary/5 hover-enabled:border-accent-foreground/25 hover-enabled:bg-accent disabled-all:opacity-50 disabled-all:grayscale-100 not-disabled-all:pointer-events-auto relative flex flex-col items-start overflow-hidden rounded-lg border p-5 text-left transition-colors disabled:pointer-events-none',
         className,
       )}
+      {...props}
+    />
+  )
+}
+
+export function CardSelectIndicator({
+  className,
+  ...props
+}: React.ComponentProps<typeof RadioGroupPrimitive.Indicator>) {
+  return (
+    <RadioGroupPrimitive.Indicator
+      className={cn('bg-primary absolute -top-4 -left-4 size-7 rotate-45', className)}
       {...props}
     />
   )
