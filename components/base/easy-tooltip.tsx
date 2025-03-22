@@ -14,7 +14,7 @@ export function EasyTooltip({
   ...props
 }: ComponentProps<typeof Tooltip> &
   Pick<ComponentProps<typeof TooltipTrigger>, 'asChild'> &
-  ComponentProps<typeof TooltipContent> & {
+  Omit<ComponentProps<typeof TooltipContent>, 'content'> & {
     content?: ReactNode
   }) {
   return (
