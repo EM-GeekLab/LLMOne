@@ -33,7 +33,7 @@ export function AppCardSidebar({ children, className, ...props }: ComponentProps
 
 export function AppCardInset({ children, className, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('flex h-full min-h-full min-w-0 flex-1 flex-col overflow-auto', className)} {...props}>
+    <div className={cn('relative flex h-full min-h-full min-w-0 flex-1 flex-col overflow-auto', className)} {...props}>
       {children}
     </div>
   )
