@@ -3,7 +3,12 @@
 import { ComponentProps } from 'react'
 
 import { cn } from '@/lib/utils'
-import { AppCardSection, AppCardSectionTitle } from '@/components/app/app-card'
+import {
+  AppCardSection,
+  AppCardSectionDescription,
+  AppCardSectionHeader,
+  AppCardSectionTitle,
+} from '@/components/app/app-card'
 import { FileSelector, FileSelectorTrigger, FileSelectorValue, type FileItem } from '@/components/base/file-selector'
 
 import { useModeSelect } from './mode-select-provider'
@@ -18,7 +23,15 @@ export function PackageSelect() {
   return (
     mode === 'offline' && (
       <AppCardSection>
-        <AppCardSectionTitle>选择离线安装包</AppCardSectionTitle>
+        <AppCardSectionHeader>
+          <AppCardSectionTitle>选择离线安装包</AppCardSectionTitle>
+          <AppCardSectionDescription>
+            从镜像站获取离线安装包。
+            <a href="#" target="_blank" className="text-primary hover:text-primary/90 font-medium">
+              点击跳转
+            </a>
+          </AppCardSectionDescription>
+        </AppCardSectionHeader>
         <PackageSelectContent>
           <PackageSelectTitle>系统镜像包</PackageSelectTitle>
           <FileSelector filter={filterPackage}>
@@ -52,7 +65,7 @@ export function PackageSelect() {
 }
 
 function PackageSelectContent({ className, ...props }: ComponentProps<'div'>) {
-  return <div className={cn('rounded-lg border p-4 flex flex-col gap-3', className)} {...props} />
+  return <div className={cn('flex flex-col gap-3 rounded-lg border p-4', className)} {...props} />
 }
 
 function PackageSelectTitle({ className, ...props }: ComponentProps<'h4'>) {
