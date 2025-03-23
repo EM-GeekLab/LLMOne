@@ -45,3 +45,5 @@ next-env.d.ts
 
 # scripts for internal testing purposes
 .local
+
+.global-store.json
