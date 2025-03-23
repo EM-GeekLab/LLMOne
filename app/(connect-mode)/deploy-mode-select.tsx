@@ -13,7 +13,7 @@ import type { DeployMode } from '@/app/global-store/types'
 import OfflineIcon from '@/icons/computer.svg'
 import OnlineIcon from '@/icons/online-update.svg'
 
-export function ModeSelect({ ...props }: ComponentProps<typeof CardSelectGroup>) {
+export function DeployModeSelect({ ...props }: ComponentProps<typeof CardSelectGroup>) {
   const { online } = useNetwork()
   const mode = useGlobalStore((s) => s.deployMode)
   const setMode = useGlobalStore((s) => s.setDeployMode)

@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { useGlobalStore } from '@/app/global-store/global-store-provider'
 import type { ConnectMode } from '@/app/global-store/types'
 
-export function ModeSelect({ ...props }: ComponentProps<typeof CardSelectGroup>) {
+export function ConnectModeSelect({ ...props }: ComponentProps<typeof CardSelectGroup>) {
   const { online } = useNetwork()
   const mode = useGlobalStore((s) => s.connectMode)
   const setMode = useGlobalStore((s) => s.setConnectMode)
@@ -30,22 +30,14 @@ export function ModeSelect({ ...props }: ComponentProps<typeof CardSelectGroup>)
           </ModeSelectDescription>
         </ModeSelectHeader>
         <Badge className="absolute top-3.5 right-3.5">推荐</Badge>
-        <div className="mt-6">
+        <div className="flex-1" />
+        <div className="mt-5 pl-10">
           <h5 className="mb-1.5 font-semibold">适用场景</h5>
-          <ul className="text-muted-foreground flex list-disc flex-col gap-1 pl-4 *:pl-1">
+          <ul className="text-muted-foreground flex list-disc flex-col gap-1 pl-3">
             <li>裸机部署</li>
             <li>需要安装操作系统</li>
             <li>完全自动化流程</li>
           </ul>
-        </div>
-        <div className="mt-4">
-          <h5 className="mb-1.5 font-semibold">部署流程</h5>
-          <ol className="text-muted-foreground flex list-decimal flex-col gap-1 pl-4 *:pl-1">
-            <li>配置 BMC 信息</li>
-            <li>选择操作系统</li>
-            <li>配置安装磁盘和 IP</li>
-            <li>自动安装系统和Agent</li>
-          </ol>
         </div>
       </CardSelectItem>
       <CardSelectItem value="ssh">
@@ -66,21 +58,14 @@ export function ModeSelect({ ...props }: ComponentProps<typeof CardSelectGroup>)
             仅专业用户
           </Badge>
         </EasyTooltip>
-        <div className="mt-6">
+        <div className="flex-1" />
+        <div className="mt-5 pl-10">
           <h5 className="mb-1.5 font-semibold">适用场景</h5>
-          <ul className="text-muted-foreground flex list-disc flex-col gap-1 pl-4 *:pl-1">
+          <ul className="text-muted-foreground flex list-disc flex-col gap-1 pl-3">
             <li>已有操作系统环境</li>
             <li>无需重装系统</li>
             <li>快速部署模型与服务</li>
           </ul>
-        </div>
-        <div className="mt-4">
-          <h5 className="mb-1.5 font-semibold">部署流程</h5>
-          <ol className="text-muted-foreground flex list-decimal flex-col gap-1 pl-4 *:pl-1">
-            <li>配置 SSH 连接信息</li>
-            <li>通过 SSH 下发 Agent</li>
-            <li>远程配置环境</li>
-          </ol>
         </div>
       </CardSelectItem>
     </CardSelectGroup>
