@@ -38,7 +38,7 @@ import {
 import { Input } from '@/components/ui/input'
 
 import { checkPath, getParentDirectoryPath, readDirectory, type FileItem } from './file-system-actions'
-import { getDirectoryName, getFileDirectory, getPathParts, joinPathParts } from './file-utils'
+import { getDirectoryName, getFileDirectory, getPathParts, joinPathParts, normalizeDirPath } from './file-utils'
 
 interface FileSelectorProps {
   path?: string
@@ -184,7 +184,7 @@ function FileSelectorList() {
   const setInputPath = useCallback((path: string, opts: { isDirectory?: boolean } = {}) => {
     const { isDirectory = true } = opts
     if (inputRef.current) {
-      inputRef.current.value = isDirectory ? (path.endsWith('/') ? path : path + '/') : path
+      inputRef.current.value = isDirectory ? normalizeDirPath(path) : path
       clearRef.current?.resetClearState(!!inputRef.current.value)
     }
   }, [])
@@ -378,7 +378,7 @@ function FileSelectorList() {
               autoFocus
               ref={inputRef}
               clearRef={clearRef}
-              defaultValue={currentDirectory.endsWith('/') ? currentDirectory : currentDirectory + '/'}
+              defaultValue={normalizeDirPath(currentDirectory)}
               className=""
               placeholder="输入路径..."
               onChange={(e) => handleInput(e.target.value)}

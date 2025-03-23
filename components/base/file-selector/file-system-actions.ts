@@ -2,7 +2,10 @@
 
 import { existsSync } from 'node:fs'
 import { readdir, stat } from 'node:fs/promises'
+import { platform } from 'node:os'
 import { dirname, join } from 'path'
+
+const PATH_SEPARATOR = platform() === 'win32' ? '\\' : '/'
 
 export type FileItem = {
   name: string
@@ -77,7 +80,7 @@ export type CheckPathResult =
 export async function checkPath(checkPath: string): Promise<CheckPathResult> {
   try {
     const stats = await stat(checkPath)
-    const isDirectory = checkPath.endsWith('/') && stats.isDirectory()
+    const isDirectory = checkPath.endsWith(PATH_SEPARATOR) && stats.isDirectory()
     const directory = isDirectory ? checkPath : dirname(checkPath)
     return {
       exists: true,
@@ -86,7 +89,7 @@ export async function checkPath(checkPath: string): Promise<CheckPathResult> {
       directory,
     }
   } catch {
-    const directory = checkPath.split('/').slice(0, -1).join('/') || '/'
+    const directory = checkPath.split(PATH_SEPARATOR).slice(0, -1).join(PATH_SEPARATOR) || PATH_SEPARATOR
     const dirExists = existsSync(directory)
     return dirExists
       ? {
