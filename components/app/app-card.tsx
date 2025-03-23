@@ -7,7 +7,7 @@ export function AppCard({ children, className, ...props }: ComponentProps<'div'>
   return (
     <div
       className={cn(
-        'bg-card text-card-foreground flex w-full max-w-full min-w-[40rem] overflow-auto max-xl:flex-1 xl:h-[52rem] xl:w-[86rem] xl:overflow-hidden xl:rounded-lg xl:border xl:shadow-sm',
+        'bg-card text-card-foreground flex w-full max-w-full min-w-[40rem] overflow-auto max-xl:flex-1 xl:h-[52rem] xl:w-[86rem] xl:overflow-hidden xl:rounded-lg xl:border xl:shadow-md',
         className,
       )}
       {...props}
@@ -21,7 +21,7 @@ export function AppCardSidebar({ children, className, ...props }: ComponentProps
   return (
     <ScrollArea
       className={cn(
-        'bg-sidebar h-full overflow-auto border-r max-md:hidden lg:w-[14rem] xl:w-[15rem] [&>div>div]:!block',
+        'bg-muted/50 h-full overflow-auto border-r max-md:hidden lg:w-[14rem] xl:w-[15rem] [&>div>div]:!block',
         className,
       )}
       {...props}
