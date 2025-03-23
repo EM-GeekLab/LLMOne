@@ -18,9 +18,11 @@ function filterPackage(item: FileItem) {
 
 export function PackageSelect() {
   const mode = useGlobalStore((s) => s.deployMode)
+  const connectMode = useGlobalStore((s) => s.connectMode)
 
   return (
-    mode === 'offline' && (
+    mode === 'offline' &&
+    connectMode && (
       <AppCardSection>
         <AppCardSectionHeader>
           <AppCardSectionTitle>选择离线安装包</AppCardSectionTitle>
