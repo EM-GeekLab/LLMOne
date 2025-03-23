@@ -12,8 +12,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { PrivateKeyInputContent } from '@/app/connect-info/private-key-input'
 import { CredentialType } from '@/stores'
+
+import { PrivateKeyInputContent } from './private-key-input'
 
 export function PasswordKeyInput({
   type = 'password',
@@ -80,7 +81,14 @@ function PrivateKeyInputDialog({
           <DialogTitle>设置密钥</DialogTitle>
           <DialogDescription className="sr-only">输入或选择私钥</DialogDescription>
         </DialogHeader>
-        <PrivateKeyInputContent defaultValue={defaultValue} onSubmit={onValueChange} autoFocus />
+        <PrivateKeyInputContent
+          defaultValue={defaultValue}
+          onSubmit={(v) => {
+            onValueChange?.(v)
+            setOpen(false)
+          }}
+          autoFocus
+        />
       </DialogContent>
     </Dialog>
   )
