@@ -1,3 +1,5 @@
 import type { StateCreator } from 'zustand/vanilla'
 
-export type ImmerStateCreator<Slice, Actions> = StateCreator<Slice, [['zustand/immer', never]], [], Actions>
+import type { GlobalStore } from './global-store'
+
+export type ImmerStateCreator<Actions> = StateCreator<GlobalStore, [['zustand/immer', never]], [], Actions>

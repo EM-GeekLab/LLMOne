@@ -3,7 +3,7 @@ import { ImmerStateCreator } from '../utils'
 export type ConnectMode = 'bmc' | 'ssh'
 export type DeployMode = 'online' | 'offline'
 
-export type ModeSelectStateSlice = {
+export type ModeSelectState = {
   connectMode?: ConnectMode
   deployMode?: DeployMode
   packagePaths: {
@@ -13,7 +13,7 @@ export type ModeSelectStateSlice = {
   }
 }
 
-export type ModeSelectActionsSlice = {
+export type ModeSelectActions = {
   setConnectMode: (mode?: ConnectMode) => void
   setDeployMode: (mode?: DeployMode) => void
   setSystemImagePath: (path?: string) => void
@@ -21,13 +21,13 @@ export type ModeSelectActionsSlice = {
   setModelPath: (path?: string) => void
 }
 
-export const defaultModelSelectState: ModeSelectStateSlice = {
+export type ModeSelectSlice = ModeSelectState & ModeSelectActions
+
+export const defaultModelSelectState: ModeSelectState = {
   packagePaths: {},
 }
 
-export type ModeSelectSlice = ModeSelectStateSlice & ModeSelectActionsSlice
-
-export const createModeSelectSlice: ImmerStateCreator<ModeSelectSlice, ModeSelectActionsSlice> = (set) => ({
+export const createModeSelectSlice: ImmerStateCreator<ModeSelectActions> = (set) => ({
   setConnectMode: (mode) =>
     set((state) => {
       state.connectMode = mode
