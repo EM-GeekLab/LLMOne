@@ -1,6 +1,6 @@
 import superjson from 'superjson'
 
-import { GlobalState } from '@/app/global-store/global-store'
+import { GlobalState } from './global-store'
 
 export const clientDataMap = new Map<string, string>()
 

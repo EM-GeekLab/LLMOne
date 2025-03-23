@@ -1,4 +1,4 @@
-import { ImmerStateCreator } from '@/app/global-store/utils'
+import { ImmerStateCreator } from '../utils'
 
 export type ConnectMode = 'bmc' | 'ssh'
 export type DeployMode = 'online' | 'offline'

@@ -2,8 +2,7 @@
 
 import { ReactNode } from 'react'
 
-import { useGlobalStore } from '@/app/global-store/global-store-provider'
-import type { ConnectMode, DeployMode } from '@/app/global-store/types'
+import { ConnectMode, DeployMode, useGlobalStore } from '@/stores'
 
 export function ConnectModeIf({ mode, children }: { mode: ConnectMode; children: ReactNode }) {
   const connectMode = useGlobalStore((s) => s.connectMode)

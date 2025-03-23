@@ -8,8 +8,7 @@ import { cn } from '@/lib/utils'
 import { CardSelectGroup, CardSelectIndicator, CardSelectItem } from '@/components/base/card-select'
 import { EasyTooltip } from '@/components/base/easy-tooltip'
 import { Badge } from '@/components/ui/badge'
-import { useGlobalStore } from '@/app/global-store/global-store-provider'
-import type { ConnectMode } from '@/app/global-store/types'
+import { ConnectMode, useGlobalStore } from '@/stores'
 
 export function ConnectModeSelect({ ...props }: ComponentProps<typeof CardSelectGroup>) {
   const { online } = useNetwork()

@@ -8,10 +8,9 @@ import { cn } from '@/lib/utils'
 import { CardSelectGroup, CardSelectIndicator, CardSelectItem } from '@/components/base/card-select'
 import { EasyTooltip } from '@/components/base/easy-tooltip'
 import { Badge } from '@/components/ui/badge'
-import { useGlobalStore } from '@/app/global-store/global-store-provider'
-import type { DeployMode } from '@/app/global-store/types'
 import OfflineIcon from '@/icons/computer.svg'
 import OnlineIcon from '@/icons/online-update.svg'
+import { DeployMode, useGlobalStore } from '@/stores'
 
 export function DeployModeSelect({ ...props }: ComponentProps<typeof CardSelectGroup>) {
   const { online } = useNetwork()

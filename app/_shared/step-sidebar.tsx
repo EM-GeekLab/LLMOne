@@ -2,7 +2,7 @@
 
 import { AppCardSidebar } from '@/components/app/app-card'
 import { AppStepper } from '@/components/app/stepper'
-import { useGlobalStore } from '@/app/global-store/global-store-provider'
+import { useGlobalStore } from '@/stores'
 
 export type StepId =
   | 'connect-mode'

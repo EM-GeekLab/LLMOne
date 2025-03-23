@@ -2,7 +2,7 @@
 
 import { AppCardFooter } from '@/components/app/app-card'
 import { NavButton } from '@/components/base/nav-button'
-import { useGlobalStore } from '@/app/global-store/global-store-provider'
+import { useGlobalStore } from '@/stores'
 
 export function Footer() {
   const connectMode = useGlobalStore((s) => s.connectMode)

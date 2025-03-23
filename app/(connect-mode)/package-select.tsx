@@ -10,7 +10,7 @@ import {
   AppCardSectionTitle,
 } from '@/components/app/app-card'
 import { FileSelector, FileSelectorTrigger, FileSelectorValue, type FileItem } from '@/components/base/file-selector'
-import { useGlobalStore } from '@/app/global-store/global-store-provider'
+import { useGlobalStore } from '@/stores'
 
 function filterPackage(item: FileItem) {
   return !!item.name.match(/\.(tar\.gz|zip|iso)$/)

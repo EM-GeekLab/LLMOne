@@ -1,6 +1,6 @@
 'use server'
 
-import { clientDataMap } from '@/app/global-store/server-store'
+import { clientDataMap } from './server-store'
 
 export async function saveGlobalData(data: string) {
   clientDataMap.set('data', data)

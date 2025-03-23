@@ -4,8 +4,7 @@ import { createContext, ReactNode, useContext, useRef } from 'react'
 import superjson from 'superjson'
 import { useStore } from 'zustand/react'
 
-import { createGlobalStore, GlobalState, GlobalStore } from '@/app/global-store/global-store'
-
+import { createGlobalStore, GlobalState, GlobalStore } from './global-store'
 import { saveGlobalData } from './server-state-actions'
 
 type GlobalStoreApi = ReturnType<typeof createGlobalStore>

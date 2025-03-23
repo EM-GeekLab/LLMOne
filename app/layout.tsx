@@ -12,8 +12,8 @@ import { QueryProvider } from '@/components/query-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { GlobalStoreProvider } from '@/app/global-store/global-store-provider'
-import { loadGlobalData } from '@/app/global-store/server-store'
+import { GlobalStoreProvider } from '@/stores'
+import { loadGlobalData } from '@/stores/server-store'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
