@@ -1,5 +1,7 @@
 import './globals.css'
 
+import { platform } from 'node:os'
+
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
@@ -44,7 +46,10 @@ export default function RootLayout({
 
   return (
     <html suppressHydrationWarning lang="zh">
-      <body className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}>
+      <body
+        className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}
+        data-server-platform={platform()}
+      >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <GlobalEnv>
             <QueryProvider>
