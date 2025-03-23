@@ -6,7 +6,6 @@ import { useGlobalStore } from '@/app/global-store/global-store-provider'
 
 export type StepId =
   | 'connect-mode'
-  | 'deploy-mode'
   | 'connect-info'
   | 'select-os'
   | 'host-info'
