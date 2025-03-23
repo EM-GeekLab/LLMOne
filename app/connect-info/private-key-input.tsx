@@ -75,8 +75,8 @@ export function PrivateKeyInputContent({
           清空
         </Button>
       </div>
-      <form
-        className="grid gap-4"
+      <WithForm
+        withForm={!onValueChange}
         onSubmit={(e) => {
           e.preventDefault()
           const value = (e.currentTarget[0] as HTMLTextAreaElement).value
@@ -92,13 +92,21 @@ export function PrivateKeyInputContent({
           className="h-[400px] font-mono"
           placeholder="-----BEGIN RSA PRIVATE KEY-----"
         />
-        {!onValueChange && (
-          <DialogFooter>
-            <Button type="submit">保存</Button>
-          </DialogFooter>
-        )}
-      </form>
+      </WithForm>
     </div>
+  )
+}
+
+function WithForm({ withForm, className, children, ...props }: { withForm?: boolean } & ComponentProps<'form'>) {
+  return withForm ? (
+    <form className={cn('grid gap-4', className)} {...props}>
+      {children}
+      <DialogFooter>
+        <Button type="submit">保存</Button>
+      </DialogFooter>
+    </form>
+  ) : (
+    <>{children}</>
   )
 }
 
