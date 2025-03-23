@@ -2,20 +2,27 @@ import { immer } from 'zustand/middleware/immer'
 import { createStore } from 'zustand/vanilla'
 
 import {
+  ConnectionInfoActions,
+  ConnectionInfoState,
+  createConnectionInfoSlice,
+  defaultConnectionInfoState,
+} from './slices/connection-info-slice'
+import {
   createModeSelectSlice,
   defaultModelSelectState,
-  ModeSelectActionsSlice,
-  ModeSelectStateSlice,
+  ModeSelectActions,
+  ModeSelectState,
 } from './slices/mode-select-slice'
 
-export type GlobalState = ModeSelectStateSlice
+export type GlobalState = ModeSelectState & ConnectionInfoState
 
-export type GlobalActions = ModeSelectActionsSlice
+export type GlobalActions = ModeSelectActions & ConnectionInfoActions
 
 export type GlobalStore = GlobalState & GlobalActions
 
 export const defaultGlobalState: GlobalState = {
   ...defaultModelSelectState,
+  ...defaultConnectionInfoState,
 }
 
 export const createGlobalStore = (
@@ -26,6 +33,7 @@ export const createGlobalStore = (
     immer((...a) => ({
       ...initState,
       ...createModeSelectSlice(...a),
+      ...createConnectionInfoSlice(...a),
     })),
   )
   if (listener) {
