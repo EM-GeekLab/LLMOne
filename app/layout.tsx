@@ -1,17 +1,15 @@
 import './globals.css'
 
-import { homedir } from 'node:os'
-
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { cn } from '@/lib/utils'
-import { EnvProvider } from '@/components/env-provider'
 import { QueryProvider } from '@/components/query-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { GlobalEnv } from '@/app/global-env'
 import { GlobalStoreProvider } from '@/stores'
 import { loadGlobalData } from '@/stores/server-store'
 
@@ -43,11 +41,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   const globalData = loadGlobalData()
+
   return (
     <html suppressHydrationWarning lang="zh">
       <body className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <EnvProvider cwd={process.cwd()} home={homedir()}>
+          <GlobalEnv>
             <QueryProvider>
               <NuqsAdapter>
                 <GlobalStoreProvider initState={globalData}>
@@ -55,7 +54,7 @@ export default function RootLayout({
                 </GlobalStoreProvider>
               </NuqsAdapter>
             </QueryProvider>
-          </EnvProvider>
+          </GlobalEnv>
           <Toaster />
         </ThemeProvider>
       </body>
