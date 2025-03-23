@@ -5,7 +5,7 @@ import { AppContainer, AppInset } from '@/components/app/app-container'
 import { AppHeader } from '@/components/app/app-header'
 import { StepId, StepSidebar } from '@/app/_shared/step-sidebar'
 
-export function AppFrame({ title, children, current }: { title: ReactNode; children: ReactNode; current?: StepId }) {
+export function AppFrame({ title, children, current }: { title: ReactNode; children?: ReactNode; current?: StepId }) {
   return (
     <AppContainer>
       <AppHeader>{title}</AppHeader>
