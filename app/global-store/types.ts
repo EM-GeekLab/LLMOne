@@ -1,2 +1,1 @@
-export type ConnectMode = 'bmc' | 'ssh'
-export type DeployMode = 'online' | 'offline'
+export type { ConnectMode, DeployMode } from './slices/mode-select-slice'

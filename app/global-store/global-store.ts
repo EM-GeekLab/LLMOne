@@ -1,30 +1,21 @@
 import { immer } from 'zustand/middleware/immer'
 import { createStore } from 'zustand/vanilla'
 
-import type { ConnectMode, DeployMode } from './types'
+import {
+  createModeSelectSlice,
+  defaultModelSelectState,
+  ModeSelectActionsSlice,
+  ModeSelectStateSlice,
+} from './slices/mode-select-slice'
 
-export type GlobalState = {
-  connectMode?: ConnectMode
-  deployMode?: DeployMode
-  packagePaths: {
-    systemImagePath?: string
-    environmentPath?: string
-    modelPath?: string
-  }
-}
+export type GlobalState = ModeSelectStateSlice
 
-export type GlobalActions = {
-  setConnectMode: (mode?: ConnectMode) => void
-  setDeployMode: (mode?: DeployMode) => void
-  setSystemImagePath: (path?: string) => void
-  setEnvironmentPath: (path?: string) => void
-  setModelPath: (path?: string) => void
-}
+export type GlobalActions = ModeSelectActionsSlice
 
 export type GlobalStore = GlobalState & GlobalActions
 
 export const defaultGlobalState: GlobalState = {
-  packagePaths: {},
+  ...defaultModelSelectState,
 }
 
 export const createGlobalStore = (
@@ -32,28 +23,9 @@ export const createGlobalStore = (
   listener?: (state: GlobalStore, prev: GlobalState) => void,
 ) => {
   const store = createStore<GlobalStore>()(
-    immer((set) => ({
+    immer((...a) => ({
       ...initState,
-      setConnectMode: (mode) =>
-        set((state) => {
-          state.connectMode = mode
-        }),
-      setDeployMode: (mode) =>
-        set((state) => {
-          state.deployMode = mode
-        }),
-      setSystemImagePath: (path) =>
-        set((state) => {
-          state.packagePaths.systemImagePath = path
-        }),
-      setEnvironmentPath: (path) =>
-        set((state) => {
-          state.packagePaths.environmentPath = path
-        }),
-      setModelPath: (path) =>
-        set((state) => {
-          state.packagePaths.modelPath = path
-        }),
+      ...createModeSelectSlice(...a),
     })),
   )
   if (listener) {
