@@ -19,6 +19,7 @@ import { match } from 'ts-pattern'
 
 import { commandScore } from '@/lib/command-score'
 import { createSafeContext } from '@/lib/create-safe-context'
+import { readableSize } from '@/lib/file'
 import { cn } from '@/lib/utils'
 import { DebouncedSpinner } from '@/components/base/debounced-spinner'
 import { EasyTooltip } from '@/components/base/easy-tooltip'
@@ -48,6 +49,9 @@ interface FileSelectorProps {
   filterDirectory?: boolean
   children?: ReactNode
   defaultDirectory?: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  showSize?: boolean
 }
 
 const FileSelectorContext = createSafeContext<{
@@ -56,6 +60,7 @@ const FileSelectorContext = createSafeContext<{
   setFilePath: (path: string) => void
   filter?: (item: FileItem) => boolean
   filterDirectory: boolean
+  showSize: boolean
 }>()
 
 const CurrentDirectoryContext = createSafeContext<{
@@ -79,11 +84,20 @@ export function FileSelector({
   filterDirectory = false,
   children,
   defaultDirectory,
+  open: controlledOpen,
+  onOpenChange,
+  showSize = true,
 }: FileSelectorProps) {
   const { home } = useEnvContext()
-  const [open, setOpen] = useState(false)
+
   const [currentDirectory, setCurrentDirectory] = useState(defaultDirectory || getFileDirectory(path) || home)
   const [peekPath, setPeekPath] = useState('')
+
+  const [_open, setOpen] = useControllableState<boolean>({
+    prop: controlledOpen,
+    onChange: onOpenChange,
+  })
+  const open = !!_open
 
   const [filePath, setFilePath] = useControllableState<string>({
     prop: path,
@@ -92,7 +106,7 @@ export function FileSelector({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <FileSelectorContext.Provider value={{ filePath, setFilePath, filter, filterDirectory }}>
+      <FileSelectorContext.Provider value={{ filePath, setFilePath, filter, filterDirectory, showSize }}>
         {children}
         <DialogContent
           className="p-0 **:focus-visible:outline-0 [&>button]:hidden"
@@ -130,7 +144,7 @@ const FileSelectorListContext = createSafeContext<{
 }>()
 
 function FileSelectorList() {
-  const { filePath, setFilePath, filter, filterDirectory } = FileSelectorContext.useContext()
+  const { filePath, setFilePath, filter, filterDirectory, showSize } = FileSelectorContext.useContext()
   const { setCurrentDirectory, currentDirectory, peekPath, setPeekPath } = CurrentDirectoryContext.useContext()
   const { open, setOpen } = DialogContext.useContext()
 
@@ -399,7 +413,10 @@ function FileSelectorList() {
                     <FileIcon className="stroke-muted-foreground" />
                   )}
                   <span className="truncate">{item.name}</span>
-                  {item.type === 'directory' && <ChevronRightIcon className="ml-auto" />}
+                  {showSize && item.size !== undefined && (
+                    <span className="ml-auto shrink-0 text-xs opacity-50">{readableSize(item.size)}</span>
+                  )}
+                  {item.type === 'directory' && <ChevronRightIcon className="ml-auto shrink-0" />}
                 </CommandItem>
               )
             })}

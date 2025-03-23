@@ -7,6 +7,7 @@ import { dirname, join } from 'path'
 export type FileItem = {
   name: string
   path: string
+  size?: number
   type: 'file' | 'directory'
 }
 
@@ -30,6 +31,7 @@ export async function readDirectory(directoryPath: string): Promise<FileItem[]> 
           return {
             name: file,
             path: filePath,
+            size: stats.isFile() ? stats.size : undefined,
             type: stats.isDirectory() ? 'directory' : 'file',
           } as FileItem
         } catch {
