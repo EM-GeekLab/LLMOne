@@ -5,14 +5,14 @@ export type CredentialType = 'password' | 'key'
 
 export type BmcConnectionInfo = {
   ip: string
-  username: string
+  username?: string
   password?: string
-  privateKey?: string
 }
 
 export type SshConnectionInfo = {
   ip: string
-  username: string
+  username?: string
+  credentialType: CredentialType
   password?: string
   privateKey?: string
   port?: number
