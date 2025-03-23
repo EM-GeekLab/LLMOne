@@ -1,11 +1,12 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+
 @plugin 'tailwind-scrollbar';
 
 @custom-variant dark (&:is(.dark *));
 
-@custom-variant disabled-all (& :is(:disabled :not(:where([class~="not-disabled"],[class~="not-disabled"] *))));
-@custom-variant not-disabled-all (& :is(:disabled :where([class~="not-disabled"],[class~="not-disabled"] *)));
+@custom-variant disabled-all (& :is(:disabled :not(:where([class~="not-disabled"], [class~="not-disabled"] *))));
+@custom-variant not-disabled-all (& :is(:disabled :where([class~="not-disabled"], [class~="not-disabled"] *)));
 
 @custom-variant hover-enabled (&:where(:not(:disabled):hover)) *;
 @custom-variant focus-enabled (&:where(:not(:disabled):focus)) *;
@@ -188,5 +189,69 @@
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;
+  }
+}
+
+@utility join {
+  & > :first-child:not(:last-child) {
+    @apply rounded-r-none;
+  }
+
+  & > :last-child:not(:first-child) {
+    @apply rounded-l-none;
+  }
+
+  & > :not(:first-child):not(:last-child) {
+    @apply rounded-none;
+  }
+
+  & > :where(*:not(:first-child)) {
+    @apply -ml-px;
+  }
+
+  & > :focus-visible,
+  & *:has(:focus-visible) {
+    @apply relative z-[2];
+  }
+
+  & > *:hover {
+    @apply relative z-[1];
+  }
+}
+
+@utility join-with-input {
+  & > [class*='shadow'] {
+    @apply shadow-none;
+  }
+
+  &:has([class*='shadow']) {
+    @apply rounded-md shadow-xs;
+  }
+}
+
+@utility join-vertical {
+  & > :first-child:not(:last-child) {
+    @apply rounded-b-none;
+  }
+
+  & > :last-child:not(:first-child) {
+    @apply rounded-t-none;
+  }
+
+  & > :not(:first-child):not(:last-child) {
+    @apply rounded-none;
+  }
+
+  & > :where(*:not(:first-child)) {
+    @apply -mt-px;
+  }
+
+  & > :focus-visible,
+  & *:has(:focus-visible) {
+    @apply relative z-[2];
+  }
+
+  & > *:hover {
+    @apply relative z-[1];
   }
 }
