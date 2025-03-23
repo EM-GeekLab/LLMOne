@@ -1,9 +1,11 @@
 import { ImmerStateCreator } from '@/stores/utils'
 
+export type CredentialType = 'password' | 'key'
+
 export type ConnectionInfoState = {
   defaultCredentials: {
     enabled: boolean
-    type: 'password' | 'key'
+    type: CredentialType
     username?: string
     password?: string
     privateKey?: string
