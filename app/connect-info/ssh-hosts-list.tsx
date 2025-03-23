@@ -1,18 +1,13 @@
 'use client'
 
 import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
+
+import { DefaultCredentialsConfig } from './default-credentials-config'
 
 export function SshHostsList() {
   return (
     <>
-      <AppCardSection>
-        <div className="flex items-center gap-2">
-          <Checkbox id="same-credentials" />
-          <Label htmlFor="same-credentials">对所有主机使用相同凭据</Label>
-        </div>
-      </AppCardSection>
+      <DefaultCredentialsConfig />
       <AppCardSection>
         <AppCardSectionHeader>
           <AppCardSectionTitle>主机列表</AppCardSectionTitle>
