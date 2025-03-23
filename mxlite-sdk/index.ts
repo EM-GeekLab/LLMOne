@@ -12,12 +12,38 @@ export type Error =
 export type TaskResult =
   | {
       ok: true
-      payload: unknown
+      payload:
+        | {
+            type: 'None'
+          }
+        | {
+            type: 'CommandExecutionResponse'
+            stdout: string
+            stderr: string
+            code: number
+          }
+        | {
+            type: 'FileOperationResponse'
+            hash?: string
+            success: boolean
+          }
     }
   | {
       ok: false
       reason: Error
     }
+
+export type AddTaskResult =
+  | {
+      ok: true
+      task_id: number
+    }
+  | {
+      ok: false
+      reason: Error
+    }
+
+export type ApiResult<T> = Promise<[T, number]>
 
 export class Mxc {
   private readonly endpoint: string
@@ -28,7 +54,7 @@ export class Mxc {
     this.token = token
   }
 
-  private async request<T, R>(url: string, method: string, body?: T): Promise<R> {
+  private async request<T, R>(url: string, method: string, body?: T): ApiResult<R> {
     const response = await fetch(url, {
       method: method,
       headers: {
@@ -37,27 +63,41 @@ export class Mxc {
       },
       body: body && JSON.stringify(body),
     })
-    return (await response.json()) as R
+    return [(await response.json()) as R, response.status]
   }
 
-  public async getHostList(): Promise<{
+  public async getHostList(): ApiResult<{
     sessions: string[]
   }> {
     return await this.request(`${this.endpoint}/list`, 'GET')
   }
 
-  public async getResult(hostId: string, taskId: number): Promise<TaskResult> {
+  public async getResult(hostId: string, taskId: number): ApiResult<TaskResult> {
     return await this.request(`${this.endpoint}/result?host=${hostId}&task_id=${taskId}`, 'GET')
   }
 
-  public async commandExec(hostId: string, command: string): Promise<TaskResult> {
+  public async blockUntilTaskComplete(hostId: string, taskId: number): Promise<TaskResult> {
+    while (true) {
+      const [result, _] = await this.getResult(hostId, taskId)
+      if (result.ok) {
+        return result
+      }
+      if (result.reason !== ERR_REASON_TASK_NOT_COMPLETED) {
+        return result
+      }
+      console.log('Waiting for task to complete...')
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+    }
+  }
+
+  public async commandExec(hostId: string, command: string): ApiResult<AddTaskResult> {
     return await this.request(`${this.endpoint}/exec`, 'POST', {
       host: hostId,
       cmd: command,
     })
   }
 
-  public async uploadFile(hostId: string, srcPath: string, targetUrl: string): Promise<TaskResult> {
+  public async uploadFile(hostId: string, srcPath: string, targetUrl: string): ApiResult<AddTaskResult> {
     return await this.request(`${this.endpoint}/file`, 'POST', {
       url: targetUrl,
       host: hostId,
@@ -66,7 +106,7 @@ export class Mxc {
     })
   }
 
-  public async downloadFile(hostId: string, srcUrl: string, targetPath: string): Promise<TaskResult> {
+  public async downloadFile(hostId: string, srcUrl: string, targetPath: string): ApiResult<AddTaskResult> {
     return await this.request(`${this.endpoint}/file`, 'POST', {
       url: srcUrl,
       host: hostId,

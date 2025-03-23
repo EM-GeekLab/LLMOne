@@ -42,3 +42,6 @@ next-env.d.ts
 
 # IntelliJ
 /.idea
+
+# scripts for internal testing purposes
+.local

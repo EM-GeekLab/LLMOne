@@ -67,8 +67,7 @@ const badgeVariants = cva(
       {
         variant: 'soft',
         color: 'secondary',
-        className:
-          'bg-muted text-secondary [a&]:hover:bg-secondary/10 focus-visible:border-border',
+        className: 'bg-muted text-secondary [a&]:hover:bg-secondary/10 focus-visible:border-border',
       },
       {
         variant: 'soft',

@@ -18,7 +18,7 @@ export function AppStepper({ items, current }: { items: { title: string; id: str
 export function AppStepperItem({ title, status }: { title: string; status: 'done' | 'current' | 'todo' }) {
   return (
     <div data-status={status} className="flex items-center gap-2">
-      <div className="size-3 flex items-center justify-center">
+      <div className="flex size-3 items-center justify-center">
         <div
           data-status={status}
           className="bg-muted-foreground/50 data-[status=current]:bg-primary data-[status=done]:bg-primary size-2 rounded-full data-[status=current]:size-3"

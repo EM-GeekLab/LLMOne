@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 @plugin 'tailwind-scrollbar';
 
 @custom-variant dark (&:is(.dark *));
@@ -162,7 +162,8 @@
       stroke-dasharray: 42 150;
       stroke-dashoffset: -16;
     }
-    95%, 100% {
+    95%,
+    100% {
       stroke-dasharray: 42 150;
       stroke-dashoffset: -59;
     }
@@ -185,8 +186,7 @@
   }
 
   button:not(:disabled),
-  [role="button"]:not(:disabled) {
+  [role='button']:not(:disabled) {
     cursor: pointer;
   }
 }
-
