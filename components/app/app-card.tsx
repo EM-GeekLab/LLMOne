@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react'
+import { Slot } from '@radix-ui/react-slot'
 
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -71,11 +72,17 @@ export function AppCardContent({ children, className, ...props }: ComponentProps
   )
 }
 
-export function AppCardSection({ children, className, ...props }: ComponentProps<'section'>) {
+export function AppCardSection({
+  children,
+  className,
+  asChild,
+  ...props
+}: ComponentProps<'section'> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot : 'section'
   return (
-    <section className={cn('flex flex-col items-stretch gap-2.5 px-6 text-sm', className)} {...props}>
+    <Comp className={cn('flex flex-col items-stretch gap-2.5 px-6 text-sm', className)} {...props}>
       {children}
-    </section>
+    </Comp>
   )
 }
 
