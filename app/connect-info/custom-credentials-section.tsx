@@ -15,7 +15,7 @@ export function CustomCredentialsSection({
     <>
       {withDefaultCredentials && (
         <div>
-          <button className="block text-left" onClick={() => setUseCustomCredentials((v) => !v)}>
+          <button type="button" className="block text-left" onClick={() => setUseCustomCredentials((v) => !v)}>
             <div className="flex items-center gap-1.5">
               <div className="text-sm font-medium">使用自定义凭据</div>
               <ChevronRightIcon
