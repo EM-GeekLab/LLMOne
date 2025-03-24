@@ -1,31 +1,31 @@
 import { makeErrorMap } from '@/lib/zod-utils'
 import { z } from '@/lib/zod-zh'
 
-export const enabledDefaultCredentialsSchema = z.union([
-  z
-    .object({
-      enabled: z.literal(true),
-      username: z.string({ message: '默认凭据用户名不能为空' }).nonempty('默认凭据用户名不能为空'),
-    })
-    .and(
-      z.discriminatedUnion(
-        'type',
-        [
-          z.object({
-            type: z.literal('password'),
-            password: z.string({ message: '默认凭据密码不能为空' }).nonempty('默认凭据密码不能为空'),
-          }),
-          z.object({
-            type: z.literal('key'),
-            privateKey: z.string({ message: '默认凭据密钥不能为空' }).nonempty('默认凭据密钥不能为空'),
-          }),
-        ],
-        { message: '请选择凭据类型' },
-      ),
+export const enabledDefaultCredentialsSchema = z
+  .object({
+    enabled: z.literal(true),
+    username: z.string({ message: '默认凭据用户名不能为空' }).nonempty('默认凭据用户名不能为空'),
+  })
+  .and(
+    z.discriminatedUnion(
+      'type',
+      [
+        z.object({
+          type: z.literal('password'),
+          password: z.string({ message: '默认凭据密码不能为空' }).nonempty('默认凭据密码不能为空'),
+        }),
+        z.object({
+          type: z.literal('key'),
+          privateKey: z.string({ message: '默认凭据密钥不能为空' }).nonempty('默认凭据密钥不能为空'),
+        }),
+      ],
+      { message: '请选择凭据类型' },
     ),
-  z.object({
-    enabled: z.literal(false),
-  }),
+  )
+
+export const defaultCredentialsSchema = z.union([
+  enabledDefaultCredentialsSchema,
+  z.object({ enabled: z.literal(false) }),
 ])
 
 export const bmcConnectionInfoSchema = z.object({
