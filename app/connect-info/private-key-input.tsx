@@ -1,11 +1,11 @@
-import { ComponentProps, useRef, useState } from 'react'
+import { ComponentProps, useRef } from 'react'
 import { useControllableState } from '@radix-ui/react-use-controllable-state'
 import { ClipboardPasteIcon, FileInputIcon, FileUpIcon, Trash2Icon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { selectFileAndRead } from '@/lib/select-file'
 import { cn } from '@/lib/utils'
-import { FileSelector } from '@/components/base/file-selector'
+import { FileSelector, FileSelectorTrigger } from '@/components/base/file-selector'
 import { useEnvContext } from '@/components/env-provider'
 import { Button } from '@/components/ui/button'
 import { DialogFooter } from '@/components/ui/dialog'
@@ -114,26 +114,22 @@ function WithForm({ withForm, className, children, ...props }: { withForm?: bool
 
 function RemoteFileReader({ maxSize = 100 * 1024, onRead }: { maxSize?: number; onRead?: (text: string) => void }) {
   const { sshPath } = useEnvContext()
-  const [fileSelectorOpen, setFileSelectorOpen] = useState(false)
 
   return (
-    <>
-      <Button variant="outline" size="sm" onClick={() => setFileSelectorOpen(true)}>
+    <FileSelector
+      defaultDirectory={sshPath}
+      filter={(item) => (item.size ? item.size <= 100 * 1024 : true)}
+      onSelected={async (path) => {
+        const text = await readFileToString(path, { maxSize }).catch((err) => {
+          toast.error('读取文件失败', { description: err.message })
+        })
+        if (text) onRead?.(text)
+      }}
+    >
+      <FileSelectorTrigger variant="outline" size="sm">
         <FileInputIcon />
         选择
-      </Button>
-      <FileSelector
-        open={fileSelectorOpen}
-        defaultDirectory={sshPath}
-        onOpenChange={setFileSelectorOpen}
-        filter={(item) => (item.size ? item.size <= 100 * 1024 : true)}
-        onSelected={async (path) => {
-          const text = await readFileToString(path, { maxSize }).catch((err) => {
-            toast.error('读取文件失败', { description: err.message })
-          })
-          if (text) onRead?.(text)
-        }}
-      />
-    </>
+      </FileSelectorTrigger>
+    </FileSelector>
   )
 }

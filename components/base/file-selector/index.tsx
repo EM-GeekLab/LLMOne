@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useDebouncedCallback } from '@mantine/hooks'
+import { useDebouncedCallback, useOs } from '@mantine/hooks'
 import { useControllableState } from '@radix-ui/react-use-controllable-state'
 import { keepPreviousData, queryOptions, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
@@ -144,6 +144,8 @@ const FileSelectorListContext = createSafeContext<{
 }>()
 
 function FileSelectorList() {
+  const platform = useOs()
+
   const { filePath, setFilePath, filter, filterDirectory, showSize } = FileSelectorContext.useContext()
   const { setCurrentDirectory, currentDirectory, peekPath, setPeekPath } = CurrentDirectoryContext.useContext()
   const { open, setOpen } = DialogContext.useContext()
@@ -208,13 +210,18 @@ function FileSelectorList() {
 
   // 导航到上级目录。
   // Navigate to parent directory.
-  const navigateToParent = useCallback(async () => {
-    const parentPath = await getParentDirectoryPath(currentDirectory)
-    setCurrentDirectory(parentPath)
-    setInputPath(parentPath)
-    const items = await ensureQueryFiles(parentPath)
-    navigateToFirstItem(items)
-  }, [currentDirectory, ensureQueryFiles, navigateToFirstItem, setCurrentDirectory, setInputPath])
+  const navigateToParent = useCallback(
+    async ({ closeWhenRoot = false } = {}) => {
+      const parentPath = await getParentDirectoryPath(currentDirectory)
+      if (closeWhenRoot && currentDirectory === parentPath) setOpen(false)
+
+      setCurrentDirectory(parentPath)
+      setInputPath(parentPath)
+      const items = await ensureQueryFiles(parentPath)
+      navigateToFirstItem(items)
+    },
+    [currentDirectory, ensureQueryFiles, navigateToFirstItem, setCurrentDirectory, setInputPath, setOpen],
+  )
 
   // 使用命令评分算法获取最相关的项目。
   // Get the most relevant item using the command scoring algorithm.
@@ -317,7 +324,12 @@ function FileSelectorList() {
           await navigate()
         })
         .with('Escape', async () => {
-          await navigateToParent()
+          const metaKey = platform === 'ios' || platform === 'macos' ? e.metaKey : e.ctrlKey
+          if (metaKey) {
+            setOpen(false)
+            return
+          }
+          await navigateToParent({ closeWhenRoot: true })
         })
         .with('ArrowRight', async () => {
           if (!inputRef.current) return
@@ -336,7 +348,7 @@ function FileSelectorList() {
           await navigateToParent()
         })
     },
-    [handleSelect, items, navigateToParent, peekPath],
+    [handleSelect, items, navigateToParent, peekPath, platform, setOpen],
   )
 
   return (
@@ -350,7 +362,7 @@ function FileSelectorList() {
         <div className="flex flex-col items-stretch">
           <div className="flex w-full items-center gap-2 p-1">
             <TooltipButton
-              onClick={navigateToParent}
+              onClick={() => navigateToParent()}
               tooltip={{
                 content: (
                   <div className="flex items-center gap-1">
@@ -368,7 +380,18 @@ function FileSelectorList() {
               <DebouncedSpinner show={isFetching} />
             </h3>
             <DialogClose asChild>
-              <TooltipButton tooltip={{ content: '关闭' }}>
+              <TooltipButton
+                tooltip={{
+                  content: (
+                    <div className="flex items-center gap-1.5">
+                      <span>关闭</span>
+                      <kbd className="text-secondary-foreground/70">
+                        {platform === 'ios' || platform === 'macos' ? '⌘Esc' : 'Ctrl+Esc'}
+                      </kbd>
+                    </div>
+                  ),
+                }}
+              >
                 <XIcon />
               </TooltipButton>
             </DialogClose>
