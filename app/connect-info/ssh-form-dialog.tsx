@@ -3,9 +3,9 @@
 import { ComponentProps, ReactNode, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Control, useForm, UseFormWatch, useWatch } from 'react-hook-form'
-import { z } from 'zod'
 
 import { findById } from '@/lib/id'
+import { z } from '@/lib/zod-zh'
 import { PasswordInput } from '@/components/base/password-input'
 import { RadioItem } from '@/components/base/radio-item'
 import { Button } from '@/components/ui/button'
@@ -22,9 +22,11 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { RadioGroup } from '@/components/ui/radio-group'
-import { CustomCredentialsSection, useFieldsHasAnyValue } from '@/app/connect-info/custom-credentials-section'
-import { PrivateKeyInputContent } from '@/app/connect-info/private-key-input'
 import { SshConnectionInfo, useGlobalStore } from '@/stores'
+
+import { CustomCredentialsSection, useFieldsHasAnyValue } from './custom-credentials-section'
+import { PrivateKeyInputContent } from './private-key-input'
+import { sshConnectionInfoSchema, sshFinalConnectionInfoSchema } from './schemas'
 
 export function SshFormDialog({ id, children }: { id?: string; children?: ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -46,16 +48,6 @@ export function SshFormDialogTrigger({ ...props }: ComponentProps<typeof Button>
     </DialogTrigger>
   )
 }
-
-const sshConnectionInfoSchema = z.object({
-  ip: z.string({ message: 'IP 地址不能为空' }).ip({ message: 'IP 地址格式不正确' }),
-  username: z.string().optional(),
-  credentialType: z.enum(['password', 'key']).default('password'),
-  password: z.string().optional(),
-  privateKey: z.string().optional(),
-  port: z.number().min(0, '端口号范围必须为 0-65535').max(65535, '端口号范围必须为 0-65535').default(22),
-  bmcIp: z.string().ip({ message: 'IP 地址格式不正确' }).optional(),
-})
 
 type SshConnectionInfoForm = z.infer<typeof sshConnectionInfoSchema>
 
@@ -94,8 +86,10 @@ function BmcForm({
   defaultValues?: SshConnectionInfo
   onSubmit: (data: SshConnectionInfo) => void
 }) {
+  const useDefaultCredentials = useGlobalStore((s) => s.defaultCredentials.enabled)
+
   const form = useForm<SshConnectionInfoForm>({
-    resolver: zodResolver(sshConnectionInfoSchema),
+    resolver: zodResolver(useDefaultCredentials ? sshConnectionInfoSchema : sshFinalConnectionInfoSchema),
     defaultValues,
   })
 
@@ -145,7 +139,7 @@ function BmcForm({
             <FormItem>
               <FormLabel>BMC IP</FormLabel>
               <FormControl>
-                <Input value={value} {...rest} />
+                <Input value={value} placeholder="可选" {...rest} />
               </FormControl>
               <FormMessage />
             </FormItem>

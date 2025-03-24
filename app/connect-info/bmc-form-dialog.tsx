@@ -3,9 +3,9 @@
 import { ComponentProps, ReactNode, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
 import { findById } from '@/lib/id'
+import { z } from '@/lib/zod-zh'
 import { PasswordInput } from '@/components/base/password-input'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,8 +20,10 @@ import {
 } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { CustomCredentialsSection, useFieldsHasAnyValue } from '@/app/connect-info/custom-credentials-section'
 import { BmcConnectionInfo, useGlobalStore } from '@/stores'
+
+import { CustomCredentialsSection, useFieldsHasAnyValue } from './custom-credentials-section'
+import { bmcConnectionInfoSchema, bmcFinalConnectionInfoSchema } from './schemas'
 
 export function BmcFormDialog({ id, children }: { id?: string; children?: ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -43,12 +45,6 @@ export function BmcFormDialogTrigger({ ...props }: ComponentProps<typeof Button>
     </DialogTrigger>
   )
 }
-
-const bmcConnectionInfoSchema = z.object({
-  ip: z.string({ message: 'IP 地址不能为空' }).ip({ message: 'IP 地址格式不正确' }),
-  username: z.string().optional(),
-  password: z.string().optional(),
-})
 
 function BmcFormDialogContent({ id, onClose }: { id?: string; onClose?: () => void }) {
   const list = useGlobalStore((s) => s.bmcHosts)
@@ -88,7 +84,7 @@ function BmcForm({
   const useDefaultCredentials = useGlobalStore((s) => s.defaultCredentials.enabled)
 
   const form = useForm<z.infer<typeof bmcConnectionInfoSchema>>({
-    resolver: zodResolver(bmcConnectionInfoSchema),
+    resolver: zodResolver(useDefaultCredentials ? bmcConnectionInfoSchema : bmcFinalConnectionInfoSchema),
     defaultValues,
   })
 
