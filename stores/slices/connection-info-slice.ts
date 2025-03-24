@@ -12,7 +12,7 @@ export type BmcConnectionInfo = {
 export type SshConnectionInfo = {
   ip: string
   username?: string
-  credentialType: CredentialType
+  credentialType?: CredentialType
   password?: string
   privateKey?: string
   port?: number

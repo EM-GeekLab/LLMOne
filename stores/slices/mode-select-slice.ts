@@ -31,6 +31,9 @@ export const createModeSelectSlice: ImmerStateCreator<ModeSelectActions> = (set)
   setConnectMode: (mode) =>
     set((state) => {
       state.connectMode = mode
+      if (mode === 'bmc') {
+        state.defaultCredentials.type = 'password'
+      }
     }),
   setDeployMode: (mode) =>
     set((state) => {
