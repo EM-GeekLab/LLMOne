@@ -12,7 +12,7 @@ export function PasswordInput({ className, ...props }: ComponentProps<typeof Inp
   const [visible, setVisible] = useState(false)
 
   return (
-    <InputWrapper className={cn('relative pr-8', className)}>
+    <InputWrapper className={cn('relative [&_input]:pr-8', className)}>
       <input
         type={visible ? 'text' : 'password'}
         autoComplete="off"
