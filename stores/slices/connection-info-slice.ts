@@ -19,14 +19,16 @@ export type SshConnectionInfo = {
   bmcIp?: string
 }
 
+export type DefaultCredentials = {
+  enabled: boolean
+  type: CredentialType
+  username?: string
+  password?: string
+  privateKey?: string
+}
+
 export type ConnectionInfoState = {
-  defaultCredentials: {
-    enabled: boolean
-    type: CredentialType
-    username?: string
-    password?: string
-    privateKey?: string
-  }
+  defaultCredentials: DefaultCredentials
   bmcHosts: WithId<BmcConnectionInfo>[]
   sshHosts: WithId<SshConnectionInfo>[]
 }
