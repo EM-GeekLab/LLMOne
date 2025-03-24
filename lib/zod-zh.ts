@@ -1,9 +1,9 @@
 import { match, P } from 'ts-pattern'
-import { z } from 'zod'
+import { z, ZodParsedType } from 'zod'
 
 import { makeErrorMap } from '@/lib/zod-utils'
 
-const typeMap = {
+const typeMap: Record<ZodParsedType, string> = {
   string: '字符串',
   number: '数字',
   bigint: '大整数',
