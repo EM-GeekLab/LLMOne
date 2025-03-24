@@ -1,29 +1,33 @@
 import { ReactNode, useState } from 'react'
-
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
+import { ChevronRightIcon } from 'lucide-react'
 
 export function CustomCredentialsSection({
   children,
   withDefaultCredentials,
+  defaultOpen = false,
 }: {
   children?: ReactNode
   withDefaultCredentials?: boolean
+  defaultOpen?: boolean
 }) {
-  const [useCustomCredentials, setUseCustomCredentials] = useState(false)
+  const [useCustomCredentials, setUseCustomCredentials] = useState(defaultOpen)
   return (
     <>
       {withDefaultCredentials && (
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="use-custom-credentials"
-            checked={useCustomCredentials}
-            onCheckedChange={(v) => setUseCustomCredentials(!!v)}
-          />
-          <Label htmlFor="use-custom-credentials">使用自定义凭据</Label>
+        <div>
+          <button className="block text-left" onClick={() => setUseCustomCredentials((v) => !v)}>
+            <div className="flex items-center gap-1.5">
+              <div className="text-sm font-medium">使用自定义凭据</div>
+              <ChevronRightIcon
+                data-state={useCustomCredentials ? 'open' : 'closed'}
+                className="text-muted-foreground data-[state=open]:text-primary size-4 data-[state=open]:rotate-90"
+              />
+            </div>
+            {useCustomCredentials && <div className="text-muted-foreground mt-1 text-xs">留空以使用默认凭据</div>}
+          </button>
         </div>
       )}
-      {(!withDefaultCredentials || useCustomCredentials) && children}
+      {(!withDefaultCredentials || useCustomCredentials) && <>{children}</>}
     </>
   )
 }

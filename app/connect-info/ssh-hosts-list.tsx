@@ -1,6 +1,6 @@
 'use client'
 
-import { PlusIcon } from 'lucide-react'
+import { EditIcon, PlusIcon } from 'lucide-react'
 
 import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
 import { SshFormDialog, SshFormDialogTrigger } from '@/app/connect-info/ssh-form-dialog'
@@ -39,6 +39,11 @@ function HostsList() {
         <div key={host.id} className="flex items-center gap-2">
           <span>{host.ip}</span>
           <span>{host.username}</span>
+          <SshFormDialog id={host.id}>
+            <SshFormDialogTrigger className="size-6 p-0">
+              <EditIcon />
+            </SshFormDialogTrigger>
+          </SshFormDialog>
         </div>
       ))}
     </div>

@@ -7,6 +7,7 @@ import { z } from 'zod'
 
 import { findById } from '@/lib/id'
 import { PasswordInput } from '@/components/base/password-input'
+import { RadioItem } from '@/components/base/radio-item'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -20,8 +21,7 @@ import {
 } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { RadioGroup } from '@/components/ui/radio-group'
 import { CustomCredentialsSection } from '@/app/connect-info/custom-credentials-section'
 import { PrivateKeyInputContent } from '@/app/connect-info/private-key-input'
 import { SshConnectionInfo, useGlobalStore } from '@/stores'
@@ -46,9 +46,9 @@ export function SshFormDialogTrigger({ ...props }: ComponentProps<typeof Button>
 }
 
 const sshConnectionInfoSchema = z.object({
-  ip: z.string().ip({ message: 'IP 地址格式不正确' }),
+  ip: z.string({ message: 'IP 地址不能为空' }).ip({ message: 'IP 地址格式不正确' }),
   username: z.string().optional(),
-  credentialType: z.enum(['password', 'key']),
+  credentialType: z.enum(['password', 'key']).default('password'),
   password: z.string().optional(),
   privateKey: z.string().optional(),
   port: z.number().default(22),
@@ -141,7 +141,10 @@ function BmcForm({
             </FormItem>
           )}
         />
-        <CustomCredentialsSection withDefaultCredentials={useDefaultCredentials}>
+        <CustomCredentialsSection
+          withDefaultCredentials={useDefaultCredentials}
+          defaultOpen={!!(defaultValues?.username || defaultValues?.password || defaultValues?.privateKey)}
+        >
           <FormField
             control={form.control}
             name="username"
@@ -163,19 +166,13 @@ function BmcForm({
                 <FormLabel>凭据类型</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    className="flex items-center py-1"
+                    className="flex items-center gap-x-4 py-1"
                     defaultValue={value}
                     onValueChange={onChange}
                     {...rest}
                   >
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem id="type-password" value="password" />
-                      <Label htmlFor="type-password">密码</Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem id="type-key" value="key" />
-                      <Label htmlFor="type-key">密钥</Label>
-                    </div>
+                    <RadioItem value="password">密码</RadioItem>
+                    <RadioItem value="key">密钥</RadioItem>
                   </RadioGroup>
                 </FormControl>
                 <FormMessage />

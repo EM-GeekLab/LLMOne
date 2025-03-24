@@ -1,6 +1,6 @@
 'use client'
 
-import { PlusIcon } from 'lucide-react'
+import { EditIcon, PlusIcon } from 'lucide-react'
 
 import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
 import { BmcFormDialog, BmcFormDialogTrigger } from '@/app/connect-info/bmc-form-dialog'
@@ -39,6 +39,11 @@ function HostsList() {
         <div key={host.id} className="flex items-center gap-2">
           <span>{host.ip}</span>
           <span>{host.username}</span>
+          <BmcFormDialog id={host.id}>
+            <BmcFormDialogTrigger className="size-6 p-0">
+              <EditIcon />
+            </BmcFormDialogTrigger>
+          </BmcFormDialog>
         </div>
       ))}
     </div>

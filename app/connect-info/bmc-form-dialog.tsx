@@ -43,7 +43,7 @@ export function BmcFormDialogTrigger({ ...props }: ComponentProps<typeof Button>
 }
 
 const bmcConnectionInfoSchema = z.object({
-  ip: z.string().ip({ message: 'IP 地址格式不正确' }),
+  ip: z.string({ message: 'IP 地址不能为空' }).ip({ message: 'IP 地址格式不正确' }),
   username: z.string().optional(),
   password: z.string().optional(),
 })
@@ -98,7 +98,10 @@ function BmcForm({
             </FormItem>
           )}
         />
-        <CustomCredentialsSection withDefaultCredentials={useDefaultCredentials}>
+        <CustomCredentialsSection
+          withDefaultCredentials={useDefaultCredentials}
+          defaultOpen={!!(defaultValues?.username || defaultValues?.password)}
+        >
           <FormField
             control={form.control}
             name="username"

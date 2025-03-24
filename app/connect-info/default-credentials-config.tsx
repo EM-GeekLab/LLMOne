@@ -21,7 +21,7 @@ export function DefaultCredentialsConfig() {
     <AppCardSection>
       <div className="flex items-center gap-2">
         <Checkbox checked={enabled} onCheckedChange={(v) => setUseDefaultCredentials(!!v)} id="same-credentials" />
-        <Label htmlFor="same-credentials">对所有主机使用相同凭据</Label>
+        <Label htmlFor="same-credentials">对所有主机使用相同的默认凭据</Label>
       </div>
       {enabled && (
         <div className="bg-muted/50 -mx-2 flex max-w-xl items-center gap-3 rounded-lg p-4">
