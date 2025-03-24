@@ -212,7 +212,12 @@ function CredentialFormPart({
           <FormItem>
             <FormLabel>凭据类型</FormLabel>
             <FormControl>
-              <RadioGroup className="flex items-center gap-x-4 py-1" value={value} onValueChange={onChange} {...rest}>
+              <RadioGroup
+                className="flex items-center gap-x-4 py-1 *:gap-1.5"
+                value={value}
+                onValueChange={onChange}
+                {...rest}
+              >
                 <RadioItem value="password">密码</RadioItem>
                 <RadioItem value="key">密钥</RadioItem>
               </RadioGroup>
