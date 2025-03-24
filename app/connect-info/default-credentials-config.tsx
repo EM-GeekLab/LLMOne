@@ -7,7 +7,6 @@ import { CheckboxItem } from '@/components/base/checkbox-item'
 import { PasswordInput } from '@/components/base/password-input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { defaultCredentialsSchema } from '@/app/connect-info/schemas'
 import { useGlobalStore } from '@/stores'
 import { DefaultCredentials } from '@/stores/slices/connection-info-slice'
@@ -29,9 +28,6 @@ export function DefaultCredentialsConfig() {
     mode: 'all',
   })
 
-  const { type, password, privateKey } = form.formState.errors
-  const inputError = type || password || privateKey
-
   return (
     <Form {...form}>
       <AppCardSection asChild>
@@ -50,29 +46,30 @@ export function DefaultCredentialsConfig() {
             )}
           />
           {form.watch('enabled') && (
-            <div className="bg-muted/50 -mx-2 flex max-w-xl items-center gap-3 rounded-lg p-4">
+            <div className="bg-muted/50 -mx-2 flex max-w-xl items-start gap-3 rounded-lg p-4">
               <FormField
                 control={form.control}
                 name="username"
-                render={({ field: { value = '', ...rest } }) => (
+                render={({ field: { value = '', onChange, ...rest } }) => (
                   <FormItem className={cn('grid flex-1/2 items-center gap-1.5', connectMode === 'ssh' && 'flex-5/12')}>
                     <FormLabel>用户名</FormLabel>
                     <FormControl>
-                      <Input value={value} {...rest} onChange={(e) => setUsername(e.target.value)} />
+                      <Input
+                        value={value}
+                        onChange={(e) => {
+                          setUsername(e.target.value)
+                          onChange(e)
+                        }}
+                        {...rest}
+                      />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
               <div className={cn('grid flex-1/2 items-center gap-1.5', connectMode == 'ssh' && 'flex-7/12')}>
                 {connectMode === 'ssh' && (
                   <>
-                    <Label
-                      htmlFor="default-credential"
-                      data-error={!!inputError}
-                      className="data-[error=true]:text-destructive"
-                    >
-                      密码 / 密钥
-                    </Label>
                     <FormPasswordKeyInput
                       control={form.control}
                       id="default-credential"
@@ -86,11 +83,18 @@ export function DefaultCredentialsConfig() {
                   <FormField
                     control={form.control}
                     name="password"
-                    render={({ field: { value = '', ...rest } }) => (
+                    render={({ field: { value = '', onChange, ...rest } }) => (
                       <FormItem>
                         <FormLabel>密码</FormLabel>
                         <FormControl>
-                          <PasswordInput value={value} {...rest} onChange={(e) => setPassword(e.target.value)} />
+                          <PasswordInput
+                            value={value}
+                            onChange={(e) => {
+                              setPassword(e.target.value)
+                              onChange(e)
+                            }}
+                            {...rest}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

@@ -1,5 +1,6 @@
+import * as React from 'react'
 import { ComponentProps, useState } from 'react'
-import { Control, useWatch } from 'react-hook-form'
+import { Control, useFormState, useWatch } from 'react-hook-form'
 
 import { cn } from '@/lib/utils'
 import { PasswordInput } from '@/components/base/password-input'
@@ -13,6 +14,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { FormControl, FormField, FormItem } from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CredentialType } from '@/stores'
 import { DefaultCredentials } from '@/stores/slices/connection-info-slice'
@@ -77,73 +79,107 @@ export function FormPasswordKeyInput({
 } & ComponentProps<'div'>) {
   const type = useWatch({ control, name: 'type' })
 
+  const {
+    errors: { password, privateKey },
+  } = useFormState({ control, name: ['password', 'privateKey'] })
+  const inputError = password || privateKey
+
   return (
-    <div className={cn('join join-with-input flex items-stretch', className)} {...props}>
-      <FormField
-        control={control}
-        name="type"
-        render={({ field: { value, ...rest } }) => (
-          <FormItem passChild>
-            <FormControl>
-              <Select value={value} {...rest} onValueChange={onTypeChange}>
-                <SelectTrigger className="w-[78px] shrink-0">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="password">密码</SelectItem>
-                  <SelectItem value="key">密钥</SelectItem>
-                </SelectContent>
-              </Select>
-            </FormControl>
-          </FormItem>
-        )}
-      />
-      {type === 'password' && (
+    <>
+      <Label htmlFor="default-credential" data-error={!!inputError} className="data-[error=true]:text-destructive">
+        密码 / 密钥
+      </Label>
+      <div className={cn('join join-with-input flex items-stretch', className)} {...props}>
         <FormField
           control={control}
-          name="password"
-          render={({ field: { value = '', ...rest } }) => (
-            <FormItem passChild>
-              <FormControl>
-                <PasswordInput
-                  id={id}
-                  className="bg-background"
-                  value={value}
-                  {...rest}
-                  onChange={(e) => onPasswordChange?.(e.target.value)}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      )}
-      {type === 'key' && (
-        <FormField
-          control={control}
-          name="privateKey"
+          name="type"
           render={({ field: { value, ...rest } }) => (
             <FormItem passChild>
               <FormControl>
-                <PrivateKeyInputDialog id={id} defaultValue={value} {...rest} onValueChange={onPrivateKeyChange} />
+                <Select value={value} onValueChange={onTypeChange} {...rest}>
+                  <SelectTrigger className="w-[78px] shrink-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="password">密码</SelectItem>
+                    <SelectItem value="key">密钥</SelectItem>
+                  </SelectContent>
+                </Select>
               </FormControl>
             </FormItem>
           )}
         />
-      )}
-    </div>
+        {type === 'password' && (
+          <FormField
+            control={control}
+            name="password"
+            render={({ field: { value = '', onChange, ...rest } }) => (
+              <FormItem passChild>
+                <FormControl>
+                  <PasswordInput
+                    id={id}
+                    className="bg-background"
+                    value={value}
+                    onChange={(e) => {
+                      onPasswordChange?.(e.target.value)
+                      onChange(e)
+                    }}
+                    {...rest}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        )}
+        {type === 'key' && (
+          <FormField
+            control={control}
+            name="privateKey"
+            render={({ field: { value, onChange, onBlur, ...rest } }) => (
+              <FormItem passChild>
+                <FormControl>
+                  <PrivateKeyInputDialog
+                    id={id}
+                    defaultValue={value}
+                    onValueChange={(v) => {
+                      onPrivateKeyChange?.(v)
+                      onChange(v)
+                    }}
+                    onClose={onBlur}
+                    {...rest}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        )}
+      </div>
+      <p data-slot="form-message" className="text-destructive text-sm">
+        {type === 'password' ? password?.message : privateKey?.message}
+      </p>
+    </>
   )
 }
 
 function PrivateKeyInputDialog({
   defaultValue,
   onValueChange,
+  onClose,
   className,
   ...props
 }: {
   defaultValue?: string
   onValueChange?: (value: string) => void
+  onClose?: () => void
 } & ComponentProps<typeof Button>) {
-  const [open, setOpen] = useState(false)
+  const [open, _setOpen] = useState(false)
+
+  const setOpen = (open: boolean) => {
+    _setOpen(open)
+    if (!open) {
+      onClose?.()
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
