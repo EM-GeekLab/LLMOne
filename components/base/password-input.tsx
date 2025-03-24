@@ -15,7 +15,7 @@ export function PasswordInput({ className, ...props }: ComponentProps<typeof Inp
     <InputWrapper className={cn('relative [&_input]:pr-8', className)}>
       <input
         type={visible ? 'text' : 'password'}
-        autoComplete="off"
+        autoComplete="off new-password"
         data-1p-ignore=""
         data-bwignore="true"
         data-lpignore="true"
