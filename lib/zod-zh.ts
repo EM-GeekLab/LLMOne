@@ -27,8 +27,9 @@ const typeMap = {
 }
 
 export const zhErrorMap = makeErrorMap({
-  required: () => `必填`,
   invalid_type: ({ expected, received }) => `类型错误，预期为${typeMap[expected]}，实际为${typeMap[received]}`,
+  invalid_type_received_undefined: () => `必填`,
+  invalid_type_received_null: () => `必填`,
   invalid_literal: ({ expected }) => `字面量值错误，预期值为 ${expected}`,
   unrecognized_keys: ({ keys }) => `对象中的键无法识别：${keys.join('、')}`,
   invalid_union: () => `不满足联合类型中的选项`,

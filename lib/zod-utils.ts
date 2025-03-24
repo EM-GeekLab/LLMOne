@@ -1,11 +1,15 @@
 import { z } from 'zod'
 
-export const ExtraErrorCode = z.util.arrayToEnum(['required'])
+export const ExtraErrorCode = z.util.arrayToEnum(['invalid_type_received_undefined', 'invalid_type_received_null'])
 
 type RequiredIssue = z.ZodIssueBase & {
-  code: typeof ExtraErrorCode.required
+  code: typeof ExtraErrorCode.invalid_type_received_undefined
   expected: z.ZodParsedType
   received: 'undefined'
+} & {
+  code: typeof ExtraErrorCode.invalid_type_received_null
+  expected: z.ZodParsedType
+  received: 'null'
 }
 
 type ExtraErrorCode = keyof typeof ExtraErrorCode
@@ -32,16 +36,21 @@ export type ErrorMapConfig = {
 
 export function makeErrorMap(config: ErrorMapConfig): z.ZodErrorMap {
   return (issue, ctx) => {
-    const errorCode: ErrorCode = issue.code === 'invalid_type' && ctx.data === undefined ? 'required' : issue.code
+    let errorCode: ErrorCode = issue.code
+
+    if (issue.code === 'invalid_type') {
+      if (issue.received === 'undefined') {
+        errorCode = ExtraErrorCode.invalid_type_received_undefined
+      } else if (issue.received === 'null') {
+        errorCode = ExtraErrorCode.invalid_type_received_null
+      }
+    }
 
     const messageOrBuilder = config[errorCode]
     const context = { ...ctx, ...issue, code: errorCode }
 
-    const message =
-      typeof messageOrBuilder === 'function'
-        ? /* @ts-expect-error too complex */
-          messageOrBuilder(context)
-        : messageOrBuilder
+    // @ts-expect-error too complex
+    const message = typeof messageOrBuilder === 'function' ? messageOrBuilder(context) : messageOrBuilder
 
     return message ? { message } : { message: ctx.defaultError }
   }
