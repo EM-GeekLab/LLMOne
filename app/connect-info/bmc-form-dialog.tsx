@@ -1,6 +1,6 @@
 'use client'
 
-import { ComponentProps, ReactNode } from 'react'
+import { ComponentProps, ReactNode, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -20,15 +20,17 @@ import {
 } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { CustomCredentialsSection } from '@/app/connect-info/custom-credentials-section'
+import { CustomCredentialsSection, useFieldsHasAnyValue } from '@/app/connect-info/custom-credentials-section'
 import { BmcConnectionInfo, useGlobalStore } from '@/stores'
 
 export function BmcFormDialog({ id, children }: { id?: string; children?: ReactNode }) {
+  const [open, setOpen] = useState(false)
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       {children}
       <DialogContent className="sm:max-w-xs">
-        <BmcFormDialogContent id={id} />
+        <BmcFormDialogContent id={id} onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   )
@@ -48,14 +50,12 @@ const bmcConnectionInfoSchema = z.object({
   password: z.string().optional(),
 })
 
-function BmcFormDialogContent({ id }: { id?: string }) {
+function BmcFormDialogContent({ id, onClose }: { id?: string; onClose?: () => void }) {
   const list = useGlobalStore((s) => s.bmcHosts)
-  const values = id ? findById(id, list) : undefined
+  const values = useMemo(() => (id ? findById(id, list) : undefined), [id, list])
 
   const addHost = useGlobalStore((s) => s.addBmcHost)
   const updateHost = useGlobalStore((s) => s.updateBmcHost)
-
-  const handleSubmit = id ? (v: BmcConnectionInfo) => updateHost(id, v) : addHost
 
   return (
     <>
@@ -63,7 +63,17 @@ function BmcFormDialogContent({ id }: { id?: string }) {
         <DialogTitle>{id ? '编辑 BMC 连接信息' : '添加 BMC 连接信息'}</DialogTitle>
         <DialogDescription className="sr-only">{id ? '编辑 BMC 连接信息' : '添加 BMC 连接信息'}</DialogDescription>
       </DialogHeader>
-      <BmcForm defaultValues={values} onSubmit={handleSubmit} />
+      <BmcForm
+        defaultValues={values}
+        onSubmit={(v: BmcConnectionInfo) => {
+          if (id) {
+            updateHost(id, v)
+          } else {
+            addHost(v)
+          }
+          onClose?.()
+        }}
+      />
     </>
   )
 }
@@ -82,17 +92,19 @@ function BmcForm({
     defaultValues,
   })
 
+  const showClearButton = useFieldsHasAnyValue(form.watch, ['username', 'password'])
+
   return (
     <Form {...form}>
       <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
           name="ip"
-          render={({ field: { value, ...rest } }) => (
+          render={({ field: { value = '', ...rest } }) => (
             <FormItem>
               <FormLabel>IP</FormLabel>
               <FormControl>
-                <Input defaultValue={value} {...rest} />
+                <Input value={value} {...rest} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -101,15 +113,20 @@ function BmcForm({
         <CustomCredentialsSection
           withDefaultCredentials={useDefaultCredentials}
           defaultOpen={!!(defaultValues?.username || defaultValues?.password)}
+          onClear={() => {
+            form.setValue('username', '')
+            form.setValue('password', '')
+          }}
+          showClearButton={showClearButton}
         >
           <FormField
             control={form.control}
             name="username"
-            render={({ field: { value, ...rest } }) => (
+            render={({ field: { value = '', ...rest } }) => (
               <FormItem>
                 <FormLabel>用户名</FormLabel>
                 <FormControl>
-                  <Input defaultValue={value} {...rest} />
+                  <Input value={value} {...rest} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -118,11 +135,11 @@ function BmcForm({
           <FormField
             control={form.control}
             name="password"
-            render={({ field: { value, ...rest } }) => (
+            render={({ field: { value = '', ...rest } }) => (
               <FormItem>
                 <FormLabel>密码</FormLabel>
                 <FormControl>
-                  <PasswordInput defaultValue={value} {...rest} />
+                  <PasswordInput value={value} {...rest} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
