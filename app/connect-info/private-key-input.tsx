@@ -1,4 +1,5 @@
 import { ComponentProps, useRef, useState } from 'react'
+import { useControllableState } from '@radix-ui/react-use-controllable-state'
 import { ClipboardPasteIcon, FileInputIcon, FileUpIcon, Trash2Icon } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -13,6 +14,7 @@ import { readFileToString } from '@/actions/file'
 
 export function PrivateKeyInputContent({
   defaultValue,
+  value,
   onSubmit,
   onValueChange,
   className,
@@ -20,17 +22,17 @@ export function PrivateKeyInputContent({
   ...props
 }: {
   defaultValue?: string
-  onSubmit?: (value: string) => void
+  value?: string
   onValueChange?: (value: string) => void
+  onSubmit?: (value: string) => void
 } & Omit<ComponentProps<'div'>, 'onSubmit'>) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const handleValueChange = (value: string) => {
-    if (inputRef.current) {
-      inputRef.current.value = value
-    }
-    onValueChange?.(value)
-  }
+  const [key, setKey] = useControllableState({
+    defaultProp: defaultValue,
+    prop: value,
+    onChange: onValueChange,
+  })
 
   return (
     <div className={cn('grid gap-4', className)} {...props}>
@@ -42,7 +44,7 @@ export function PrivateKeyInputContent({
             const text = await navigator.clipboard.readText().catch((err) => {
               toast.error('读取剪贴板失败', { description: err.message })
             })
-            if (text) handleValueChange(text)
+            if (text) setKey(text)
           }}
         >
           <ClipboardPasteIcon />
@@ -55,19 +57,19 @@ export function PrivateKeyInputContent({
             const text = await selectFileAndRead({ maxSize: 100 * 1024 }).catch((err) => {
               toast.error('读取文件失败', { description: err.message })
             })
-            if (text) handleValueChange(text)
+            if (text) setKey(text)
           }}
         >
           <FileUpIcon />
           上传
         </Button>
-        <RemoteFileReader onRead={handleValueChange} />
+        <RemoteFileReader onRead={setKey} />
         <Button
           variant="outline"
           size="sm"
           className="ml-auto"
           onClick={() => {
-            handleValueChange('')
+            setKey('')
             inputRef.current?.focus()
           }}
         >
@@ -86,9 +88,9 @@ export function PrivateKeyInputContent({
         <Textarea
           data-slot="textarea"
           ref={inputRef}
-          defaultValue={defaultValue}
+          value={key}
           autoFocus={autoFocus}
-          onChange={(e) => handleValueChange(e.target.value)}
+          onChange={(e) => setKey(e.target.value)}
           className="h-[400px] font-mono"
           placeholder="-----BEGIN RSA PRIVATE KEY-----"
         />
