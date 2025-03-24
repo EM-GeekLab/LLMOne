@@ -1,11 +1,10 @@
-import { forwardRef, type ComponentProps } from 'react'
+import { type ComponentProps } from 'react'
 
 import { cn } from '@/lib/utils'
 
-export const Spinner = forwardRef<SVGSVGElement, ComponentProps<'svg'>>(({ className, ...props }, ref) => {
+export function Spinner({ className, ...props }: ComponentProps<'svg'>) {
   return (
     <svg
-      ref={ref}
       width="24"
       height="24"
       className={cn('animate-spinner-outer origin-center', className)}
@@ -24,5 +23,4 @@ export const Spinner = forwardRef<SVGSVGElement, ComponentProps<'svg'>>(({ class
       />
     </svg>
   )
-})
-Spinner.displayName = 'Spinner'
+}
