@@ -17,6 +17,7 @@ import { CredentialType } from '@/stores'
 import { PrivateKeyInputContent } from './private-key-input'
 
 export function PasswordKeyInput({
+  id,
   type = 'password',
   password,
   privateKey,
@@ -46,13 +47,13 @@ export function PasswordKeyInput({
       </Select>
       {type === 'password' && (
         <PasswordInput
-          id="default-credential"
+          id={id}
           className="bg-background"
           value={password}
           onChange={(e) => onPasswordChange?.(e.target.value)}
         />
       )}
-      {type === 'key' && <PrivateKeyInputDialog defaultValue={privateKey} onValueChange={onPrivateKeyChange} />}
+      {type === 'key' && <PrivateKeyInputDialog id={id} defaultValue={privateKey} onValueChange={onPrivateKeyChange} />}
     </div>
   )
 }
@@ -60,10 +61,12 @@ export function PasswordKeyInput({
 function PrivateKeyInputDialog({
   defaultValue,
   onValueChange,
+  className,
+  ...props
 }: {
   defaultValue?: string
   onValueChange?: (value: string) => void
-}) {
+} & ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -71,7 +74,12 @@ function PrivateKeyInputDialog({
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className={cn('flex-1 justify-start px-3 text-left font-normal', !defaultValue && 'text-muted-foreground')}
+          className={cn(
+            'flex-1 justify-start px-3 text-left font-normal',
+            !defaultValue && 'text-muted-foreground',
+            className,
+          )}
+          {...props}
         >
           {defaultValue ? '已设置密钥' : '设置密钥'}
         </Button>

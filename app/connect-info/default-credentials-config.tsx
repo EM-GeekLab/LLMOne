@@ -34,6 +34,7 @@ export function DefaultCredentialsConfig() {
               <>
                 <Label htmlFor="default-credential">密码 / 密钥</Label>
                 <PasswordKeyInput
+                  id="default-credential"
                   type={type}
                   password={password}
                   privateKey={privateKey}
