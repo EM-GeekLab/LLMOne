@@ -86,8 +86,8 @@ export function FormPasswordKeyInput({
 
   return (
     <>
-      <Label htmlFor="default-credential" data-error={!!inputError} className="data-[error=true]:text-destructive">
-        密码 / 密钥
+      <Label htmlFor="default-credential" data-error={!!inputError} className="data-[error=true]:text-destructive pl-1">
+        凭据
       </Label>
       <div className={cn('join join-with-input flex items-stretch', className)} {...props}>
         <FormField
@@ -155,9 +155,11 @@ export function FormPasswordKeyInput({
           />
         )}
       </div>
-      <p data-slot="form-message" className="text-destructive -my-1 text-xs">
-        {type === 'password' ? password?.message : privateKey?.message}
-      </p>
+      {inputError && (
+        <p data-slot="form-message" className="text-destructive -my-1 text-xs">
+          {type === 'password' ? password?.message : privateKey?.message}
+        </p>
+      )}
     </>
   )
 }
