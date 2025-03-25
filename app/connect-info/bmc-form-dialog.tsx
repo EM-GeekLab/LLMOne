@@ -56,8 +56,8 @@ function BmcFormDialogContent({ id, onClose }: { id?: string; onClose?: () => vo
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{id ? '编辑 BMC 连接信息' : '添加 BMC 连接信息'}</DialogTitle>
-        <DialogDescription className="sr-only">{id ? '编辑 BMC 连接信息' : '添加 BMC 连接信息'}</DialogDescription>
+        <DialogTitle>{id ? '编辑 BMC 主机' : '添加 BMC 主机'}</DialogTitle>
+        <DialogDescription className="sr-only">{id ? '编辑 BMC 主机' : '添加 BMC 主机'}</DialogDescription>
       </DialogHeader>
       <BmcForm
         defaultValues={values}
