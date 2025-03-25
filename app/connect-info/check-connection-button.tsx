@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { validateConnectionInfo } from '@/app/connect-info/utils'
 import { useGlobalStore } from '@/stores'
 
-export function CheckConnectionButton() {
+export function CheckConnectionButton({ onValidate }: { onValidate?: () => Promise<boolean> }) {
   const connectMode = useGlobalStore((s) => s.connectMode)
   const sshHosts = useGlobalStore((s) => s.sshHosts)
   const bmcHosts = useGlobalStore((s) => s.bmcHosts)
@@ -11,7 +11,11 @@ export function CheckConnectionButton() {
 
   return (
     <Button
-      onClick={() => {
+      onClick={async () => {
+        if (onValidate) {
+          const result = await onValidate()
+          if (!result) return
+        }
         switch (connectMode) {
           case 'bmc': {
             const result = validateConnectionInfo(data, 'bmc')

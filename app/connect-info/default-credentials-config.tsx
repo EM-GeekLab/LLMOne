@@ -1,3 +1,4 @@
+import { Ref, useImperativeHandle } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Resolver, useForm } from 'react-hook-form'
 
@@ -13,7 +14,7 @@ import { DefaultCredentials } from '@/stores/slices/connection-info-slice'
 
 import { FormPasswordKeyInput } from './password-key-input'
 
-export function DefaultCredentialsConfig() {
+export function DefaultCredentialsConfig({ ref }: { ref?: Ref<{ validate: () => Promise<boolean> }> }) {
   const connectMode = useGlobalStore((s) => s.connectMode)
   const defaultCredentials = useGlobalStore((s) => s.defaultCredentials)
   const setPrivateKey = useGlobalStore((s) => s.setDefaultKey)
@@ -27,6 +28,10 @@ export function DefaultCredentialsConfig() {
     values: defaultCredentials,
     mode: 'all',
   })
+
+  useImperativeHandle(ref, () => ({
+    validate: () => form.trigger(),
+  }))
 
   return (
     <Form {...form}>

@@ -2,35 +2,27 @@
 
 import { EditIcon, PlusIcon } from 'lucide-react'
 
-import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
+import { HostsListContainer } from '@/app/connect-info/hosts-list-container'
 import { RemoveButton } from '@/app/connect-info/remove-button'
 import { useGlobalStore } from '@/stores'
 
 import { BmcFormDialog, BmcFormDialogTrigger } from './bmc-form-dialog'
-import { CheckConnectionButton } from './check-connection-button'
-import { DefaultCredentialsConfig } from './default-credentials-config'
 import { DefaultOrUnsetMessage } from './default-or-unset-message'
 
 export function BmcHostsList() {
   return (
-    <>
-      <DefaultCredentialsConfig />
-      <AppCardSection>
-        <AppCardSectionHeader>
-          <AppCardSectionTitle>主机列表</AppCardSectionTitle>
-        </AppCardSectionHeader>
-        <HostsList />
-        <div className="flex items-center gap-2">
-          <BmcFormDialog>
-            <BmcFormDialogTrigger>
-              <PlusIcon />
-              添加主机
-            </BmcFormDialogTrigger>
-          </BmcFormDialog>
-          <CheckConnectionButton />
-        </div>
-      </AppCardSection>
-    </>
+    <HostsListContainer
+      actions={
+        <BmcFormDialog>
+          <BmcFormDialogTrigger>
+            <PlusIcon />
+            添加主机
+          </BmcFormDialogTrigger>
+        </BmcFormDialog>
+      }
+    >
+      <HostsList />
+    </HostsListContainer>
   )
 }
 

@@ -3,35 +3,27 @@
 import { EditIcon, PlusIcon } from 'lucide-react'
 import { match } from 'ts-pattern'
 
-import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
+import { HostsListContainer } from '@/app/connect-info/hosts-list-container'
 import { useGlobalStore } from '@/stores'
 
-import { CheckConnectionButton } from './check-connection-button'
-import { DefaultCredentialsConfig } from './default-credentials-config'
 import { DefaultOrUnsetMessage } from './default-or-unset-message'
 import { RemoveButton } from './remove-button'
 import { SshFormDialog, SshFormDialogTrigger } from './ssh-form-dialog'
 
 export function SshHostsList() {
   return (
-    <>
-      <DefaultCredentialsConfig />
-      <AppCardSection>
-        <AppCardSectionHeader>
-          <AppCardSectionTitle>主机列表</AppCardSectionTitle>
-        </AppCardSectionHeader>
-        <HostsList />
-        <div className="flex items-center gap-2">
-          <SshFormDialog>
-            <SshFormDialogTrigger>
-              <PlusIcon />
-              添加主机
-            </SshFormDialogTrigger>
-          </SshFormDialog>
-          <CheckConnectionButton />
-        </div>
-      </AppCardSection>
-    </>
+    <HostsListContainer
+      actions={
+        <SshFormDialog>
+          <SshFormDialogTrigger>
+            <PlusIcon />
+            添加主机
+          </SshFormDialogTrigger>
+        </SshFormDialog>
+      }
+    >
+      <HostsList />
+    </HostsListContainer>
   )
 }
 
