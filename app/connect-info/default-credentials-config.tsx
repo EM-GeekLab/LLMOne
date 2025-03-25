@@ -51,7 +51,7 @@ export function DefaultCredentialsConfig() {
                 control={form.control}
                 name="username"
                 render={({ field: { value = '', onChange, ...rest } }) => (
-                  <FormItem className={cn('grid flex-1/2 items-center gap-1.5', connectMode === 'ssh' && 'flex-5/12')}>
+                  <FormItem className={cn('grid flex-1/2 items-center', connectMode === 'ssh' && 'flex-5/12')}>
                     <FormLabel>用户名</FormLabel>
                     <FormControl>
                       <Input
@@ -67,7 +67,7 @@ export function DefaultCredentialsConfig() {
                   </FormItem>
                 )}
               />
-              <div className={cn('grid flex-1/2 items-center gap-1.5', connectMode == 'ssh' && 'flex-7/12')}>
+              <div className={cn('grid flex-1/2 items-center gap-2', connectMode == 'ssh' && 'flex-7/12')}>
                 {connectMode === 'ssh' && (
                   <>
                     <FormPasswordKeyInput

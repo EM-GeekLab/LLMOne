@@ -77,7 +77,7 @@ function FormItem({ className, children, passChild, ...props }: React.ComponentP
       {passChild ? (
         <>{children}</>
       ) : (
-        <div data-slot="form-item" className={cn('grid gap-1.5', className)} {...props}>
+        <div data-slot="form-item" className={cn('grid gap-2', className)} {...props}>
           {children}
         </div>
       )}
@@ -138,7 +138,7 @@ function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
     <p
       data-slot="form-message"
       id={formMessageId}
-      className={cn('text-destructive -my-0.5 text-xs', className)}
+      className={cn('text-destructive -my-1 text-xs', className)}
       {...props}
     >
       {body}
