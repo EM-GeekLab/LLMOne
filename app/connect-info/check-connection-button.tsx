@@ -1,3 +1,5 @@
+import { toast } from 'sonner'
+
 import { Button } from '@/components/ui/button'
 import { validateConnectionInfo } from '@/app/connect-info/utils'
 import { useGlobalStore } from '@/stores'
@@ -9,18 +11,28 @@ export function CheckConnectionButton({ onValidate }: { onValidate?: () => Promi
   const defaultCredentials = useGlobalStore((s) => s.defaultCredentials)
   const data = { sshHosts, bmcHosts, defaultCredentials }
 
+  const showErrorMessage = (message?: string) => {
+    toast.error('连接信息不完整', {
+      description: message,
+    })
+  }
+
   return (
     <Button
       onClick={async () => {
         if (onValidate) {
           const result = await onValidate()
-          if (!result) return
+          if (!result) {
+            showErrorMessage()
+            return
+          }
         }
         switch (connectMode) {
           case 'bmc': {
             const result = validateConnectionInfo(data, 'bmc')
             if (!result.success) {
-              console.log(result.error)
+              showErrorMessage()
+              console.error(result.error)
               return
             }
             console.log(result.data)
@@ -29,7 +41,8 @@ export function CheckConnectionButton({ onValidate }: { onValidate?: () => Promi
           case 'ssh': {
             const result = validateConnectionInfo(data, 'ssh')
             if (!result.success) {
-              console.log(result.error)
+              showErrorMessage()
+              console.error(result.error)
               return
             }
             console.log(result.data)
