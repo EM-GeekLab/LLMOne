@@ -78,7 +78,7 @@ export class Mxc {
 
   public async blockUntilTaskComplete(hostId: string, taskId: number): Promise<TaskResult> {
     while (true) {
-      const [result, _] = await this.getResult(hostId, taskId)
+      const [result] = await this.getResult(hostId, taskId)
       if (result.ok) {
         return result
       }
