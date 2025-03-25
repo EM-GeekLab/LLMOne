@@ -90,7 +90,10 @@ function BmcForm({
 
   const form = useForm<SshConnectionInfoForm>({
     resolver: zodResolver(useDefaultCredentials ? sshConnectionInfoSchema : sshFinalConnectionInfoSchema),
-    defaultValues,
+    defaultValues: {
+      credentialType: 'password',
+      ...defaultValues,
+    },
   })
 
   return (
@@ -148,11 +151,21 @@ function BmcForm({
         <CredentialFormPart
           control={form.control}
           watch={form.watch}
-          defaultOpen={!!(defaultValues?.username || defaultValues?.password || defaultValues?.privateKey)}
+          defaultOpen={
+            !!(
+              defaultValues?.username ||
+              defaultValues?.password ||
+              defaultValues?.privateKey ||
+              defaultValues?.credentialType === 'no-password'
+            )
+          }
           onClear={() => {
             form.setValue('username', '')
             form.setValue('password', '')
             form.setValue('privateKey', '')
+            if (form.getValues('credentialType') !== 'key') {
+              form.setValue('credentialType', 'password')
+            }
           }}
         />
         <DialogFooter>
@@ -178,17 +191,18 @@ function CredentialFormPart({
   defaultOpen?: boolean
 }) {
   const useDefaultCredentials = useGlobalStore((s) => s.defaultCredentials.enabled)
-  const showClearButton = useFieldsHasAnyValue(watch, ['username', 'password', 'privateKey'])
-
-  const type = useWatch({
-    control,
-    name: 'credentialType',
+  const showClearButton = useFieldsHasAnyValue({
+    watch,
+    fields: ['username', 'password', 'privateKey'],
+    defaultHasAnyValue: defaultOpen,
   })
+
+  const type = useWatch({ control, name: 'credentialType' })
 
   return (
     <CustomCredentialsSection
       withDefaultCredentials={useDefaultCredentials}
-      showClearButton={showClearButton}
+      showClearButton={showClearButton || type === 'no-password'}
       defaultOpen={defaultOpen}
       onClear={onClear}
     >
@@ -199,7 +213,7 @@ function CredentialFormPart({
           <FormItem>
             <FormLabel>用户名</FormLabel>
             <FormControl>
-              <Input value={value} {...rest} />
+              <Input placeholder={useDefaultCredentials ? '默认' : ''} value={value} {...rest} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -220,6 +234,7 @@ function CredentialFormPart({
               >
                 <RadioItem value="password">密码</RadioItem>
                 <RadioItem value="key">密钥</RadioItem>
+                <RadioItem value="no-password">无密码</RadioItem>
               </RadioGroup>
             </FormControl>
             <FormMessage />
@@ -234,7 +249,7 @@ function CredentialFormPart({
             <FormItem>
               <FormLabel>密码</FormLabel>
               <FormControl>
-                <PasswordInput value={value} {...rest} />
+                <PasswordInput placeholder={useDefaultCredentials ? '默认' : ''} value={value} {...rest} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -254,6 +269,7 @@ function CredentialFormPart({
                   className="gap-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_[data-slot='textarea']]:h-[200px]"
                   value={value}
                   onValueChange={onChange}
+                  placeholder={useDefaultCredentials ? '默认' : undefined}
                   {...rest}
                 />
               </FormControl>

@@ -19,12 +19,14 @@ export function PrivateKeyInputContent({
   onValueChange,
   className,
   autoFocus,
+  placeholder,
   ...props
 }: {
   defaultValue?: string
   value?: string
   onValueChange?: (value: string) => void
   onSubmit?: (value: string) => void
+  placeholder?: string
 } & Omit<ComponentProps<'div'>, 'onSubmit'>) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -92,7 +94,7 @@ export function PrivateKeyInputContent({
           autoFocus={autoFocus}
           onChange={(e) => setKey(e.target.value)}
           className="h-[400px] font-mono"
-          placeholder="-----BEGIN RSA PRIVATE KEY-----"
+          placeholder={placeholder || '-----BEGIN RSA PRIVATE KEY-----'}
         />
       </WithForm>
     </div>

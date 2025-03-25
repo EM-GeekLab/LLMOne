@@ -36,7 +36,10 @@ export function validateConnectionInfo(info: ConnectionInfoState, mode: ConnectM
         parsedDefault.enabled
           ? info.sshHosts.map((_host) => {
               const host = shake(_host, (v) => !v) as WithId<SshConnectionInfo>
-              if (!host.credentialType || !(host.username || host.password || host.privateKey)) {
+              if (
+                !host.credentialType ||
+                !(host.credentialType === 'no-password' || host.username || host.password || host.privateKey)
+              ) {
                 host.credentialType = parsedDefault.type
               }
               return { ...parsedDefault, ...host }

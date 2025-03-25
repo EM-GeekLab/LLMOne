@@ -33,7 +33,7 @@ export function CustomCredentialsSection({
           {useCustomCredentials && (
             <div className="text-muted-foreground mt-1 flex gap-1.5 text-xs">
               <span>留空以使用默认凭据</span>
-              {(showClearButton || defaultOpen) && (
+              {showClearButton && (
                 <button
                   type="button"
                   className="text-primary hover:text-primary/90 font-medium"
@@ -51,21 +51,30 @@ export function CustomCredentialsSection({
   )
 }
 
-export function useFieldsHasAnyValue<T extends FieldValues = FieldValues>(watchFn: UseFormWatch<T>, fields: Path<T>[]) {
-  const [hasAnyValue, setHasAnyValue] = useState(false)
+export function useFieldsHasAnyValue<T extends FieldValues = FieldValues>({
+  watch,
+  fields,
+  defaultHasAnyValue = false,
+}: {
+  watch: UseFormWatch<T>
+  fields: Path<T>[]
+  defaultHasAnyValue?: boolean
+}) {
+  const [hasAnyValue, setHasAnyValue] = useState(defaultHasAnyValue)
 
   useShallowEffect(() => {
-    const { unsubscribe } = watchFn((values, { name }) => {
+    const { unsubscribe } = watch((values, { name }) => {
       if (name && fields.includes(name)) {
         if (fields.some((f) => Boolean(values[f]))) {
           setHasAnyValue(true)
         } else {
+          console.log(name, 'false')
           setHasAnyValue(false)
         }
       }
     })
     return () => unsubscribe()
-  }, [watchFn, fields])
+  }, [watch, fields])
 
   return hasAnyValue
 }

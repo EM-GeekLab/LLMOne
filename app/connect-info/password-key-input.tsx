@@ -97,12 +97,13 @@ export function FormPasswordKeyInput({
             <FormItem passChild>
               <FormControl>
                 <Select value={value} onValueChange={onTypeChange} {...rest}>
-                  <SelectTrigger className="w-[78px] shrink-0">
+                  <SelectTrigger className={cn('w-[78px] shrink-0', value === 'no-password' && 'w-full !rounded-r-md')}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="password">密码</SelectItem>
                     <SelectItem value="key">密钥</SelectItem>
+                    <SelectItem value="no-password">无密码</SelectItem>
                   </SelectContent>
                 </Select>
               </FormControl>

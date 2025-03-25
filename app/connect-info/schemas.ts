@@ -18,6 +18,9 @@ export const enabledDefaultCredentialsSchema = z
           type: z.literal('key'),
           privateKey: z.string({ message: '默认凭据密钥不能为空' }).nonempty('默认凭据密钥不能为空'),
         }),
+        z.object({
+          type: z.literal('no-password'),
+        }),
       ],
       { message: '请选择凭据类型' },
     ),
@@ -45,7 +48,7 @@ export const bmcHostsListSchema = z.array(bmcFinalConnectionInfoSchema)
 export const sshConnectionInfoSchema = z.object({
   ip: z.string({ message: 'IP 地址不能为空' }).nonempty('IP 地址不能为空').ip(),
   username: z.string().optional(),
-  credentialType: z.enum(['password', 'key']).optional(),
+  credentialType: z.enum(['password', 'key', 'no-password']).optional(),
   password: z.string().optional(),
   privateKey: z.string().optional(),
   port: z.number().min(0, '端口号范围必须为 0-65535').max(65535, '端口号范围必须为 0-65535').default(22),
@@ -70,6 +73,9 @@ export const sshFinalConnectionInfoSchema = z
         z.object({
           credentialType: z.literal('key'),
           privateKey: z.string({ message: '密钥不能为空' }).nonempty('密钥不能为空'),
+        }),
+        z.object({
+          credentialType: z.literal('no-password'),
         }),
       ],
       {

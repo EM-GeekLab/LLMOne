@@ -88,7 +88,13 @@ function BmcForm({
     defaultValues,
   })
 
-  const showClearButton = useFieldsHasAnyValue(form.watch, ['username', 'password'])
+  const defaultOpen = !!(defaultValues?.username || defaultValues?.password)
+
+  const showClearButton = useFieldsHasAnyValue({
+    watch: form.watch,
+    fields: ['username', 'password'],
+    defaultHasAnyValue: defaultOpen,
+  })
 
   return (
     <Form {...form}>
@@ -108,7 +114,7 @@ function BmcForm({
         />
         <CustomCredentialsSection
           withDefaultCredentials={useDefaultCredentials}
-          defaultOpen={!!(defaultValues?.username || defaultValues?.password)}
+          defaultOpen={defaultOpen}
           onClear={() => {
             form.setValue('username', '')
             form.setValue('password', '')

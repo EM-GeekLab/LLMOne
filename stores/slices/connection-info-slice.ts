@@ -1,7 +1,7 @@
 import { generateId } from '@/lib/id'
 import { ImmerStateCreator, WithId } from '@/stores/utils'
 
-export type CredentialType = 'password' | 'key'
+export type CredentialType = 'password' | 'key' | 'no-password'
 
 export type BmcConnectionInfo = {
   ip: string
@@ -35,7 +35,7 @@ export type ConnectionInfoState = {
 
 export type ConnectionInfoActions = {
   setUseDefaultCredentials: (enabled: boolean) => void
-  setDefaultCredentialsType: (type: 'password' | 'key') => void
+  setDefaultCredentialsType: (type: CredentialType) => void
   setDefaultUsername: (username?: string) => void
   setDefaultPassword: (password?: string) => void
   setDefaultKey: (publicKey?: string) => void
