@@ -52,14 +52,14 @@ function HostsList() {
           <div>
             {match(host.credentialType)
               .with('key', () =>
-                host.privateKey ? '密钥已设置' : <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />,
+                host.privateKey ? '密钥已设置' : <DefaultOrUnsetMessage useDefault={useDefaultCredentials} showType />,
               )
               .with('password', () =>
-                host.password ? '密码已设置' : <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />,
+                host.password ? '密码已设置' : <DefaultOrUnsetMessage useDefault={useDefaultCredentials} showType />,
               )
               .with('no-password', () => '无密码')
               .otherwise(() => (
-                <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />
+                <DefaultOrUnsetMessage useDefault={useDefaultCredentials} showType />
               ))}
           </div>
           <div>{host.bmcIp}</div>
