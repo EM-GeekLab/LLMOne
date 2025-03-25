@@ -41,10 +41,12 @@ export type ConnectionInfoActions = {
   setDefaultKey: (publicKey?: string) => void
   addBmcHost: (host: BmcConnectionInfo) => void
   updateBmcHost: (id: string, host: BmcConnectionInfo) => void
-  removeBmcHost: (id: string) => void
+  // Returns the removed host and a function to restore the original state
+  removeBmcHost: (id: string) => { removed: WithId<BmcConnectionInfo>; restore: () => void }
   addSshHost: (host: SshConnectionInfo) => void
   updateSshHost: (id: string, host: SshConnectionInfo) => void
-  removeSshHost: (id: string) => void
+  // Returns the removed host and a function to restore the original state
+  removeSshHost: (id: string) => { removed: WithId<SshConnectionInfo>; restore: () => void }
 }
 
 export type ConnectionInfoSlice = ConnectionInfoState & ConnectionInfoActions
@@ -58,7 +60,7 @@ export const defaultConnectionInfoState: ConnectionInfoState = {
   sshHosts: [],
 }
 
-export const createConnectionInfoSlice: ImmerStateCreator<ConnectionInfoActions> = (set) => ({
+export const createConnectionInfoSlice: ImmerStateCreator<ConnectionInfoActions> = (set, get) => ({
   setUseDefaultCredentials: (value) =>
     set((state) => {
       state.defaultCredentials.enabled = value
@@ -90,10 +92,22 @@ export const createConnectionInfoSlice: ImmerStateCreator<ConnectionInfoActions>
         state.bmcHosts[index] = { ...state.bmcHosts[index], ...host }
       }
     }),
-  removeBmcHost: (id) =>
-    set((state) => {
-      state.bmcHosts = state.bmcHosts.filter((h) => h.id !== id)
-    }),
+  removeBmcHost: (id) => {
+    const originalList = get().bmcHosts
+    const toBeRemovedIndex = originalList.findIndex((h) => h.id === id)
+    if (toBeRemovedIndex !== -1) {
+      set((state) => {
+        state.bmcHosts.splice(toBeRemovedIndex, 1)
+      })
+    }
+    return {
+      removed: originalList[toBeRemovedIndex],
+      restore: () =>
+        set((state) => {
+          state.bmcHosts = originalList
+        }),
+    }
+  },
   addSshHost: (host) =>
     set((state) => {
       state.sshHosts.push({ id: generateId(), ...host })
@@ -105,8 +119,20 @@ export const createConnectionInfoSlice: ImmerStateCreator<ConnectionInfoActions>
         state.sshHosts[index] = { ...state.sshHosts[index], ...host }
       }
     }),
-  removeSshHost: (id) =>
-    set((state) => {
-      state.sshHosts = state.sshHosts.filter((h) => h.id !== id)
-    }),
+  removeSshHost: (id) => {
+    const originalList = get().sshHosts
+    const toBeRemovedIndex = originalList.findIndex((h) => h.id === id)
+    if (toBeRemovedIndex !== -1) {
+      set((state) => {
+        state.sshHosts.splice(toBeRemovedIndex, 1)
+      })
+    }
+    return {
+      removed: originalList[toBeRemovedIndex],
+      restore: () =>
+        set((state) => {
+          state.sshHosts = originalList
+        }),
+    }
+  },
 })
