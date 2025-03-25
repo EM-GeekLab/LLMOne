@@ -1,13 +1,15 @@
 'use client'
 
-import { EditIcon, PlusIcon, Trash2Icon } from 'lucide-react'
+import { EditIcon, PlusIcon } from 'lucide-react'
 
 import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
-import { Button } from '@/components/ui/button'
+import { RemoveButton } from '@/app/connect-info/remove-button'
 import { useGlobalStore } from '@/stores'
 
 import { BmcFormDialog, BmcFormDialogTrigger } from './bmc-form-dialog'
+import { CheckConnectionButton } from './check-connection-button'
 import { DefaultCredentialsConfig } from './default-credentials-config'
+import { DefaultOrUnsetMessage } from './default-or-unset-message'
 
 export function BmcHostsList() {
   return (
@@ -25,6 +27,7 @@ export function BmcHostsList() {
               添加主机
             </BmcFormDialogTrigger>
           </BmcFormDialog>
+          <CheckConnectionButton />
         </div>
       </AppCardSection>
     </>
@@ -49,18 +52,8 @@ function HostsList() {
           className="col-span-full grid grid-cols-subgrid items-center not-last:border-b *:not-last:py-2.5 *:not-last:pl-3"
         >
           <div>{host.ip}</div>
-          <div>
-            {host.username || (
-              <span className="text-muted-foreground">{useDefaultCredentials ? '默认' : '无用户名'}</span>
-            )}
-          </div>
-          <div>
-            {host.password ? (
-              '已设置'
-            ) : (
-              <span className="text-muted-foreground">{useDefaultCredentials ? '默认' : '未设置'}</span>
-            )}
-          </div>
+          <div>{host.username || <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />}</div>
+          <div>{host.password ? '已设置' : <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />}</div>
           <div className="flex items-center gap-0.5 px-2">
             <BmcFormDialog id={host.id}>
               <BmcFormDialogTrigger variant="ghost" className="size-7 !p-0">
@@ -68,28 +61,10 @@ function HostsList() {
                 <span className="sr-only">编辑</span>
               </BmcFormDialogTrigger>
             </BmcFormDialog>
-            <RemoveButton id={host.id} />
+            <RemoveButton id={host.id} mode="bmc" />
           </div>
         </div>
       ))}
     </div>
-  )
-}
-
-function RemoveButton({ id }: { id: string }) {
-  const removeHost = useGlobalStore((s) => s.removeBmcHost)
-
-  return (
-    <Button
-      variant="ghost"
-      className="size-7 !p-0"
-      onClick={(e) => {
-        e.stopPropagation()
-        removeHost(id)
-      }}
-    >
-      <Trash2Icon className="text-destructive size-3.5" />
-      <span className="sr-only">删除</span>
-    </Button>
   )
 }

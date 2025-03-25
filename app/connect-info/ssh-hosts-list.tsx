@@ -1,13 +1,15 @@
 'use client'
 
-import { EditIcon, PlusIcon, Trash2Icon } from 'lucide-react'
+import { EditIcon, PlusIcon } from 'lucide-react'
 import { match } from 'ts-pattern'
 
 import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
-import { Button } from '@/components/ui/button'
 import { useGlobalStore } from '@/stores'
 
+import { CheckConnectionButton } from './check-connection-button'
 import { DefaultCredentialsConfig } from './default-credentials-config'
+import { DefaultOrUnsetMessage } from './default-or-unset-message'
+import { RemoveButton } from './remove-button'
 import { SshFormDialog, SshFormDialogTrigger } from './ssh-form-dialog'
 
 export function SshHostsList() {
@@ -26,6 +28,7 @@ export function SshHostsList() {
               添加主机
             </SshFormDialogTrigger>
           </SshFormDialog>
+          <CheckConnectionButton />
         </div>
       </AppCardSection>
     </>
@@ -53,31 +56,18 @@ function HostsList() {
         >
           <div>{host.ip}</div>
           <div>{host.port}</div>
-          <div>
-            {!(useDefaultCredentials || host.username) ? (
-              <span className="text-muted-foreground">无用户名</span>
-            ) : (
-              host.username || <span className="text-muted-foreground">默认</span>
-            )}
-          </div>
+          <div>{host.username || <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />}</div>
           <div>
             {match(host.credentialType)
               .with('key', () =>
-                host.privateKey ? (
-                  '密钥已设置'
-                ) : (
-                  <span className="text-muted-foreground">{useDefaultCredentials ? '默认' : '未设置密钥'}</span>
-                ),
+                host.privateKey ? '密钥已设置' : <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />,
               )
               .with('password', () =>
-                host.password ? (
-                  '密码已设置'
-                ) : (
-                  <span className="text-muted-foreground">{useDefaultCredentials ? '默认' : '未设置密码'}</span>
-                ),
+                host.password ? '密码已设置' : <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />,
               )
+              .with('no-password', () => '无密码')
               .otherwise(() => (
-                <span className="text-muted-foreground">{useDefaultCredentials ? '默认' : '未设置'}</span>
+                <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />
               ))}
           </div>
           <div>{host.bmcIp}</div>
@@ -88,28 +78,10 @@ function HostsList() {
                 <span className="sr-only">编辑</span>
               </SshFormDialogTrigger>
             </SshFormDialog>
-            <RemoveButton id={host.id} />
+            <RemoveButton id={host.id} mode="ssh" />
           </div>
         </div>
       ))}
     </div>
-  )
-}
-
-function RemoveButton({ id }: { id: string }) {
-  const removeHost = useGlobalStore((s) => s.removeSshHost)
-
-  return (
-    <Button
-      variant="ghost"
-      className="size-7 !p-0"
-      onClick={(e) => {
-        e.stopPropagation()
-        removeHost(id)
-      }}
-    >
-      <Trash2Icon className="text-destructive size-3.5" />
-      <span className="sr-only">删除</span>
-    </Button>
   )
 }
