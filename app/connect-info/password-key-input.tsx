@@ -156,7 +156,7 @@ export function FormPasswordKeyInput({
         )}
       </div>
       {inputError && (
-        <p data-slot="form-message" className="text-destructive -my-1 text-xs">
+        <p data-slot="form-message" className="text-destructive -my-1 pl-1 text-xs">
           {type === 'password' ? password?.message : privateKey?.message}
         </p>
       )}

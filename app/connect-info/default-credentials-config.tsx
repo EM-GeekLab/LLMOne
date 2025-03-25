@@ -63,7 +63,7 @@ export function DefaultCredentialsConfig() {
                         {...rest}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="pl-1" />
                   </FormItem>
                 )}
               />
@@ -96,7 +96,7 @@ export function DefaultCredentialsConfig() {
                             {...rest}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="pl-1" />
                       </FormItem>
                     )}
                   />
