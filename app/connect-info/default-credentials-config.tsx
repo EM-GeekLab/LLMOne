@@ -51,7 +51,7 @@ export function DefaultCredentialsConfig({ ref }: { ref?: Ref<{ validate: () => 
             )}
           />
           {form.watch('enabled') && (
-            <div className="bg-muted/50 -mx-2 flex max-w-xl items-start gap-3 rounded-lg p-4">
+            <div className="bg-muted/50 border-border/50 flex max-w-xl items-start gap-3 rounded-lg border p-4">
               <FormField
                 control={form.control}
                 name="username"
