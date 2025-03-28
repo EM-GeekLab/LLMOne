@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { CardSelectGroup, CardSelectIndicator, CardSelectItem } from '@/components/base/card-select'
 import { EasyTooltip } from '@/components/base/easy-tooltip'
 import { Badge } from '@/components/ui/badge'
-import OfflineIcon from '@/icons/computer.svg'
+import LocalIcon from '@/icons/computer.svg'
 import OnlineIcon from '@/icons/online-update.svg'
 import { DeployMode, useGlobalStore } from '@/stores'
 
@@ -19,9 +19,9 @@ export function DeployModeSelect({ ...props }: ComponentProps<typeof CardSelectG
 
   return (
     <CardSelectGroup value={mode} onValueChange={(v: DeployMode) => setMode(v)} {...props}>
-      <CardSelectItem className="items-center" value="offline">
+      <CardSelectItem className="items-center" value="local">
         <CardSelectIndicator />
-        <OfflineIcon className="mb-4 size-16" />
+        <LocalIcon className="mb-4 size-16" />
         <ModeSelectTitle>本地模式</ModeSelectTitle>
         <ModeSelectDescription>使用本地的离线安装包部署，不受网络环境影响</ModeSelectDescription>
         <Badge className="absolute top-3.5 right-3.5">推荐</Badge>

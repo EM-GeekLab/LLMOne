@@ -21,7 +21,7 @@ export function PackageSelect() {
   const connectMode = useGlobalStore((s) => s.connectMode)
 
   return (
-    mode === 'offline' &&
+    mode === 'local' &&
     connectMode && (
       <AppCardSection>
         <AppCardSectionHeader>

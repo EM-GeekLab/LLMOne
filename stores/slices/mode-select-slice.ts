@@ -1,7 +1,7 @@
 import { ImmerStateCreator } from '../utils'
 
 export type ConnectMode = 'bmc' | 'ssh'
-export type DeployMode = 'online' | 'offline'
+export type DeployMode = 'online' | 'local'
 
 export type ModeSelectState = {
   connectMode?: ConnectMode
