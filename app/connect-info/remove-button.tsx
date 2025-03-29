@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ConnectMode, useGlobalStore } from '@/stores'
 
 export function RemoveButton({ id, mode }: { id: string; mode: ConnectMode }) {
-  const removeHost = useGlobalStore((s) => (mode === 'bmc' ? s.removeSshHost : s.removeSshHost))
+  const removeHost = useGlobalStore((s) => (mode === 'bmc' ? s.removeBmcHost : s.removeSshHost))
 
   return (
     <Button
