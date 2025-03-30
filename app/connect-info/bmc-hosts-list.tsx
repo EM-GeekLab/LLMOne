@@ -2,6 +2,7 @@
 
 import { EditIcon, PlusIcon } from 'lucide-react'
 
+import { CheckConnectBadge } from '@/app/connect-info/check-connect-badge'
 import { HostsListContainer } from '@/app/connect-info/hosts-list-container'
 import { RemoveButton } from '@/app/connect-info/remove-button'
 import { useGlobalStore } from '@/stores'
@@ -31,8 +32,9 @@ function HostsList() {
   const hosts = useGlobalStore((s) => s.bmcHosts)
 
   return (
-    <div className="grid grid-cols-[1fr_1fr_1fr_74px] rounded-md border">
+    <div className="grid grid-cols-[28px_1fr_1fr_1fr_74px] rounded-md border">
       <div className="text-muted-foreground col-span-full grid grid-cols-subgrid items-center border-b *:px-3 *:py-1.5 *:font-medium">
+        <div></div>
         <div>IP</div>
         <div>用户名</div>
         <div>密码</div>
@@ -43,6 +45,7 @@ function HostsList() {
           key={host.id}
           className="col-span-full grid grid-cols-subgrid items-center not-last:border-b *:not-last:py-2.5 *:not-last:pl-3"
         >
+          <CheckConnectBadge id={host.id} />
           <div>{host.ip}</div>
           <div>{host.username || <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />}</div>
           <div>{host.password ? '已设置' : <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />}</div>
