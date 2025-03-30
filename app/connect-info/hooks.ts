@@ -35,42 +35,35 @@ export function useAutoCheckConnection(id: string) {
     staleTime: Infinity,
     retry: false,
     queryFn: async () => {
-      if (!host || !mode) return
+      if (!host || !mode) throw new Error('连接信息不完整')
       const parseResult = validateDefaultCredentials(defaultCredentials)
       if (!parseResult.success) {
-        showErrorMessage()
-        console.error(parseResult.error)
-        return
+        console.warn(parseResult.error)
+        throw new Error('连接信息不完整')
       }
       const parsedDefault = parseResult.data
 
-      const result = await (async () => {
+      const [ok, err] = await (async () => {
         switch (mode) {
           case 'bmc': {
             const result = validateBmcHostConnectionInfo(host, parsedDefault)
             if (!result.success) {
-              showErrorMessage()
-              console.error(result.error)
-              return
+              console.warn(result.error)
+              throw new Error('连接信息不完整')
             }
             return await trpc.connection.checkBMC.query(result.data, { context: { skipBatch: true } })
           }
           case 'ssh': {
             const result = validateSshHostConnectionInfo(host, parsedDefault)
             if (!result.success) {
-              showErrorMessage()
-              console.error(result.error)
-              return
+              console.warn(result.error)
+              throw new Error('连接信息不完整')
             }
             return await trpc.connection.checkSSH.query(result.data, { context: { skipBatch: true } })
           }
         }
       })()
-
-      if (!result) return
-
-      const [ok, err] = result
-      if (!ok) throw err
+      if (err) throw err
       return ok
     },
   })
@@ -98,7 +91,7 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
         const result = validateHostsConnectionInfo(data, 'bmc')
         if (!result.success) {
           showErrorMessage()
-          console.error(result.error)
+          console.warn(result.error)
           return
         }
         await Promise.all(
@@ -114,7 +107,7 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
         const result = validateHostsConnectionInfo(data, 'ssh')
         if (!result.success) {
           showErrorMessage()
-          console.error(result.error)
+          console.warn(result.error)
           return
         }
         await Promise.all(
