@@ -41,7 +41,7 @@ export function CheckConnectBadge({ id }: { id: string }) {
           <TooltipTrigger>
             <XIcon className="text-destructive" />
           </TooltipTrigger>
-          <TooltipContent className="w-56 px-3 py-2">
+          <TooltipContent>
             <h4 className="mb-0.5 flex items-center gap-1.5 font-semibold">
               <Badge variant="solid" color="destructive" className="size-1.5 shrink-0 p-0" />
               连接失败
