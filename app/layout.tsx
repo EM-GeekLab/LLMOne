@@ -7,13 +7,13 @@ import localFont from 'next/font/local'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { cn } from '@/lib/utils'
-import { QueryProvider } from '@/components/query-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { GlobalEnv } from '@/app/global-env'
 import { GlobalStoreProvider } from '@/stores'
 import { loadGlobalData } from '@/stores/server-store'
+import { TrpcReactProvider } from '@/trpc/client'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -52,13 +52,13 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <GlobalEnv>
-            <QueryProvider>
+            <TrpcReactProvider>
               <NuqsAdapter>
                 <GlobalStoreProvider initState={globalData}>
                   <TooltipProvider>{children}</TooltipProvider>
                 </GlobalStoreProvider>
               </NuqsAdapter>
-            </QueryProvider>
+            </TrpcReactProvider>
           </GlobalEnv>
           <Toaster />
         </ThemeProvider>
