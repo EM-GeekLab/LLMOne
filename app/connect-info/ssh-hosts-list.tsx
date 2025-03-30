@@ -33,7 +33,7 @@ function HostsList() {
   const hosts = useGlobalStore((s) => s.sshHosts)
 
   return (
-    <div className="grid grid-cols-[80px_1fr_80px_1fr_1fr_1fr_74px] rounded-md border">
+    <div className="grid grid-cols-[28px_1fr_80px_1fr_1fr_1fr_74px] rounded-md border">
       <div className="text-muted-foreground col-span-full grid grid-cols-subgrid items-center border-b *:px-3 *:py-1.5 *:font-medium">
         <div></div>
         <div>IP</div>
@@ -48,9 +48,7 @@ function HostsList() {
           key={host.id}
           className="col-span-full grid grid-cols-subgrid items-center not-last:border-b *:not-last:py-2.5 *:not-last:pl-3"
         >
-          <div>
-            <CheckConnectBadge id={host.id} />
-          </div>
+          <CheckConnectBadge id={host.id} />
           <div>{host.ip}</div>
           <div>{host.port}</div>
           <div>{host.username || <DefaultOrUnsetMessage useDefault={useDefaultCredentials} />}</div>
