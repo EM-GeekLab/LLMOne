@@ -24,13 +24,12 @@ function showErrorMessage(message?: string) {
 async function requestCheckConnection(info: SshFinalConnectionInfo, mode: 'ssh'): Promise<boolean>
 async function requestCheckConnection(info: BmcFinalConnectionInfo, mode: 'bmc'): Promise<boolean>
 async function requestCheckConnection(info: SshFinalConnectionInfo | BmcFinalConnectionInfo, mode: ConnectMode) {
-  try {
-    return mode === 'ssh'
+  const [ok, err] =
+    mode === 'ssh'
       ? await checkSshConnection(info as SshFinalConnectionInfo)
       : await checkBmcConnection(info as BmcFinalConnectionInfo)
-  } catch (err: unknown) {
-    throw err instanceof Error ? err : new Error('连接失败')
-  }
+  if (err) throw err
+  return ok
 }
 
 export function useAutoCheckConnection(id: string) {
