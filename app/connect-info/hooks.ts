@@ -15,7 +15,7 @@ import {
 } from './utils'
 
 function showErrorMessage(message?: string) {
-  toast.error('连接信息不完整', {
+  toast.error('连接配置不完整', {
     description: message,
   })
 }
@@ -35,11 +35,11 @@ export function useAutoCheckConnection(id: string) {
     staleTime: Infinity,
     retry: false,
     queryFn: async () => {
-      if (!host || !mode) throw new Error('连接信息不完整')
+      if (!host || !mode) throw new Error('连接配置不完整')
       const parseResult = validateDefaultCredentials(defaultCredentials)
       if (!parseResult.success) {
         console.warn(parseResult.error)
-        throw new Error('连接信息不完整')
+        throw new Error('连接配置不完整')
       }
       const parsedDefault = parseResult.data
 
@@ -49,7 +49,7 @@ export function useAutoCheckConnection(id: string) {
             const result = validateBmcHostConnectionInfo(host, parsedDefault)
             if (!result.success) {
               console.warn(result.error)
-              throw new Error('连接信息不完整')
+              throw new Error('连接配置不完整')
             }
             return await trpc.connection.checkBMC.query(result.data, { context: { skipBatch: true } })
           }
@@ -57,7 +57,7 @@ export function useAutoCheckConnection(id: string) {
             const result = validateSshHostConnectionInfo(host, parsedDefault)
             if (!result.success) {
               console.warn(result.error)
-              throw new Error('连接信息不完整')
+              throw new Error('连接配置不完整')
             }
             return await trpc.connection.checkSSH.query(result.data, { context: { skipBatch: true } })
           }
