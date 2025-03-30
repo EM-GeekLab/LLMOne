@@ -21,23 +21,15 @@ function showErrorMessage(message?: string) {
   })
 }
 
-async function requestCheckConnection(
-  info: SshFinalConnectionInfo,
-  mode: 'ssh',
-): Promise<{ ip: string; ok: boolean; error?: unknown }>
-async function requestCheckConnection(
-  info: BmcFinalConnectionInfo,
-  mode: 'bmc',
-): Promise<{ ip: string; ok: boolean; error?: unknown }>
+async function requestCheckConnection(info: SshFinalConnectionInfo, mode: 'ssh'): Promise<boolean>
+async function requestCheckConnection(info: BmcFinalConnectionInfo, mode: 'bmc'): Promise<boolean>
 async function requestCheckConnection(info: SshFinalConnectionInfo | BmcFinalConnectionInfo, mode: ConnectMode) {
   try {
-    const ok =
-      mode === 'ssh'
-        ? await checkSshConnection(info as SshFinalConnectionInfo)
-        : await checkBmcConnection(info as BmcFinalConnectionInfo)
-    return { ip: info.ip, ok }
+    return mode === 'ssh'
+      ? await checkSshConnection(info as SshFinalConnectionInfo)
+      : await checkBmcConnection(info as BmcFinalConnectionInfo)
   } catch (err: unknown) {
-    return { ip: info.ip, ok: false, error: err }
+    throw err instanceof Error ? err : new Error('连接失败')
   }
 }
 
@@ -52,6 +44,7 @@ export function useAutoCheckConnection(id: string) {
     enabled: !!host && !!mode,
     queryKey: [mode === 'ssh' ? 'check-ssh-connection' : 'check-bmc-connection', { host, defaultCredentials }],
     staleTime: Infinity,
+    retry: false,
     queryFn: async () => {
       if (!host || !mode) return
       const parseResult = validateDefaultCredentials(defaultCredentials)
