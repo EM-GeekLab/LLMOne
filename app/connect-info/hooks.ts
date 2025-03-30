@@ -4,10 +4,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { findById } from '@/lib/id'
-import { ConnectMode, useGlobalStore } from '@/stores'
+import { useGlobalStore } from '@/stores'
+import { useTRPCClient } from '@/trpc/client'
 
-import { checkBmcConnection, checkSshConnection } from './check-connection-action'
-import { BmcFinalConnectionInfo, SshFinalConnectionInfo } from './schemas'
 import {
   validateBmcHostConnectionInfo,
   validateDefaultCredentials,
@@ -21,23 +20,14 @@ function showErrorMessage(message?: string) {
   })
 }
 
-async function requestCheckConnection(info: SshFinalConnectionInfo, mode: 'ssh'): Promise<boolean>
-async function requestCheckConnection(info: BmcFinalConnectionInfo, mode: 'bmc'): Promise<boolean>
-async function requestCheckConnection(info: SshFinalConnectionInfo | BmcFinalConnectionInfo, mode: ConnectMode) {
-  const [ok, err] =
-    mode === 'ssh'
-      ? await checkSshConnection(info as SshFinalConnectionInfo)
-      : await checkBmcConnection(info as BmcFinalConnectionInfo)
-  if (err) throw err
-  return ok
-}
-
 export function useAutoCheckConnection(id: string) {
   const mode = useGlobalStore((s) => s.connectMode)
   const list = useGlobalStore((s) => (mode === 'ssh' ? s.sshHosts : s.bmcHosts))
   const host = useMemo(() => findById(id, list), [id, list])
   const _defaultCredentials = useGlobalStore((s) => s.defaultCredentials)
   const [defaultCredentials] = useDebouncedValue(_defaultCredentials, 500, { leading: true })
+
+  const trpc = useTRPCClient()
 
   return useQuery({
     enabled: !!host && !!mode,
@@ -54,26 +44,34 @@ export function useAutoCheckConnection(id: string) {
       }
       const parsedDefault = parseResult.data
 
-      switch (mode) {
-        case 'bmc': {
-          const result = validateBmcHostConnectionInfo(host, parsedDefault)
-          if (!result.success) {
-            showErrorMessage()
-            console.error(result.error)
-            return
+      const result = await (async () => {
+        switch (mode) {
+          case 'bmc': {
+            const result = validateBmcHostConnectionInfo(host, parsedDefault)
+            if (!result.success) {
+              showErrorMessage()
+              console.error(result.error)
+              return
+            }
+            return await trpc.connection.checkBMC.query(result.data, { context: { skipBatch: true } })
           }
-          return await requestCheckConnection(result.data, 'bmc')
-        }
-        case 'ssh': {
-          const result = validateSshHostConnectionInfo(host, parsedDefault)
-          if (!result.success) {
-            showErrorMessage()
-            console.error(result.error)
-            return
+          case 'ssh': {
+            const result = validateSshHostConnectionInfo(host, parsedDefault)
+            if (!result.success) {
+              showErrorMessage()
+              console.error(result.error)
+              return
+            }
+            return await trpc.connection.checkSSH.query(result.data, { context: { skipBatch: true } })
           }
-          return await requestCheckConnection(result.data, 'ssh')
         }
-      }
+      })()
+
+      if (!result) return
+
+      const [ok, err] = result
+      if (!ok) throw err
+      return ok
     },
   })
 }
