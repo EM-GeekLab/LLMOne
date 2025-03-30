@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckIcon, XIcon } from 'lucide-react'
+import { AlertCircleIcon, CheckIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
@@ -39,7 +39,7 @@ export function CheckConnectBadge({ id }: { id: string }) {
       ) : (
         <Tooltip>
           <TooltipTrigger>
-            <XIcon className="text-destructive" />
+            <AlertCircleIcon className="text-destructive" />
           </TooltipTrigger>
           <TooltipContent>
             <h4 className="mb-0.5 flex items-center gap-1.5 font-semibold">
