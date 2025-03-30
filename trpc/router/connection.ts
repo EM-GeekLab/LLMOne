@@ -1,5 +1,5 @@
 import { Config, NodeSSH } from 'node-ssh'
-import { iDRACRedfishClient } from 'redfish-client'
+import { autoDetect } from 'redfish-client'
 
 import type { BmcFinalConnectionInfo, SshFinalConnectionInfo } from '@/app/connect-info/schemas'
 
@@ -11,7 +11,7 @@ export const connectionRouter = createRouter({
     .input(inputType<BmcFinalConnectionInfo>)
     .query(async ({ input: { ip, username, password } }): Promise<[boolean, Error | null]> => {
       try {
-        const client = new iDRACRedfishClient(ip, username, password)
+        const client = await autoDetect(ip, username, password)
         const ok = await client.isAvailable()
         await client.closeSession()
         return [ok, null]
