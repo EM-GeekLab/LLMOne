@@ -77,7 +77,7 @@
     "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4.0.17",
-    "@types/node": "^20.17.28",
+    "@types/node": "^22.13.14",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@types/ssh2": "^1.15.4",
