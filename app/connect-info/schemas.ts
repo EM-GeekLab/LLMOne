@@ -31,6 +31,8 @@ export const defaultCredentialsSchema = z.union([
   z.object({ enabled: z.literal(false) }),
 ])
 
+export type FinalDefaultCredentials = z.infer<typeof defaultCredentialsSchema>
+
 export const bmcConnectionInfoSchema = z.object({
   ip: z.string({ message: 'IP 地址不能为空' }).nonempty('IP 地址不能为空').ip(),
   username: z.string().optional(),
@@ -42,6 +44,8 @@ export const bmcFinalConnectionInfoSchema = z.object({
   username: z.string({ message: '用户名不能为空' }).nonempty('用户名不能为空'),
   password: z.string({ message: '密码不能为空' }).nonempty('密码不能为空'),
 })
+
+export type BmcFinalConnectionInfo = z.infer<typeof bmcFinalConnectionInfoSchema>
 
 export const bmcHostsListSchema = z.array(bmcFinalConnectionInfoSchema)
 
@@ -85,5 +89,7 @@ export const sshFinalConnectionInfoSchema = z
       },
     ),
   )
+
+export type SshFinalConnectionInfo = z.infer<typeof sshFinalConnectionInfoSchema>
 
 export const sshHostsListSchema = z.array(sshFinalConnectionInfoSchema)
