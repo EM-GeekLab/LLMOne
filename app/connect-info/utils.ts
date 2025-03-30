@@ -1,5 +1,9 @@
 import { shake } from 'radash'
 
+import { BmcConnectionInfo, ConnectMode, SshConnectionInfo } from '@/stores'
+import { ConnectionInfoState, DefaultCredentials } from '@/stores/slices/connection-info-slice'
+import { WithId } from '@/stores/utils'
+
 import {
   bmcFinalConnectionInfoSchema,
   bmcHostsListSchema,
@@ -7,10 +11,7 @@ import {
   FinalDefaultCredentials,
   sshFinalConnectionInfoSchema,
   sshHostsListSchema,
-} from '@/app/connect-info/schemas'
-import { BmcConnectionInfo, ConnectMode, SshConnectionInfo } from '@/stores'
-import { ConnectionInfoState, DefaultCredentials } from '@/stores/slices/connection-info-slice'
-import { WithId } from '@/stores/utils'
+} from './schemas'
 
 export function validateHostsConnectionInfo(
   info: ConnectionInfoState,

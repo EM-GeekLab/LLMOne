@@ -3,8 +3,9 @@
 import { ReactNode, useRef } from 'react'
 
 import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
-import { CheckConnectionButton } from '@/app/connect-info/check-connection-button'
-import { DefaultCredentialsConfig } from '@/app/connect-info/default-credentials-config'
+
+import { CheckConnectionButton } from './check-connection-button'
+import { DefaultCredentialsConfig } from './default-credentials-config'
 
 export function HostsListContainer({ children, actions }: { children?: ReactNode; actions?: ReactNode }) {
   const ref = useRef<{ validate: () => Promise<boolean> }>(null)

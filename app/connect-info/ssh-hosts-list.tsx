@@ -3,11 +3,11 @@
 import { EditIcon, PlusIcon } from 'lucide-react'
 import { match } from 'ts-pattern'
 
-import { CheckConnectBadge } from '@/app/connect-info/check-connect-badge'
-import { HostsListContainer } from '@/app/connect-info/hosts-list-container'
 import { useGlobalStore } from '@/stores'
 
+import { CheckConnectBadge } from './check-connect-badge'
 import { DefaultOrUnsetMessage } from './default-or-unset-message'
+import { HostsListContainer } from './hosts-list-container'
 import { RemoveButton } from './remove-button'
 import { SshFormDialog, SshFormDialogTrigger } from './ssh-form-dialog'
 

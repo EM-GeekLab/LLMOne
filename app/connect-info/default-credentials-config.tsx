@@ -8,11 +8,11 @@ import { CheckboxItem } from '@/components/base/checkbox-item'
 import { PasswordInput } from '@/components/base/password-input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { defaultCredentialsSchema } from '@/app/connect-info/schemas'
 import { useGlobalStore } from '@/stores'
 import { DefaultCredentials } from '@/stores/slices/connection-info-slice'
 
 import { FormPasswordKeyInput } from './password-key-input'
+import { defaultCredentialsSchema } from './schemas'
 
 export function DefaultCredentialsConfig({ ref }: { ref?: Ref<{ validate: () => Promise<boolean> }> }) {
   const connectMode = useGlobalStore((s) => s.connectMode)

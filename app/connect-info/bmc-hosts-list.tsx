@@ -2,13 +2,13 @@
 
 import { EditIcon, PlusIcon } from 'lucide-react'
 
-import { CheckConnectBadge } from '@/app/connect-info/check-connect-badge'
-import { HostsListContainer } from '@/app/connect-info/hosts-list-container'
-import { RemoveButton } from '@/app/connect-info/remove-button'
 import { useGlobalStore } from '@/stores'
 
 import { BmcFormDialog, BmcFormDialogTrigger } from './bmc-form-dialog'
+import { CheckConnectBadge } from './check-connect-badge'
 import { DefaultOrUnsetMessage } from './default-or-unset-message'
+import { HostsListContainer } from './hosts-list-container'
+import { RemoveButton } from './remove-button'
 
 export function BmcHostsList() {
   return (

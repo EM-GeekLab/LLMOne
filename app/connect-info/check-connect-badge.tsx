@@ -5,7 +5,8 @@ import { AlertCircleIcon, CheckIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useAutoCheckConnection } from '@/app/connect-info/hooks'
+
+import { useAutoCheckConnection } from './hooks'
 
 export function CheckConnectBadge({ id }: { id: string }) {
   const { data: ok, error, isFetching } = useAutoCheckConnection(id)
