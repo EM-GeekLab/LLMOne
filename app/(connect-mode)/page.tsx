@@ -13,7 +13,6 @@ import { AppFrame } from '@/components/app/app-frame'
 import { ConnectModeSelect } from './connect-mode-select'
 import { DeployModeSelect } from './deploy-mode-select'
 import { Footer } from './footer'
-import { PackageSelect } from './package-select'
 
 export default function Home() {
   return (
@@ -37,7 +36,6 @@ export default function Home() {
           </AppCardSectionHeader>
           <DeployModeSelect />
         </AppCardSection>
-        <PackageSelect />
       </AppCardContent>
       <Footer />
     </AppFrame>
