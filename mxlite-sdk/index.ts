@@ -55,6 +55,34 @@ export type HostInfoResponse = {
       local_addr: Option<string>
       remote_addr: Option<string>
     }>
+    system_info: Option<{
+      total_memory: number
+      name: Option<string>
+      kernel_version: Option<string>
+      cpu: {
+        names: string[]
+        vendor_id: string
+        brand: number
+      }[]
+      disks: {
+        kind: 'HDD' | 'SSD' | 'Unknown'
+        device_name: string
+        file_system: string
+        mount_point: string
+        total_space: number
+        is_removeable: boolean
+        is_read_only: boolean
+      }[]
+      nics: {
+        mac_address: string
+        mtu: number
+        ip: {
+          addr: string
+          version: 4 | 6
+          prefix: number
+        }[]
+      }[]
+    }>
   }>
 }
 
