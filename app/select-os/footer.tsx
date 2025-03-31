@@ -2,6 +2,7 @@
 
 import { AppCardFooter } from '@/components/app/app-card'
 import { NavButton } from '@/components/base/nav-button'
+import { NavButtonGuard } from '@/components/base/nav-button-guard'
 import { useGlobalStore } from '@/stores'
 
 export function Footer() {
@@ -12,9 +13,9 @@ export function Footer() {
       <NavButton variant="outline" to="/connect-info">
         上一步
       </NavButton>
-      <NavButton to="/host-info" disabled={!selection.version}>
-        下一步
-      </NavButton>
+      <NavButtonGuard message="需要选择操作系统" pass={!!selection.version}>
+        <NavButton to="/host-info">下一步</NavButton>
+      </NavButtonGuard>
     </AppCardFooter>
   )
 }
