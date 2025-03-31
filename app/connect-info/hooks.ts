@@ -137,7 +137,6 @@ export function useIsAllConnected() {
     const handleQueryResult = (result: QueryObserverResult[]) => {
       const allConnected = result.every((r) => r.status === 'success' && r.data === true)
       setIsAllConnected(allConnected)
-      console.log(result)
     }
 
     const observer = new QueriesObserver(
