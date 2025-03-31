@@ -1,6 +1,6 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDebouncedValue } from '@mantine/hooks'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { QueriesObserver, QueryObserverResult, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { findById } from '@/lib/id'
@@ -121,4 +121,37 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
       }
     }
   }, [bmcHosts, connectMode, defaultCredentials, onValidate, queryClient, sshHosts])
+}
+
+export function useIsAllConnected() {
+  const connectMode = useGlobalStore((s) => s.connectMode)
+  const sshHosts = useGlobalStore((s) => s.sshHosts)
+  const bmcHosts = useGlobalStore((s) => s.bmcHosts)
+  const defaultCredentials = useGlobalStore((s) => s.defaultCredentials)
+
+  const queryClient = useQueryClient()
+
+  const [isAllConnected, setIsAllConnected] = useState(false)
+
+  useEffect(() => {
+    const handleQueryResult = (result: QueryObserverResult[]) => {
+      const allConnected = result.every((r) => r.status === 'success' && r.data === true)
+      setIsAllConnected(allConnected)
+      console.log(result)
+    }
+
+    const observer = new QueriesObserver(
+      queryClient,
+      connectMode === 'ssh'
+        ? sshHosts.map((host) => ({ queryKey: ['check-connection', 'ssh', { host, defaultCredentials }] }))
+        : bmcHosts.map((host) => ({ queryKey: ['check-connection', 'bmc', { host, defaultCredentials }] })),
+    )
+
+    handleQueryResult(observer.getCurrentResult())
+    const unsubscribe = observer.subscribe((result) => handleQueryResult(result))
+
+    return () => unsubscribe()
+  }, [bmcHosts, connectMode, defaultCredentials, queryClient, sshHosts])
+
+  return isAllConnected
 }
