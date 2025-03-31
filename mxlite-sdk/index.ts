@@ -3,7 +3,9 @@ export const ERR_REASON_TASK_NOT_FOUND = 'TASK_NOT_FOUND'
 export const ERR_REASON_TASK_NOT_COMPLETED = 'TASK_NOT_COMPLETED'
 export const ERR_REASON_INTERNAL_ERROR = 'INTERNAL_ERROR'
 
-export type Error =
+export type Option<T> = T | null
+
+export type OperationError =
   | typeof ERR_REASON_SESSION_NOT_FOUND
   | typeof ERR_REASON_TASK_NOT_FOUND
   | typeof ERR_REASON_TASK_NOT_COMPLETED
@@ -12,25 +14,27 @@ export type Error =
 export type TaskResult =
   | {
       ok: true
-      payload:
-        | {
-            type: 'None'
-          }
-        | {
-            type: 'CommandExecutionResponse'
-            stdout: string
-            stderr: string
-            code: number
-          }
-        | {
-            type: 'FileOperationResponse'
-            hash?: string
-            success: boolean
-          }
+      payload: {
+        payload:
+          | {
+              type: 'None'
+            }
+          | {
+              type: 'CommandExecutionResponse'
+              stdout: string
+              stderr: string
+              code: number
+            }
+          | {
+              type: 'FileOperationResponse'
+              hash: Option<string>
+              success: boolean
+            }
+      }
     }
   | {
       ok: false
-      reason: Error
+      reason: OperationError
     }
 
 export type AddTaskResult =
@@ -40,8 +44,19 @@ export type AddTaskResult =
     }
   | {
       ok: false
-      reason: Error
+      reason: OperationError
     }
+
+export type HostInfoResponse = {
+  host: string
+  ok: boolean
+  info: Option<{
+    socket_info: Option<{
+      local_addr: Option<string>
+      remote_addr: Option<string>
+    }>
+  }>
+}
 
 export type ApiResult<T> = Promise<[T, number]>
 
@@ -72,11 +87,21 @@ export class Mxc {
     return await this.request(`${this.endpoint}/list`, 'GET')
   }
 
+  public async getHostInfo(hostId: string): ApiResult<HostInfoResponse> {
+    return await this.request(`${this.endpoint}/info?host=${hostId}`, 'GET')
+  }
+
   public async getResult(hostId: string, taskId: number): ApiResult<TaskResult> {
     return await this.request(`${this.endpoint}/result?host=${hostId}&task_id=${taskId}`, 'GET')
   }
 
-  public async blockUntilTaskComplete(hostId: string, taskId: number): Promise<TaskResult> {
+  public async blockUntilTaskComplete(
+    hostId: string,
+    taskId: number,
+    interval = 1000,
+    timeout = -1,
+  ): Promise<TaskResult> {
+    let timeout_ = timeout
     while (true) {
       const [result] = await this.getResult(hostId, taskId)
       if (result.ok) {
@@ -85,8 +110,11 @@ export class Mxc {
       if (result.reason !== ERR_REASON_TASK_NOT_COMPLETED) {
         return result
       }
-      console.log('Waiting for task to complete...')
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      timeout_ -= 1
+      if (timeout === 0) {
+        return result
+      }
+      await new Promise((resolve) => setTimeout(resolve, interval))
     }
   }
 
