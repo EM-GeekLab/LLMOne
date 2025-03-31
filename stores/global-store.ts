@@ -13,16 +13,23 @@ import {
   ModeSelectActions,
   ModeSelectState,
 } from './slices/mode-select-slice'
+import {
+  createOsSelectionSlice,
+  defaultOsSelectionState,
+  OsSelectionActions,
+  OsSelectionState,
+} from './slices/os-selection-slice'
 
-export type GlobalState = ModeSelectState & ConnectionInfoState
+export type GlobalState = ModeSelectState & ConnectionInfoState & OsSelectionState
 
-export type GlobalActions = ModeSelectActions & ConnectionInfoActions
+export type GlobalActions = ModeSelectActions & ConnectionInfoActions & OsSelectionActions
 
 export type GlobalStore = GlobalState & GlobalActions
 
 export const defaultGlobalState: GlobalState = {
   ...defaultModelSelectState,
   ...defaultConnectionInfoState,
+  ...defaultOsSelectionState,
 }
 
 export const createGlobalStore = (
@@ -34,6 +41,7 @@ export const createGlobalStore = (
       ...initState,
       ...createModeSelectSlice(...a),
       ...createConnectionInfoSlice(...a),
+      ...createOsSelectionSlice(...a),
     })),
   )
   if (listener) {
