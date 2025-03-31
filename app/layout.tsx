@@ -37,6 +37,8 @@ export const viewport: Viewport = {
   width: 'device-width',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default function RootLayout({
   children,
 }: Readonly<{
