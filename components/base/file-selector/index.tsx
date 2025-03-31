@@ -461,11 +461,17 @@ export function FileSelectorTrigger({ children, ...props }: ComponentProps<typeo
   )
 }
 
-export function FileSelectorValue({ className, ...props }: ComponentProps<'div'>) {
+export function FileSelectorValue({
+  className,
+  placeholder,
+  ...props
+}: ComponentProps<'div'> & {
+  placeholder?: string
+}) {
   const { filePath } = FileSelectorContext.useContext()
   return (
-    <div className={cn('text-sm', className)} {...props}>
-      {filePath}
+    <div className={cn('text-sm', !filePath && 'text-muted-foreground', className)} {...props}>
+      {filePath || placeholder}
     </div>
   )
 }
