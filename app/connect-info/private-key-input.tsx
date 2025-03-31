@@ -3,7 +3,7 @@ import { useControllableState } from '@radix-ui/react-use-controllable-state'
 import { ClipboardPasteIcon, FileInputIcon, FileUpIcon, Trash2Icon } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { selectFileAndRead } from '@/lib/select-file'
+import { selectFileAndRead } from '@/lib/file/client-file'
 import { cn } from '@/lib/utils'
 import { FileSelector, FileSelectorTrigger } from '@/components/base/file-selector'
 import { useEnvContext } from '@/components/env-provider'

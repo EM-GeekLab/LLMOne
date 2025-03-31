@@ -1,5 +1,5 @@
-import { makeErrorMap } from '@/lib/zod-utils'
-import { z } from '@/lib/zod-zh'
+import { z } from '@/lib/zod'
+import { makeErrorMap } from '@/lib/zod/utils'
 
 export const enabledDefaultCredentialsSchema = z
   .object({

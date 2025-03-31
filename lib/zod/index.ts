@@ -1,7 +1,7 @@
 import { match, P } from 'ts-pattern'
 import { z, ZodParsedType } from 'zod'
 
-import { makeErrorMap } from '@/lib/zod-utils'
+import { makeErrorMap } from './utils'
 
 const typeMap: Record<ZodParsedType, string> = {
   string: '字符串',

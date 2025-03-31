@@ -18,9 +18,9 @@ import { ArrowUpIcon, ChevronRightIcon, FileIcon, FolderIcon, FolderOpenIcon, XC
 import { match } from 'ts-pattern'
 
 import { commandScore } from '@/lib/command-score'
-import { createSafeContext } from '@/lib/create-safe-context'
-import { readableSize } from '@/lib/file'
-import { type FileItem } from '@/lib/server-file'
+import { type FileItem } from '@/lib/file/server-file'
+import { readableSize } from '@/lib/file/utils'
+import { createSafeContext } from '@/lib/react/create-safe-context'
 import { cn } from '@/lib/utils'
 import { DebouncedSpinner } from '@/components/base/debounced-spinner'
 import { EasyTooltip } from '@/components/base/easy-tooltip'

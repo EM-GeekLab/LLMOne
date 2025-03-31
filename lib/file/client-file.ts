@@ -1,4 +1,4 @@
-import { readableSize } from '@/lib/file'
+import { readableSize } from './utils'
 
 export interface SelectOptions {
   accept?: string

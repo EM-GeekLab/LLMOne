@@ -4,7 +4,7 @@ import {
   readDirectory,
   readFileToString,
   ReadFileToStringOptions,
-} from '@/lib/server-file'
+} from '@/lib/file/server-file'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
 import { inputType } from './utils'

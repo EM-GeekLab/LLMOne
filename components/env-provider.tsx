@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 
-import { createSafeContext } from '@/lib/create-safe-context'
+import { createSafeContext } from '@/lib/react/create-safe-context'
 
 type EnvContextType = {
   cwd: string

@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import { findById } from '@/lib/id'
-import { z } from '@/lib/zod-zh'
+import { z } from '@/lib/zod'
 import { PasswordInput } from '@/components/base/password-input'
 import { Button } from '@/components/ui/button'
 import {

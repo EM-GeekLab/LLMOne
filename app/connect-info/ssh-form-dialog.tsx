@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Control, useForm, UseFormWatch, useWatch } from 'react-hook-form'
 
 import { findById } from '@/lib/id'
-import { z } from '@/lib/zod-zh'
+import { z } from '@/lib/zod'
 import { PasswordInput } from '@/components/base/password-input'
 import { RadioItem } from '@/components/base/radio-item'
 import { Button } from '@/components/ui/button'

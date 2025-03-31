@@ -3,7 +3,7 @@ import { readdir, readFile, stat } from 'node:fs/promises'
 import { platform } from 'node:os'
 import { dirname, join } from 'path'
 
-import { readableSize } from '@/lib/file'
+import { readableSize } from './utils'
 
 export interface ReadFileToStringOptions {
   // The path to the file to read.
