@@ -20,6 +20,7 @@ import { match } from 'ts-pattern'
 import { commandScore } from '@/lib/command-score'
 import { createSafeContext } from '@/lib/create-safe-context'
 import { readableSize } from '@/lib/file'
+import { type FileItem } from '@/lib/server-file'
 import { cn } from '@/lib/utils'
 import { DebouncedSpinner } from '@/components/base/debounced-spinner'
 import { EasyTooltip } from '@/components/base/easy-tooltip'
@@ -36,8 +37,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { useTRPCClient } from '@/trpc/client'
 
-import { checkPath, getParentDirectoryPath, readDirectory, type FileItem } from './file-system-actions'
 import { getDirectoryName, getFileDirectory, getPathParts, joinPathParts, normalizeDirPath } from './file-utils'
 
 interface FileSelectorProps {
@@ -127,16 +128,6 @@ export function FileSelector({
   )
 }
 
-const filesQueryOptions = (opts: { directory: string; enabled?: boolean }) =>
-  queryOptions({
-    queryKey: ['directory', opts.directory],
-    queryFn: async ({ queryKey }) => {
-      return await readDirectory(queryKey[1])
-    },
-    placeholderData: keepPreviousData,
-    enabled: opts.enabled,
-  })
-
 const FileSelectorListContext = createSafeContext<{
   setInputPath: (path: string, opts?: { isDirectory?: boolean }) => void
   ensureQueryFiles: (directory: string) => Promise<FileItem[]>
@@ -151,6 +142,18 @@ function FileSelectorList() {
   const { open, setOpen } = DialogContext.useContext()
 
   const queryClient = useQueryClient()
+  const trpc = useTRPCClient()
+
+  const filesQueryOptions = useCallback(
+    (opts: { directory: string; enabled?: boolean }) =>
+      queryOptions({
+        queryKey: ['directory', opts.directory],
+        queryFn: async ({ signal }) => trpc.file.readDirectory.query(opts.directory, { signal }),
+        placeholderData: keepPreviousData,
+        enabled: opts.enabled,
+      }),
+    [trpc],
+  )
 
   const {
     data: items = [],
@@ -193,7 +196,7 @@ function FileSelectorList() {
 
   const ensureQueryFiles = useCallback(
     (directory: string) => queryClient.ensureQueryData(filesQueryOptions({ directory })),
-    [queryClient],
+    [filesQueryOptions, queryClient],
   )
 
   // 当导航至上级目录或进入指定目录时，导航到第一个项目。
@@ -212,7 +215,7 @@ function FileSelectorList() {
   // Navigate to parent directory.
   const navigateToParent = useCallback(
     async ({ closeWhenRoot = false } = {}) => {
-      const parentPath = await getParentDirectoryPath(currentDirectory)
+      const parentPath = await trpc.file.getParentDirectoryPath.query(currentDirectory)
       if (closeWhenRoot && currentDirectory === parentPath) setOpen(false)
 
       setCurrentDirectory(parentPath)
@@ -220,7 +223,7 @@ function FileSelectorList() {
       const items = await ensureQueryFiles(parentPath)
       navigateToFirstItem(items)
     },
-    [currentDirectory, ensureQueryFiles, navigateToFirstItem, setCurrentDirectory, setInputPath, setOpen],
+    [trpc, currentDirectory, ensureQueryFiles, navigateToFirstItem, setCurrentDirectory, setInputPath, setOpen],
   )
 
   // 使用命令评分算法获取最相关的项目。
@@ -271,7 +274,7 @@ function FileSelectorList() {
   const checkAndNavigateToDirectory = useCallback(
     async (path: string) => {
       if (!path) return
-      const { directory, dirExists, isDirectory } = await checkPath(path)
+      const { directory, dirExists, isDirectory } = await trpc.file.checkPath.query(path)
       if (directory === currentDirectory) {
         navigateToItem({ path, items, isDirectory })
         return
@@ -282,7 +285,7 @@ function FileSelectorList() {
         setTimeout(() => navigateToItem({ path, items, isDirectory }))
       }
     },
-    [currentDirectory, ensureQueryFiles, items, navigateToItem, setCurrentDirectory],
+    [trpc, currentDirectory, ensureQueryFiles, items, navigateToItem, setCurrentDirectory],
   )
 
   const handleInput = useDebouncedCallback(checkAndNavigateToDirectory, 100)

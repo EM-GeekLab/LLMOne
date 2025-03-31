@@ -10,7 +10,7 @@ import { useEnvContext } from '@/components/env-provider'
 import { Button } from '@/components/ui/button'
 import { DialogFooter } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
-import { readFileToString } from '@/actions/file'
+import { useTRPCClient } from '@/trpc/client'
 
 export function PrivateKeyInputContent({
   defaultValue,
@@ -116,13 +116,14 @@ function WithForm({ withForm, className, children, ...props }: { withForm?: bool
 
 function RemoteFileReader({ maxSize = 100 * 1024, onRead }: { maxSize?: number; onRead?: (text: string) => void }) {
   const { sshPath } = useEnvContext()
+  const trpc = useTRPCClient()
 
   return (
     <FileSelector
       defaultDirectory={sshPath}
       filter={(item) => (item.size ? item.size <= 100 * 1024 : true)}
       onSelected={async (path) => {
-        const text = await readFileToString(path, { maxSize }).catch((err) => {
+        const text = await trpc.file.readFileText.query({ path, maxSize }).catch((err) => {
           toast.error('读取文件失败', { description: err.message })
         })
         if (text) onRead?.(text)
