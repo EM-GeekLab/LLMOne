@@ -25,7 +25,7 @@ export function useAutoCheckConnection(id: string) {
   const list = useGlobalStore((s) => (mode === 'ssh' ? s.sshHosts : s.bmcHosts))
   const host = useMemo(() => findById(id, list), [id, list])
   const _defaultCredentials = useGlobalStore((s) => s.defaultCredentials)
-  const [defaultCredentials] = useDebouncedValue(_defaultCredentials, 500, { leading: true })
+  const [defaultCredentials] = useDebouncedValue(_defaultCredentials, 500)
 
   const trpc = useTRPCClient()
 
