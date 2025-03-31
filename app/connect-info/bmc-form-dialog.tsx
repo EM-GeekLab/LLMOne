@@ -74,6 +74,8 @@ function BmcFormDialogContent({ id, onClose }: { id?: string; onClose?: () => vo
   )
 }
 
+type BmcConnectionInfoForm = z.infer<typeof bmcConnectionInfoSchema>
+
 function BmcForm({
   defaultValues,
   onSubmit,
@@ -83,8 +85,10 @@ function BmcForm({
 }) {
   const useDefaultCredentials = useGlobalStore((s) => s.defaultCredentials.enabled)
 
-  const form = useForm<z.infer<typeof bmcConnectionInfoSchema>>({
-    resolver: zodResolver(useDefaultCredentials ? bmcConnectionInfoSchema : bmcFinalConnectionInfoSchema),
+  const form = useForm<BmcConnectionInfoForm>({
+    resolver: zodResolver<BmcConnectionInfoForm>(
+      useDefaultCredentials ? bmcConnectionInfoSchema : bmcFinalConnectionInfoSchema,
+    ),
     defaultValues,
   })
 

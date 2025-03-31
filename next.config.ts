@@ -24,6 +24,15 @@ const nextConfig: NextConfig = {
     // Modify the file loader rule to ignore *.svg, since we have it handled now.
     fileLoaderRule.exclude = /\.svg$/i
 
+    config.module.rules.push({
+      test: /\.node$/,
+      use: [
+        {
+          loader: 'nextjs-node-loader',
+        },
+      ],
+    })
+
     return config
   },
   experimental: {

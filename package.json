@@ -89,6 +89,7 @@
     "@types/ssh2": "^1.15.4",
     "eslint": "^9.23.0",
     "eslint-config-next": "15.2.3",
+    "nextjs-node-loader": "^1.1.9",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwind-scrollbar": "^4.0.2",
