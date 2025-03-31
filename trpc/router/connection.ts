@@ -9,19 +9,20 @@ import { inputType } from './utils'
 export const connectionRouter = createRouter({
   checkBMC: baseProcedure
     .input(inputType<BmcFinalConnectionInfo>)
-    .query(async ({ input: { ip, username, password } }): Promise<[boolean, Error | null]> => {
+    .mutation(async ({ input: { ip, username, password } }): Promise<[boolean, Error | null]> => {
       try {
         const client = await autoDetect(ip, username, password)
         const ok = await client.isAvailable()
         await client.closeSession()
         return [ok, null]
       } catch (err) {
+        console.log({ ip, username, err })
         return [false, err instanceof Error ? err : new Error('连接时发生未知错误')]
       }
     }),
   checkSSH: baseProcedure
     .input(inputType<SshFinalConnectionInfo>)
-    .query(async ({ input: { ip, port, username, ...credential } }): Promise<[boolean, Error | null]> => {
+    .mutation(async ({ input: { ip, port, username, ...credential } }): Promise<[boolean, Error | null]> => {
       try {
         const ssh = new NodeSSH()
 
@@ -48,6 +49,7 @@ export const connectionRouter = createRouter({
           }
         }
       } catch (err) {
+        console.log({ ip, username, err })
         return [false, err instanceof Error ? err : new Error('连接时发生未知错误')]
       }
     }),

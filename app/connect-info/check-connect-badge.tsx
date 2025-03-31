@@ -1,5 +1,6 @@
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import { AlertCircleIcon, CheckIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -9,11 +10,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useAutoCheckConnection } from './hooks'
 
 export function CheckConnectBadge({ id }: { id: string }) {
-  const { data: ok, error, isFetching } = useAutoCheckConnection(id)
+  const { data: ok, error, isFetching, isPending } = useQuery(useAutoCheckConnection(id))
 
   return (
     <div className="flex items-center [&_svg]:size-4">
-      {isFetching ? (
+      {isFetching || isPending ? (
         <Tooltip>
           <TooltipTrigger>
             <Spinner className="text-primary" />

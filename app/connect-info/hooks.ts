@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDebouncedValue } from '@mantine/hooks'
-import { QueriesObserver, QueryObserverResult, useQuery, useQueryClient } from '@tanstack/react-query'
+import { QueriesObserver, QueryObserverResult, queryOptions, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { findById } from '@/lib/id'
@@ -29,12 +29,11 @@ export function useAutoCheckConnection(id: string) {
 
   const trpc = useTRPCClient()
 
-  return useQuery({
+  return queryOptions({
     enabled: !!host && !!mode,
-    queryKey: ['check-connection', mode, { host, defaultCredentials }],
-    staleTime: Infinity,
+    queryKey: ['check-connection', mode, host?.id, { host, defaultCredentials }],
     retry: false,
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!host || !mode) throw new Error('连接配置不完整')
       const parseResult = validateDefaultCredentials(defaultCredentials)
       if (!parseResult.success) {
@@ -51,7 +50,7 @@ export function useAutoCheckConnection(id: string) {
               console.warn(result.error)
               throw new Error('连接配置不完整')
             }
-            return await trpc.connection.checkBMC.query(result.data, { context: { skipBatch: true } })
+            return await trpc.connection.checkBMC.mutate(result.data, { signal })
           }
           case 'ssh': {
             const result = validateSshHostConnectionInfo(host, parsedDefault)
@@ -59,7 +58,7 @@ export function useAutoCheckConnection(id: string) {
               console.warn(result.error)
               throw new Error('连接配置不完整')
             }
-            return await trpc.connection.checkSSH.query(result.data, { context: { skipBatch: true } })
+            return await trpc.connection.checkSSH.mutate(result.data, { signal })
           }
         }
       })()
@@ -95,11 +94,12 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
           return
         }
         await Promise.all(
-          result.data.map(async (_info, index) =>
-            queryClient.invalidateQueries({
-              queryKey: ['check-connection', 'bmc', { host: bmcHosts[index], defaultCredentials }],
-            }),
-          ),
+          result.data.map(async (_info, index) => {
+            await queryClient.cancelQueries({ queryKey: ['check-connection', 'bmc', bmcHosts[index].id] })
+            return await queryClient.invalidateQueries({
+              queryKey: ['check-connection', 'bmc', bmcHosts[index].id, { host: bmcHosts[index], defaultCredentials }],
+            })
+          }),
         )
         break
       }
@@ -111,11 +111,12 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
           return
         }
         await Promise.all(
-          result.data.map(async (_info, index) =>
-            queryClient.invalidateQueries({
-              queryKey: ['check-connection', 'ssh', { host: sshHosts[index], defaultCredentials }],
-            }),
-          ),
+          result.data.map(async (_info, index) => {
+            await queryClient.cancelQueries({ queryKey: ['check-connection', 'ssh', sshHosts[index].id] })
+            return await queryClient.invalidateQueries({
+              queryKey: ['check-connection', 'ssh', sshHosts[index].id, { host: sshHosts[index], defaultCredentials }],
+            })
+          }),
         )
         break
       }
@@ -142,8 +143,14 @@ export function useIsAllConnected() {
     const observer = new QueriesObserver(
       queryClient,
       connectMode === 'ssh'
-        ? sshHosts.map((host) => ({ queryKey: ['check-connection', 'ssh', { host, defaultCredentials }] }))
-        : bmcHosts.map((host) => ({ queryKey: ['check-connection', 'bmc', { host, defaultCredentials }] })),
+        ? sshHosts.map((host) => ({
+            queryKey: ['check-connection', 'ssh', host.id, { host, defaultCredentials }],
+            enabled: false,
+          }))
+        : bmcHosts.map((host) => ({
+            queryKey: ['check-connection', 'bmc', host.id, { host, defaultCredentials }],
+            enabled: false,
+          })),
     )
 
     handleQueryResult(observer.getCurrentResult())
