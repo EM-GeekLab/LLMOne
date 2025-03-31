@@ -111,7 +111,7 @@ export class Mxc {
         return result
       }
       timeout_ -= 1
-      if (timeout === 0) {
+      if (timeout_ === 0) {
         return result
       }
       await new Promise((resolve) => setTimeout(resolve, interval))
