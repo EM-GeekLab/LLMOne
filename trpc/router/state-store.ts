@@ -6,7 +6,8 @@ import { GlobalState } from '@/stores/global-store'
 import { isWriteState } from '@/stores/server-config'
 import { clientDataMap, persistFile } from '@/stores/server-store'
 import { baseProcedure, createRouter } from '@/trpc/init'
-import { inputType } from '@/trpc/router/utils'
+
+import { inputType } from './utils'
 
 export const stateStoreRouter = createRouter({
   save: baseProcedure.input(inputType<GlobalState>).mutation(async ({ input }) => {

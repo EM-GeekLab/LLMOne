@@ -2,8 +2,8 @@ import { Config, NodeSSH } from 'node-ssh'
 import { autoDetect } from 'redfish-client'
 
 import type { BmcFinalConnectionInfo, SshFinalConnectionInfo } from '@/app/connect-info/schemas'
+import { baseProcedure, createRouter } from '@/trpc/init'
 
-import { baseProcedure, createRouter } from '../init'
 import { inputType } from './utils'
 
 export const connectionRouter = createRouter({
