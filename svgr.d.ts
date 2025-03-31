@@ -1,10 +1,10 @@
-declare module '*.svg' {
+declare module '@/icons/*.svg' {
   import { FC, SVGProps } from 'react'
   const content: FC<SVGProps<SVGElement>>
   export default content
 }
 
-declare module '*.svg?url' {
+declare module '@/icons/*.svg?url' {
   const content: any
   export default content
 }
