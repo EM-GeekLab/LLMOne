@@ -31,7 +31,7 @@ export function useAutoCheckConnection(id: string) {
 
   return useQuery({
     enabled: !!host && !!mode,
-    queryKey: [mode === 'ssh' ? 'check-ssh-connection' : 'check-bmc-connection', { host, defaultCredentials }],
+    queryKey: ['check-connection', mode, { host, defaultCredentials }],
     staleTime: Infinity,
     retry: false,
     queryFn: async () => {
@@ -97,7 +97,7 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
         await Promise.all(
           result.data.map(async (_info, index) =>
             queryClient.invalidateQueries({
-              queryKey: ['check-bmc-connection', { host: bmcHosts[index], defaultCredentials }],
+              queryKey: ['check-connection', 'bmc', { host: bmcHosts[index], defaultCredentials }],
             }),
           ),
         )
@@ -113,7 +113,7 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
         await Promise.all(
           result.data.map(async (_info, index) =>
             queryClient.invalidateQueries({
-              queryKey: ['check-ssh-connection', { host: sshHosts[index], defaultCredentials }],
+              queryKey: ['check-connection', 'ssh', { host: sshHosts[index], defaultCredentials }],
             }),
           ),
         )
