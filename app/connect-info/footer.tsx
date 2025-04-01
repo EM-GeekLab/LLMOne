@@ -10,12 +10,20 @@ import { useIsAllConnected } from './hooks'
 const message = '需要成功连接所有服务器'
 
 export function Footer() {
-  const isAllConnected = useIsAllConnected()
   return (
     <AppCardFooter>
       <NavButton variant="outline" to="/">
         上一步
       </NavButton>
+      <NextStepButton />
+    </AppCardFooter>
+  )
+}
+
+function NextStepButton() {
+  const { isAllConnected } = useIsAllConnected()
+  return (
+    <>
       <ConnectModeIf mode="bmc">
         <NavButtonGuard pass={isAllConnected} message={message}>
           <NavButton to="/select-os">下一步</NavButton>
@@ -26,6 +34,6 @@ export function Footer() {
           <NavButton to="/install-env">下一步</NavButton>
         </NavButtonGuard>
       </ConnectModeIf>
-    </AppCardFooter>
+    </>
   )
 }

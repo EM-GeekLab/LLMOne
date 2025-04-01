@@ -9,9 +9,10 @@ import { useTRPCClient } from '@/trpc/client'
 
 import {
   validateBmcHostConnectionInfo,
+  validateBmcHosts,
   validateDefaultCredentials,
-  validateHostsConnectionInfo,
   validateSshHostConnectionInfo,
+  validateSshHosts,
 } from './utils'
 
 function showErrorMessage(message?: string) {
@@ -77,7 +78,6 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
   const queryClient = useQueryClient()
 
   return useCallback(async () => {
-    const data = { sshHosts, bmcHosts, defaultCredentials }
     if (onValidate) {
       const result = await onValidate()
       if (!result) {
@@ -87,7 +87,7 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
     }
     switch (connectMode) {
       case 'bmc': {
-        const result = validateHostsConnectionInfo(data, 'bmc')
+        const result = validateBmcHosts(bmcHosts, defaultCredentials)
         if (!result.success) {
           showErrorMessage()
           console.warn(result.error)
@@ -104,7 +104,7 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
         break
       }
       case 'ssh': {
-        const result = validateHostsConnectionInfo(data, 'ssh')
+        const result = validateSshHosts(sshHosts, defaultCredentials)
         if (!result.success) {
           showErrorMessage()
           console.warn(result.error)
@@ -133,11 +133,14 @@ export function useIsAllConnected() {
   const queryClient = useQueryClient()
 
   const [isAllConnected, setIsAllConnected] = useState(false)
+  const [isChecking, setIsChecking] = useState(false)
 
   useEffect(() => {
     const handleQueryResult = (result: QueryObserverResult[]) => {
       const allConnected = result.every((r) => r.status === 'success' && r.data === true)
       setIsAllConnected(allConnected)
+      const loadingResult = result.some((r) => r.isFetching || r.isPending)
+      setIsChecking(loadingResult)
     }
 
     const observer = new QueriesObserver(
@@ -159,5 +162,5 @@ export function useIsAllConnected() {
     return () => unsubscribe()
   }, [bmcHosts, connectMode, defaultCredentials, queryClient, sshHosts])
 
-  return isAllConnected
+  return { isAllConnected, isChecking }
 }

@@ -1,7 +1,7 @@
 import { shake } from 'radash'
 
-import { BmcConnectionInfo, ConnectMode, SshConnectionInfo } from '@/stores'
-import { ConnectionInfoState, DefaultCredentials } from '@/stores/slices/connection-info-slice'
+import { BmcConnectionInfo, SshConnectionInfo } from '@/stores'
+import { DefaultCredentials } from '@/stores/slices/connection-info-slice'
 import { WithId } from '@/stores/utils'
 
 import {
@@ -13,28 +13,24 @@ import {
   sshHostsListSchema,
 } from './schemas'
 
-export function validateHostsConnectionInfo(
-  info: ConnectionInfoState,
-  mode: 'bmc',
-): ReturnType<typeof bmcHostsListSchema.safeParse>
-export function validateHostsConnectionInfo(
-  info: ConnectionInfoState,
-  mode: 'ssh',
-): ReturnType<typeof sshHostsListSchema.safeParse>
-export function validateHostsConnectionInfo(info: ConnectionInfoState, mode: ConnectMode) {
-  const { defaultCredentials } = info
+export function validateBmcHosts(hosts: WithId<BmcConnectionInfo>[], defaultCredentials: DefaultCredentials) {
   const parseResult = validateDefaultCredentials(defaultCredentials)
   if (!parseResult.success) {
     return parseResult
   }
   const parsedDefault = parseResult.data
 
-  switch (mode) {
-    case 'bmc':
-      return bmcHostsListSchema.safeParse(info.bmcHosts.map((host) => mergeBmcHost(host, parsedDefault)))
-    case 'ssh':
-      return sshHostsListSchema.safeParse(info.sshHosts.map((host) => mergeSshHost(host, parsedDefault)))
+  return bmcHostsListSchema.safeParse(hosts.map((host) => mergeBmcHost(host, parsedDefault)))
+}
+
+export function validateSshHosts(hosts: WithId<SshConnectionInfo>[], defaultCredentials: DefaultCredentials) {
+  const parseResult = validateDefaultCredentials(defaultCredentials)
+  if (!parseResult.success) {
+    return parseResult
   }
+  const parsedDefault = parseResult.data
+
+  return sshHostsListSchema.safeParse(hosts.map((host) => mergeSshHost(host, parsedDefault)))
 }
 
 /**
