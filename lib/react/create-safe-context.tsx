@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext as useReactContext, type Provider as ReactProvider } from 'react'
 
 export interface CreateSafeContextResult<T> {
