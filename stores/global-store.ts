@@ -7,6 +7,7 @@ import {
   createConnectionInfoSlice,
   defaultConnectionInfoState,
 } from './slices/connection-info-slice'
+import { createHostInfoSlice, defaultHostInfoState, HostInfoAction, HostInfoState } from './slices/host-info-slice'
 import {
   createModeSelectSlice,
   defaultModelSelectState,
@@ -20,9 +21,9 @@ import {
   OsSelectionState,
 } from './slices/os-selection-slice'
 
-export type GlobalState = ModeSelectState & ConnectionInfoState & OsSelectionState
+export type GlobalState = ModeSelectState & ConnectionInfoState & OsSelectionState & HostInfoState
 
-export type GlobalActions = ModeSelectActions & ConnectionInfoActions & OsSelectionActions
+export type GlobalActions = ModeSelectActions & ConnectionInfoActions & OsSelectionActions & HostInfoAction
 
 export type GlobalStore = GlobalState & GlobalActions
 
@@ -30,6 +31,7 @@ export const defaultGlobalState: GlobalState = {
   ...defaultModelSelectState,
   ...defaultConnectionInfoState,
   ...defaultOsSelectionState,
+  ...defaultHostInfoState,
 }
 
 export const createGlobalStore = (
@@ -42,6 +44,7 @@ export const createGlobalStore = (
       ...createModeSelectSlice(...a),
       ...createConnectionInfoSlice(...a),
       ...createOsSelectionSlice(...a),
+      ...createHostInfoSlice(...a),
     })),
   )
   if (listener) {
