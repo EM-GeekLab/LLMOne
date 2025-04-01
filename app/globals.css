@@ -215,6 +215,10 @@
     @apply -ml-px;
   }
 
+  & > [aria-invalid='true'] {
+    @apply relative;
+  }
+
   & > :focus-visible,
   & *:has(:focus-visible) {
     @apply relative z-[2];
