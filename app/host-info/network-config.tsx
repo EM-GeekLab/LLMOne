@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { ComponentProps } from 'react'
+import { ComponentProps, useImperativeHandle } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MinusCircleIcon, PlusIcon } from 'lucide-react'
 import { useForm, useFormContext, useFormState, useWatch } from 'react-hook-form'
@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { RadioGroup } from '@/components/ui/radio-group'
+import { useHostInfoContext } from '@/app/host-info/context'
 import { useGlobalStore } from '@/stores'
 import { HostNetworkConfig } from '@/stores/slices/host-info-slice'
 
@@ -44,6 +45,12 @@ function NetworkConfigForm() {
     values,
     mode: 'all',
   })
+
+  const { networkFormRef } = useHostInfoContext()
+
+  useImperativeHandle(networkFormRef, () => ({
+    validate: () => form.trigger(),
+  }))
 
   return (
     <Form {...form}>

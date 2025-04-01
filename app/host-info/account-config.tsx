@@ -1,5 +1,6 @@
 'use client'
 
+import { useImperativeHandle } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
@@ -12,6 +13,7 @@ import {
 import { PasswordInput } from '@/components/base/password-input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { useHostInfoContext } from '@/app/host-info/context'
 import { useGlobalStore } from '@/stores'
 import { HostAccountConfig } from '@/stores/slices/host-info-slice'
 
@@ -40,6 +42,12 @@ function AccountConfigForm() {
     values,
     mode: 'all',
   })
+
+  const { accountFormRef } = useHostInfoContext()
+
+  useImperativeHandle(accountFormRef, () => ({
+    validate: () => form.trigger(),
+  }))
 
   return (
     <Form {...form}>

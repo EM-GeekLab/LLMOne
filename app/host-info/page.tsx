@@ -1,9 +1,10 @@
 import { AppCardContent, AppCardDescription, AppCardHeader, AppCardTitle } from '@/components/app/app-card'
 import { AppFrame } from '@/components/app/app-frame'
-import { Footer } from '@/app/host-info/footer'
-import { NetworkConfig } from '@/app/host-info/network-config'
 
 import { AccountConfig } from './account-config'
+import { HostInfoContextProvider } from './context'
+import { Footer } from './footer'
+import { NetworkConfig } from './network-config'
 
 export default function Page() {
   return (
@@ -12,11 +13,13 @@ export default function Page() {
         <AppCardTitle>配置主机信息</AppCardTitle>
         <AppCardDescription>为每台主机配置网络、安装磁盘和IP地址。</AppCardDescription>
       </AppCardHeader>
-      <AppCardContent>
-        <AccountConfig />
-        <NetworkConfig />
-      </AppCardContent>
-      <Footer />
+      <HostInfoContextProvider>
+        <AppCardContent>
+          <AccountConfig />
+          <NetworkConfig />
+        </AppCardContent>
+        <Footer />
+      </HostInfoContextProvider>
     </AppFrame>
   )
 }
