@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { ComponentProps, useImperativeHandle } from 'react'
+import { ComponentProps, useImperativeHandle, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MinusCircleIcon, PlusIcon } from 'lucide-react'
 import { useForm, useFormContext, useFormState, useWatch } from 'react-hook-form'
@@ -240,6 +240,8 @@ function DnsFormSection() {
     errors: { dns: error },
   } = useFormState({ control, name: 'dns' })
 
+  const inputRefs = useRef<HTMLInputElement[]>([])
+
   return (
     <CardWrapper className="col-span-full lg:grid-cols-3 xl:grid-cols-4">
       <div className="col-span-full -mb-1.5 flex items-center gap-3">
@@ -255,7 +257,7 @@ function DnsFormSection() {
           key={index}
           control={control}
           name={`dns.${index}`}
-          render={({ field: { value = '', onChange, ...rest } }) => (
+          render={({ field: { value = '', onChange, ref, ...rest } }) => (
             <FormItem>
               <div className="join join-with-input flex">
                 <div className="border-input text-muted-foreground bg-muted pointer-events-none flex size-9 shrink-0 items-center justify-center rounded-md border">
@@ -263,6 +265,12 @@ function DnsFormSection() {
                 </div>
                 <FormControl>
                   <Input
+                    ref={(el) => {
+                      if (el) {
+                        inputRefs.current[index] = el
+                        ref(el)
+                      }
+                    }}
                     value={value}
                     onChange={(e) => {
                       actions.set(index, e.target.value)
@@ -271,7 +279,14 @@ function DnsFormSection() {
                     {...rest}
                   />
                 </FormControl>
-                <Button variant="outline" size="icon" onClick={() => actions.remove(index)}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    actions.remove(index)
+                    inputRefs.current.splice(index, 1)
+                  }}
+                >
                   <MinusCircleIcon />
                   <span className="sr-only">移除</span>
                 </Button>
@@ -282,7 +297,14 @@ function DnsFormSection() {
         />
       ))}
       {dnsList.length < 3 && (
-        <Button className="border-dashed" variant="outline" onClick={() => actions.push()}>
+        <Button
+          className="border-dashed"
+          variant="outline"
+          onClick={() => {
+            actions.push()
+            setTimeout(() => inputRefs.current[dnsList.length]?.focus())
+          }}
+        >
           <PlusIcon /> 添加
         </Button>
       )}
