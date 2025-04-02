@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useDebouncedValue } from '@mantine/hooks'
 import { QueriesObserver, QueryObserverResult, queryOptions, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { findById } from '@/lib/id'
 import { useGlobalStore } from '@/stores'
+import { useDebouncedGlobalStore } from '@/stores/global-store-provider'
 import { useTRPCClient } from '@/trpc/client'
 
 import {
@@ -25,8 +25,7 @@ export function useAutoCheckConnection(id: string) {
   const mode = useGlobalStore((s) => s.connectMode)
   const list = useGlobalStore((s) => (mode === 'ssh' ? s.sshHosts : s.bmcHosts))
   const host = useMemo(() => findById(id, list), [id, list])
-  const _defaultCredentials = useGlobalStore((s) => s.defaultCredentials)
-  const [defaultCredentials] = useDebouncedValue(_defaultCredentials, 500)
+  const defaultCredentials = useDebouncedGlobalStore((s) => s.defaultCredentials)
 
   const trpc = useTRPCClient()
 
