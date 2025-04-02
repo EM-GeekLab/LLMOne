@@ -55,7 +55,7 @@ function NetworkConfigForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(setValue)} className="grid max-w-sm gap-3.5">
+      <form onSubmit={form.handleSubmit(setValue)} className="grid max-w-xs gap-3.5">
         <CardWrapper>
           <Ipv4FormSection />
           <DnsFormSection />
@@ -124,7 +124,7 @@ function Ipv4FormSection() {
           />
         </>
       )}
-      {type === 'dhcp' && <EmptyMessage>主机将通过 DHCP 自动获取 IP 地址。</EmptyMessage>}
+      {type === 'dhcp' && <EmptyMessage>主机将通过 DHCP 自动获取 IP 地址和网关。</EmptyMessage>}
     </div>
   )
 }
@@ -219,13 +219,7 @@ function DnsFormSection() {
 
 function CardWrapper({ className, children, ...props }: ComponentProps<'div'>) {
   return (
-    <div
-      className={cn(
-        'bg-muted/50 border-border/50 grid content-start items-start gap-x-3 gap-y-4 rounded-lg border p-3.5',
-        className,
-      )}
-      {...props}
-    >
+    <div className={cn('grid content-start items-start gap-4', className)} {...props}>
       {children}
     </div>
   )
@@ -233,7 +227,7 @@ function CardWrapper({ className, children, ...props }: ComponentProps<'div'>) {
 
 function EmptyMessage({ className, children, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('text-muted-foreground col-span-full place-self-center pt-2 text-sm', className)} {...props}>
+    <div className={cn('text-muted-foreground col-span-full text-sm', className)} {...props}>
       {children}
     </div>
   )

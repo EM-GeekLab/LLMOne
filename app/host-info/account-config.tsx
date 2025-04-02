@@ -51,10 +51,7 @@ function AccountConfigForm() {
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(actions.setAll)}
-        className="bg-muted/50 border-border/50 grid max-w-xl grid-cols-2 items-start gap-3 rounded-lg border p-4"
-      >
+      <form onSubmit={form.handleSubmit(actions.setAll)} className="grid max-w-xl grid-cols-2 items-start gap-3">
         <FormField
           control={form.control}
           name="username"
