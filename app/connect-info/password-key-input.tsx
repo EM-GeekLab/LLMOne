@@ -93,10 +93,17 @@ export function FormPasswordKeyInput({
         <FormField
           control={control}
           name="type"
-          render={({ field: { value, ...rest } }) => (
+          render={({ field: { value, onChange, ...rest } }) => (
             <FormItem passChild>
               <FormControl>
-                <Select value={value} onValueChange={onTypeChange} {...rest}>
+                <Select
+                  value={value}
+                  onValueChange={(v: CredentialType) => {
+                    onTypeChange?.(v)
+                    onChange(v)
+                  }}
+                  {...rest}
+                >
                   <SelectTrigger className={cn('w-[78px] shrink-0', value === 'no-password' && 'w-full !rounded-r-md')}>
                     <SelectValue />
                   </SelectTrigger>
