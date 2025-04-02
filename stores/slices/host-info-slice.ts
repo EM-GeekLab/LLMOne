@@ -9,12 +9,6 @@ export type HostNetworkConfig = {
   ipv4: {
     type: 'dhcp' | 'static'
     gateway?: string
-    netmask?: string
-  }
-  ipv6: {
-    type: 'dhcp' | 'static' | 'off'
-    gateway?: string
-    prefix?: number
   }
   dns: string[]
 }
@@ -40,12 +34,6 @@ export type HostInfoAction = {
       ipv4: {
         setType: (type: 'dhcp' | 'static') => void
         setGateway: (gateway?: string) => void
-        setNetmask: (netmask?: string) => void
-      }
-      ipv6: {
-        setType: (type: 'dhcp' | 'static' | 'off') => void
-        setGateway: (gateway?: string) => void
-        setPrefix: (prefix?: number) => void
       }
       dns: {
         set: (index: number, dns: string) => void
@@ -61,7 +49,6 @@ export const defaultHostInfoState: HostInfoState = {
     account: {},
     network: {
       ipv4: { type: 'dhcp' },
-      ipv6: { type: 'dhcp' },
       dns: [''],
     },
   },
@@ -96,24 +83,6 @@ export const createHostInfoSlice: ImmerStateCreator<HostInfoAction> = (set) => (
         setGateway: (gateway) =>
           set((state) => {
             state.hostConfig.network.ipv4.gateway = gateway
-          }),
-        setNetmask: (netmask) =>
-          set((state) => {
-            state.hostConfig.network.ipv4.netmask = netmask
-          }),
-      },
-      ipv6: {
-        setType: (type) =>
-          set((state) => {
-            state.hostConfig.network.ipv6.type = type
-          }),
-        setGateway: (gateway) =>
-          set((state) => {
-            state.hostConfig.network.ipv6.gateway = gateway
-          }),
-        setPrefix: (prefix) =>
-          set((state) => {
-            state.hostConfig.network.ipv6.prefix = prefix
           }),
       },
       dns: {

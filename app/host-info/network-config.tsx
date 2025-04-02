@@ -4,7 +4,7 @@ import * as React from 'react'
 import { ComponentProps, useImperativeHandle, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MinusCircleIcon, PlusIcon } from 'lucide-react'
-import { Resolver, useForm, useFormContext, useFormState, useWatch } from 'react-hook-form'
+import { Resolver, useFieldArray, useForm, useFormContext, useFormState, useWatch } from 'react-hook-form'
 
 import { cn } from '@/lib/utils'
 import {
@@ -17,6 +17,7 @@ import { RadioItem } from '@/components/base/radio-item'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 import { HostNetworkConfig } from '@/stores/slices/host-info-slice'
@@ -54,10 +55,11 @@ function NetworkConfigForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(setValue)} className="grid gap-3.5 lg:grid-cols-2">
-        <Ipv4FormSection />
-        <Ipv6FormSection />
-        <DnsFormSection />
+      <form onSubmit={form.handleSubmit(setValue)} className="grid max-w-sm gap-3.5">
+        <CardWrapper>
+          <Ipv4FormSection />
+          <DnsFormSection />
+        </CardWrapper>
         <button type="submit" className="hidden" />
       </form>
     </Form>
@@ -71,14 +73,13 @@ function Ipv4FormSection() {
   const type = useWatch({ control, name: 'ipv4.type' })
 
   return (
-    <CardWrapper>
+    <div className="grid gap-4">
       <div className="col-span-full flex items-center justify-between gap-5">
-        <h3 className="text-muted-foreground text-base/none font-bold">IPv4</h3>
         <FormField
           control={control}
           name="ipv4.type"
           render={({ field: { value, onChange, ...rest } }) => (
-            <FancyFormItem>
+            <FormItem>
               <FormLabel className="sr-only">IPv4 类型</FormLabel>
               <FormControl>
                 <RadioGroup
@@ -95,7 +96,7 @@ function Ipv4FormSection() {
                 </RadioGroup>
               </FormControl>
               <FormMessage />
-            </FancyFormItem>
+            </FormItem>
           )}
         />
       </div>
@@ -106,32 +107,12 @@ function Ipv4FormSection() {
             name="ipv4.gateway"
             render={({ field: { value = '', onChange, ...rest } }) => (
               <FormItem>
-                <FormLabel>IPv4 网关</FormLabel>
+                <FormLabel>网关</FormLabel>
                 <FormControl>
                   <Input
                     value={value}
                     onChange={(e) => {
                       actions.setGateway(e.target.value)
-                      onChange(e)
-                    }}
-                    {...rest}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="ipv4.netmask"
-            render={({ field: { value = '', onChange, ...rest } }) => (
-              <FormItem>
-                <FormLabel>子网掩码</FormLabel>
-                <FormControl>
-                  <Input
-                    value={value}
-                    onChange={(e) => {
-                      actions.setNetmask(e.target.value)
                       onChange(e)
                     }}
                     {...rest}
@@ -143,97 +124,8 @@ function Ipv4FormSection() {
           />
         </>
       )}
-      {type === 'dhcp' && <EmptyMessage>已配置自动获取 IP 地址</EmptyMessage>}
-    </CardWrapper>
-  )
-}
-
-function Ipv6FormSection() {
-  const actions = useGlobalStore((s) => s.hostConfigActions.network.ipv6)
-
-  const { control } = useFormContext<HostNetworkConfig>()
-  const type = useWatch({ control, name: 'ipv6.type' })
-
-  return (
-    <CardWrapper className="grid-cols-1">
-      <div className="flex items-center justify-between gap-5">
-        <h3 className="text-muted-foreground text-base/none font-bold">IPv6</h3>
-        <FormField
-          control={control}
-          name="ipv6.type"
-          render={({ field: { value, onChange, ...rest } }) => (
-            <FancyFormItem>
-              <FormLabel className="sr-only">IPv6 类型</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  className="flex items-center gap-x-4 *:gap-1.5"
-                  value={value}
-                  onValueChange={(v: 'dhcp' | 'static' | 'off') => {
-                    actions.setType(v)
-                    onChange(v)
-                  }}
-                  {...rest}
-                >
-                  <RadioItem value="dhcp">自动</RadioItem>
-                  <RadioItem value="static">手动</RadioItem>
-                  <RadioItem value="off">关闭</RadioItem>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FancyFormItem>
-          )}
-        />
-      </div>
-      {type === 'static' && (
-        <div className="flex items-start gap-3">
-          <FormField
-            control={control}
-            name="ipv6.gateway"
-            render={({ field: { value = '', onChange, ...rest } }) => (
-              <FormItem className="flex-1">
-                <FormLabel>IPv6 网关</FormLabel>
-                <FormControl>
-                  <Input
-                    value={value}
-                    onChange={(e) => {
-                      actions.setGateway(e.target.value)
-                      onChange(e)
-                    }}
-                    {...rest}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="ipv6.prefix"
-            render={({ field: { value = '', onChange, ...rest } }) => (
-              <FormItem className="basis-[72px]">
-                <FormLabel>前缀长度</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    value={value}
-                    min={0}
-                    max={128}
-                    onChange={(e) => {
-                      actions.setPrefix(Number(e.target.value))
-                      onChange(Number(e.target.value))
-                    }}
-                    {...rest}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-      )}
-      {type === 'dhcp' && <EmptyMessage>已配置自动获取 IP 地址</EmptyMessage>}
-      {type === 'off' && <EmptyMessage>已停用 IPv6 网络</EmptyMessage>}
-    </CardWrapper>
+      {type === 'dhcp' && <EmptyMessage>主机将通过 DHCP 自动获取 IP 地址。</EmptyMessage>}
+    </div>
   )
 }
 
@@ -246,12 +138,17 @@ function DnsFormSection() {
     errors: { dns: error },
   } = useFormState({ control, name: 'dns' })
 
+  // @ts-expect-error use-field-array hook bug
+  const { append, remove } = useFieldArray({ control, name: 'dns' })
+
   const inputRefs = useRef<HTMLInputElement[]>([])
 
   return (
-    <CardWrapper className="col-span-full lg:grid-cols-3 xl:grid-cols-4">
-      <div className="col-span-full -mb-1.5 flex items-center gap-3">
-        <h3 className="text-muted-foreground text-base/none font-bold">DNS</h3>
+    <div className="grid gap-2">
+      <div className="col-span-full flex items-center gap-3">
+        <Label data-error={!!error} className="data-[error=true]:text-destructive">
+          DNS
+        </Label>
         {error && (
           <p data-slot="form-message" className="text-destructive text-xs">
             {error.message}
@@ -290,6 +187,7 @@ function DnsFormSection() {
                   size="icon"
                   onClick={() => {
                     actions.remove(index)
+                    remove(index)
                     inputRefs.current.splice(index, 1)
                   }}
                 >
@@ -302,19 +200,20 @@ function DnsFormSection() {
           )}
         />
       ))}
-      {dnsList.length < 3 && (
+      {dnsList.length < 4 && (
         <Button
           className="border-dashed"
           variant="outline"
           onClick={() => {
             actions.push()
+            append('')
             setTimeout(() => inputRefs.current[dnsList.length]?.focus())
           }}
         >
           <PlusIcon /> 添加
         </Button>
       )}
-    </CardWrapper>
+    </div>
   )
 }
 
@@ -322,21 +221,13 @@ function CardWrapper({ className, children, ...props }: ComponentProps<'div'>) {
   return (
     <div
       className={cn(
-        'bg-muted/50 border-border/50 grid grid-cols-2 content-start items-start gap-x-3 gap-y-4 rounded-lg border p-3.5',
+        'bg-muted/50 border-border/50 grid content-start items-start gap-x-3 gap-y-4 rounded-lg border p-3.5',
         className,
       )}
       {...props}
     >
       {children}
     </div>
-  )
-}
-
-function FancyFormItem({ className, children, ...props }: ComponentProps<typeof FormItem>) {
-  return (
-    <FormItem className={cn('bg-card border-border/50 -my-2 -mr-2 rounded-md border px-3 py-2', className)} {...props}>
-      {children}
-    </FormItem>
   )
 }
 

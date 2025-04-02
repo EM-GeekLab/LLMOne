@@ -26,7 +26,7 @@ export function AccountConfig() {
         <AppCardSectionTitle>操作系统账户</AppCardSectionTitle>
         <AppCardSectionDescription>配置每台主机的操作系统账户信息。</AppCardSectionDescription>
       </AppCardSectionHeader>
-      <div className="grid gap-3.5 xl:grid-cols-2">
+      <div className="grid gap-3.5">
         <AccountConfigForm />
       </div>
     </AppCardSection>
@@ -53,7 +53,7 @@ function AccountConfigForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(actions.setAll)}
-        className="bg-muted/50 border-border/50 grid max-w-2xl grid-cols-2 items-start gap-3 rounded-lg border p-4"
+        className="bg-muted/50 border-border/50 grid max-w-xl grid-cols-2 items-start gap-3 rounded-lg border p-4"
       >
         <FormField
           control={form.control}
