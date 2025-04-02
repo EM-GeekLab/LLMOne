@@ -35,6 +35,12 @@ export function useGlobalStore<T>(selector: (store: GlobalStore) => T): T {
   return useStore(store, selector)
 }
 
+// Access the global store's state **without** subscribing to updates.
+export function useGlobalStoreNoUpdate<T>(selector: (store: GlobalStore) => T): T {
+  const store = useGlobalStoreApi()
+  return selector(store.getState())
+}
+
 export function useDebouncedGlobalStore<T>(selector: (store: GlobalStore) => T, delay = 500): T {
   const api = useGlobalStoreApi()
   const slice = useSyncExternalStore(
