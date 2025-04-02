@@ -65,7 +65,7 @@
     "react-hook-form": "^7.55.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "^2.15.1",
-    "redfish-client": "^0.3.2",
+    "redfish-client": "^0.3.4",
     "server-only": "^0.0.1",
     "sonner": "^2.0.3",
     "superjson": "^2.2.2",
