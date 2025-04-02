@@ -89,9 +89,8 @@ function BmcForm({
   const useDefaultCredentials = useGlobalStore((s) => s.defaultCredentials.enabled)
 
   const form = useForm<SshConnectionInfoForm>({
-    resolver: zodResolver<SshConnectionInfoForm>(
-      useDefaultCredentials ? sshConnectionInfoSchema : sshFinalConnectionInfoSchema,
-    ),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(useDefaultCredentials ? sshConnectionInfoSchema : (sshFinalConnectionInfoSchema as any)),
     defaultValues: {
       credentialType: 'password',
       ...defaultValues,

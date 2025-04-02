@@ -2,7 +2,7 @@
 
 import { useImperativeHandle } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { Resolver, useForm } from 'react-hook-form'
 
 import {
   AppCardSection,
@@ -38,7 +38,7 @@ function AccountConfigForm() {
   const actions = useGlobalStore((s) => s.hostConfigActions.account)
 
   const form = useForm<HostAccountConfig>({
-    resolver: zodResolver<HostAccountConfig>(accountConfigSchema),
+    resolver: zodResolver(accountConfigSchema) as Resolver<HostAccountConfig>,
     defaultValues,
     mode: 'all',
   })

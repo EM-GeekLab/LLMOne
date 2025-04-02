@@ -2,7 +2,7 @@
 
 import { ComponentProps, ReactNode, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { Resolver, useForm } from 'react-hook-form'
 
 import { findById } from '@/lib/id'
 import { z } from '@/lib/zod'
@@ -86,9 +86,9 @@ function BmcForm({
   const useDefaultCredentials = useGlobalStore((s) => s.defaultCredentials.enabled)
 
   const form = useForm<BmcConnectionInfoForm>({
-    resolver: zodResolver<BmcConnectionInfoForm>(
+    resolver: zodResolver(
       useDefaultCredentials ? bmcConnectionInfoSchema : bmcFinalConnectionInfoSchema,
-    ),
+    ) as Resolver<BmcConnectionInfoForm>,
     defaultValues,
   })
 

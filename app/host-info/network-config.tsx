@@ -4,7 +4,7 @@ import * as React from 'react'
 import { ComponentProps, useImperativeHandle, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MinusCircleIcon, PlusIcon } from 'lucide-react'
-import { useForm, useFormContext, useFormState, useWatch } from 'react-hook-form'
+import { Resolver, useForm, useFormContext, useFormState, useWatch } from 'react-hook-form'
 
 import { cn } from '@/lib/utils'
 import {
@@ -41,7 +41,7 @@ function NetworkConfigForm() {
   const setValue = useGlobalStore((s) => s.hostConfigActions.network.setAll)
 
   const form = useForm<HostNetworkConfig>({
-    resolver: zodResolver<HostNetworkConfig>(networkConfigSchema),
+    resolver: zodResolver(networkConfigSchema) as Resolver<HostNetworkConfig>,
     defaultValues,
     mode: 'all',
   })
