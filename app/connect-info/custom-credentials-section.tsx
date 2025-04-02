@@ -68,7 +68,6 @@ export function useFieldsHasAnyValue<T extends FieldValues = FieldValues>({
         if (fields.some((f) => Boolean(values[f]))) {
           setHasAnyValue(true)
         } else {
-          console.log(name, 'false')
           setHasAnyValue(false)
         }
       }
