@@ -8,15 +8,15 @@ import { CheckboxItem } from '@/components/base/checkbox-item'
 import { PasswordInput } from '@/components/base/password-input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useGlobalStore } from '@/stores'
+import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 import { DefaultCredentials } from '@/stores/slices/connection-info-slice'
 
 import { FormPasswordKeyInput } from './password-key-input'
 import { defaultCredentialsSchema } from './schemas'
 
 export function DefaultCredentialsConfig({ ref }: { ref?: Ref<{ validate: () => Promise<boolean> }> }) {
+  const defaultCredentials = useGlobalStoreNoUpdate((s) => s.defaultCredentials)
   const connectMode = useGlobalStore((s) => s.connectMode)
-  const defaultCredentials = useGlobalStore((s) => s.defaultCredentials)
   const setPrivateKey = useGlobalStore((s) => s.setDefaultKey)
   const setUseDefaultCredentials = useGlobalStore((s) => s.setUseDefaultCredentials)
   const setUsername = useGlobalStore((s) => s.setDefaultUsername)
@@ -25,7 +25,7 @@ export function DefaultCredentialsConfig({ ref }: { ref?: Ref<{ validate: () => 
 
   const form = useForm<DefaultCredentials>({
     resolver: zodResolver(defaultCredentialsSchema) as Resolver<DefaultCredentials>,
-    values: defaultCredentials,
+    defaultValues: defaultCredentials,
     mode: 'all',
   })
 
@@ -40,10 +40,17 @@ export function DefaultCredentialsConfig({ ref }: { ref?: Ref<{ validate: () => 
           <FormField
             control={form.control}
             name="enabled"
-            render={({ field: { value, ...rest } }) => (
+            render={({ field: { value, onChange, ...rest } }) => (
               <FormItem passChild>
                 <FormControl>
-                  <CheckboxItem checked={value} {...rest} onCheckedChange={(v) => setUseDefaultCredentials(!!v)}>
+                  <CheckboxItem
+                    checked={value}
+                    {...rest}
+                    onCheckedChange={(v) => {
+                      setUseDefaultCredentials(!!v)
+                      onChange(!!v)
+                    }}
+                  >
                     对所有主机使用相同的默认凭据
                   </CheckboxItem>
                 </FormControl>

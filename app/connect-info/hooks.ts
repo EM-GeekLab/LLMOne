@@ -3,8 +3,7 @@ import { QueriesObserver, QueryObserverResult, queryOptions, useQueryClient } fr
 import { toast } from 'sonner'
 
 import { findById } from '@/lib/id'
-import { useGlobalStore } from '@/stores'
-import { useDebouncedGlobalStore } from '@/stores/global-store-provider'
+import { useDebouncedGlobalStore, useGlobalStore, useGlobalStoreApi } from '@/stores'
 import { useTRPCClient } from '@/trpc/client'
 
 import {
@@ -69,14 +68,12 @@ export function useAutoCheckConnection(id: string) {
 }
 
 export function useManualCheckAllConnections({ onValidate }: { onValidate?: () => Promise<boolean> }) {
-  const connectMode = useGlobalStore((s) => s.connectMode)
-  const sshHosts = useGlobalStore((s) => s.sshHosts)
-  const bmcHosts = useGlobalStore((s) => s.bmcHosts)
-  const defaultCredentials = useGlobalStore((s) => s.defaultCredentials)
-
+  const api = useGlobalStoreApi()
   const queryClient = useQueryClient()
 
   return useCallback(async () => {
+    const { connectMode, sshHosts, bmcHosts, defaultCredentials } = api.getState()
+
     if (onValidate) {
       const result = await onValidate()
       if (!result) {
@@ -120,14 +117,14 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
         break
       }
     }
-  }, [bmcHosts, connectMode, defaultCredentials, onValidate, queryClient, sshHosts])
+  }, [api, onValidate, queryClient])
 }
 
 export function useIsAllConnected() {
   const connectMode = useGlobalStore((s) => s.connectMode)
   const sshHosts = useGlobalStore((s) => s.sshHosts)
   const bmcHosts = useGlobalStore((s) => s.bmcHosts)
-  const defaultCredentials = useGlobalStore((s) => s.defaultCredentials)
+  const defaultCredentials = useDebouncedGlobalStore((s) => s.defaultCredentials)
 
   const queryClient = useQueryClient()
 

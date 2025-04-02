@@ -18,10 +18,10 @@ import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { RadioGroup } from '@/components/ui/radio-group'
-import { useHostInfoContext } from '@/app/host-info/context'
-import { useGlobalStore } from '@/stores'
+import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 import { HostNetworkConfig } from '@/stores/slices/host-info-slice'
 
+import { useHostInfoContext } from './context'
 import { networkConfigSchema } from './schemas'
 
 export function NetworkConfig() {
@@ -37,12 +37,12 @@ export function NetworkConfig() {
 }
 
 function NetworkConfigForm() {
-  const values = useGlobalStore((s) => s.hostConfig.network)
+  const defaultValues = useGlobalStoreNoUpdate((s) => s.hostConfig.network)
   const setValue = useGlobalStore((s) => s.hostConfigActions.network.setAll)
 
   const form = useForm<HostNetworkConfig>({
     resolver: zodResolver<HostNetworkConfig>(networkConfigSchema),
-    values,
+    defaultValues,
     mode: 'all',
   })
 
@@ -77,14 +77,17 @@ function Ipv4FormSection() {
         <FormField
           control={control}
           name="ipv4.type"
-          render={({ field: { value, ...rest } }) => (
+          render={({ field: { value, onChange, ...rest } }) => (
             <FancyFormItem>
               <FormLabel className="sr-only">IPv4 类型</FormLabel>
               <FormControl>
                 <RadioGroup
                   className="flex items-center gap-x-4 *:gap-1.5"
                   value={value}
-                  onValueChange={actions.setType}
+                  onValueChange={(v: 'dhcp' | 'static') => {
+                    actions.setType(v)
+                    onChange(v)
+                  }}
                   {...rest}
                 >
                   <RadioItem value="dhcp">自动</RadioItem>
@@ -158,14 +161,17 @@ function Ipv6FormSection() {
         <FormField
           control={control}
           name="ipv6.type"
-          render={({ field: { value, ...rest } }) => (
+          render={({ field: { value, onChange, ...rest } }) => (
             <FancyFormItem>
               <FormLabel className="sr-only">IPv6 类型</FormLabel>
               <FormControl>
                 <RadioGroup
                   className="flex items-center gap-x-4 *:gap-1.5"
                   value={value}
-                  onValueChange={actions.setType}
+                  onValueChange={(v: 'dhcp' | 'static' | 'off') => {
+                    actions.setType(v)
+                    onChange(v)
+                  }}
                   {...rest}
                 >
                   <RadioItem value="dhcp">自动</RadioItem>

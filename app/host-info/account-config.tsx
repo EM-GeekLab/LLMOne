@@ -14,7 +14,7 @@ import { PasswordInput } from '@/components/base/password-input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useHostInfoContext } from '@/app/host-info/context'
-import { useGlobalStore } from '@/stores'
+import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 import { HostAccountConfig } from '@/stores/slices/host-info-slice'
 
 import { accountConfigSchema } from './schemas'
@@ -34,12 +34,12 @@ export function AccountConfig() {
 }
 
 function AccountConfigForm() {
-  const values = useGlobalStore((s) => s.hostConfig.account)
+  const defaultValues = useGlobalStoreNoUpdate((s) => s.hostConfig.account)
   const actions = useGlobalStore((s) => s.hostConfigActions.account)
 
   const form = useForm<HostAccountConfig>({
     resolver: zodResolver<HostAccountConfig>(accountConfigSchema),
-    values,
+    defaultValues,
     mode: 'all',
   })
 
