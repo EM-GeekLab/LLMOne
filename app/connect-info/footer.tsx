@@ -4,10 +4,12 @@ import { AppCardFooter } from '@/components/app/app-card'
 import { NavButton } from '@/components/base/nav-button'
 import { NavButtonGuard } from '@/components/base/nav-button-guard'
 import { ConnectModeIf } from '@/app/_shared/condition'
+import { useGlobalStore } from '@/stores'
 
 import { useIsAllConnected } from './hooks'
 
-const message = '需要成功连接所有服务器'
+const noHostMessage = '至少添加一台主机'
+const connectionMessage = '需要成功连接所有服务器'
 
 export function Footer() {
   return (
@@ -15,25 +17,32 @@ export function Footer() {
       <NavButton variant="outline" to="/">
         上一步
       </NavButton>
-      <NextStepButton />
+      <ConnectModeIf mode="bmc">
+        <BmcNextStepButton />
+      </ConnectModeIf>
+      <ConnectModeIf mode="ssh">
+        <SshNextStepButton />
+      </ConnectModeIf>
     </AppCardFooter>
   )
 }
 
-function NextStepButton() {
+function BmcNextStepButton() {
   const { isAllConnected } = useIsAllConnected()
+  const hasHost = useGlobalStore((s) => !!s.bmcHosts.length)
   return (
-    <>
-      <ConnectModeIf mode="bmc">
-        <NavButtonGuard pass={isAllConnected} message={message}>
-          <NavButton to="/select-os">下一步</NavButton>
-        </NavButtonGuard>
-      </ConnectModeIf>
-      <ConnectModeIf mode="ssh">
-        <NavButtonGuard pass={isAllConnected} message={message}>
-          <NavButton to="/install-env">下一步</NavButton>
-        </NavButtonGuard>
-      </ConnectModeIf>
-    </>
+    <NavButtonGuard pass={isAllConnected && hasHost} message={!hasHost ? noHostMessage : connectionMessage}>
+      <NavButton to="/select-os">下一步</NavButton>
+    </NavButtonGuard>
+  )
+}
+
+function SshNextStepButton() {
+  const { isAllConnected } = useIsAllConnected()
+  const hasHost = useGlobalStore((s) => !!s.sshHosts.length)
+  return (
+    <NavButtonGuard pass={isAllConnected && hasHost} message={!hasHost ? noHostMessage : connectionMessage}>
+      <NavButton to="/install-env">下一步</NavButton>
+    </NavButtonGuard>
   )
 }
