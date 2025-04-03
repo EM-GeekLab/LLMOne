@@ -49,7 +49,7 @@ export function useAutoCheckConnection(id: string) {
               console.warn(result.error)
               throw new Error('连接配置不完整')
             }
-            return await trpc.connection.checkBMC.mutate(result.data, { signal })
+            return await trpc.connection.bmc.check.mutate(result.data, { signal })
           }
           case 'ssh': {
             const result = validateSshHostConnectionInfo(host, parsedDefault)
@@ -57,7 +57,7 @@ export function useAutoCheckConnection(id: string) {
               console.warn(result.error)
               throw new Error('连接配置不完整')
             }
-            return await trpc.connection.checkSSH.mutate(result.data, { signal })
+            return await trpc.connection.ssh.check.mutate(result.data, { signal })
           }
         }
       })()

@@ -7,50 +7,54 @@ import { baseProcedure, createRouter } from '@/trpc/init'
 import { inputType } from './utils'
 
 export const connectionRouter = createRouter({
-  checkBMC: baseProcedure
-    .input(inputType<BmcFinalConnectionInfo>)
-    .mutation(async ({ input: { ip, username, password } }): Promise<[boolean, Error | null]> => {
-      try {
-        const client = await autoDetect(ip, username, password)
-        const ok = await client.isAvailable()
-        await client.closeSession()
-        return [ok, null]
-      } catch (err) {
-        console.log({ ip, username, err })
-        return [false, err instanceof Error ? err : new Error('连接时发生未知错误')]
-      }
-    }),
-  checkSSH: baseProcedure
-    .input(inputType<SshFinalConnectionInfo>)
-    .mutation(async ({ input: { ip, port, username, ...credential } }): Promise<[boolean, Error | null]> => {
-      try {
-        const ssh = new NodeSSH()
-
-        const sharedConfig: Config = {
-          host: ip,
-          port,
-          username,
+  bmc: {
+    check: baseProcedure
+      .input(inputType<BmcFinalConnectionInfo>)
+      .mutation(async ({ input: { ip, username, password } }): Promise<[boolean, Error | null]> => {
+        try {
+          const client = await autoDetect(ip, username, password)
+          const ok = await client.isAvailable()
+          await client.closeSession()
+          return [ok, null]
+        } catch (err) {
+          console.log({ ip, username, err })
+          return [false, err instanceof Error ? err : new Error('连接时发生未知错误')]
         }
+      }),
+  },
+  ssh: {
+    check: baseProcedure
+      .input(inputType<SshFinalConnectionInfo>)
+      .mutation(async ({ input: { ip, port, username, ...credential } }): Promise<[boolean, Error | null]> => {
+        try {
+          const ssh = new NodeSSH()
 
-        switch (credential.credentialType) {
-          case 'no-password': {
-            const session = await ssh.connect({ ...sharedConfig })
-            return [session.isConnected(), null]
+          const sharedConfig: Config = {
+            host: ip,
+            port,
+            username,
           }
-          case 'password': {
-            const { password } = credential
-            const session = await ssh.connect({ ...sharedConfig, password })
-            return [session.isConnected(), null]
+
+          switch (credential.credentialType) {
+            case 'no-password': {
+              const session = await ssh.connect({ ...sharedConfig })
+              return [session.isConnected(), null]
+            }
+            case 'password': {
+              const { password } = credential
+              const session = await ssh.connect({ ...sharedConfig, password })
+              return [session.isConnected(), null]
+            }
+            case 'key': {
+              const { privateKey } = credential
+              const session = await ssh.connect({ ...sharedConfig, privateKey })
+              return [session.isConnected(), null]
+            }
           }
-          case 'key': {
-            const { privateKey } = credential
-            const session = await ssh.connect({ ...sharedConfig, privateKey })
-            return [session.isConnected(), null]
-          }
+        } catch (err) {
+          console.log({ ip, username, err })
+          return [false, err instanceof Error ? err : new Error('连接时发生未知错误')]
         }
-      } catch (err) {
-        console.log({ ip, username, err })
-        return [false, err instanceof Error ? err : new Error('连接时发生未知错误')]
-      }
-    }),
+      }),
+  },
 })
