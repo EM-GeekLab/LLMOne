@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 
+import { SyncIndicator } from '@/components/app/sync-indicator'
 import { Separator } from '@/components/ui/separator'
 
 export function AppHeader({ children }: { children?: ReactNode }) {
@@ -8,6 +9,7 @@ export function AppHeader({ children }: { children?: ReactNode }) {
       <div className="text-base font-medium">ModelMachine</div>
       <Separator className="!h-4" orientation="vertical" />
       <h1 className="text-base font-normal">{children}</h1>
+      <SyncIndicator className="ml-auto" />
     </header>
   )
 }

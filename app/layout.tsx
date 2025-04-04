@@ -12,6 +12,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { GlobalEnv } from '@/app/global-env'
 import { GlobalStoreProvider } from '@/stores'
+import { LocalStoreProvider } from '@/stores/local-store-provider'
 import { loadGlobalData } from '@/stores/server-store'
 import { TrpcReactProvider } from '@/trpc/client'
 
@@ -56,9 +57,11 @@ export default function RootLayout({
           <GlobalEnv>
             <TrpcReactProvider>
               <NuqsAdapter>
-                <GlobalStoreProvider initState={globalData}>
-                  <TooltipProvider>{children}</TooltipProvider>
-                </GlobalStoreProvider>
+                <LocalStoreProvider>
+                  <GlobalStoreProvider initState={globalData}>
+                    <TooltipProvider>{children}</TooltipProvider>
+                  </GlobalStoreProvider>
+                </LocalStoreProvider>
               </NuqsAdapter>
             </TrpcReactProvider>
           </GlobalEnv>

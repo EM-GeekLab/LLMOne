@@ -1,8 +1,10 @@
 'use client'
 
 import { createContext, ReactNode, useContext, useDebugValue, useRef, useSyncExternalStore } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { useStore } from 'zustand/react'
 
+import { useLocalStore, useLocalStoreApi } from '@/stores/local-store-provider'
 import { useTRPCClient } from '@/trpc/client'
 
 import { createGlobalStore, GlobalState, GlobalStore } from './global-store'
@@ -14,9 +16,22 @@ export const GlobalStoreContext = createContext<GlobalStoreApi | null>(null)
 export function GlobalStoreProvider({ children, initState }: { children: ReactNode; initState?: GlobalState }) {
   const trpc = useTRPCClient()
 
+  const localStoreApi = useLocalStoreApi()
+  const setError = useLocalStore((s) => s.setSyncError)
+  const clearError = useLocalStore((s) => s.clearSyncError)
+  const updateSyncTime = useLocalStore((s) => s.updateLastSyncTime)
+  const { mutate } = useMutation({
+    mutationFn: trpc.stateStore.save.mutate,
+    onError: (error) => setError(error),
+    onSuccess: () => {
+      updateSyncTime()
+      if (localStoreApi.getState().syncError) clearError()
+    },
+  })
+
   const storeRef = useRef<GlobalStoreApi | null>(null)
   if (storeRef.current === null) {
-    storeRef.current = createGlobalStore(initState, debounceFunction(trpc.stateStore.save.mutate))
+    storeRef.current = createGlobalStore(initState, debounceFunction(mutate))
   }
 
   return <GlobalStoreContext.Provider value={storeRef.current}>{children}</GlobalStoreContext.Provider>
