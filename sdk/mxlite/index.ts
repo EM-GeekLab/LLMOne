@@ -47,43 +47,59 @@ export type AddTaskResult =
       reason: OperationError
     }
 
+export type HostExtraInfo = {
+  socket_info: Option<{
+    local_addr: Option<string>
+    remote_addr: Option<string>
+  }>
+  controller_url: Option<string>
+  system_info: Option<{
+    total_memory: number
+    name: Option<string>
+    kernel_version: Option<string>
+    cpu: {
+      names: string[]
+      vendor_id: string
+      brand: number
+    }[]
+    disks: {
+      kind: 'HDD' | 'SSD' | 'Unknown'
+      device_name: string
+      file_system: string
+      mount_point: string
+      total_space: number
+      is_removeable: boolean
+      is_read_only: boolean
+    }[]
+    nics: {
+      mac_address: string
+      mtu: number
+      ip: {
+        addr: string
+        version: 4 | 6
+        prefix: number
+      }[]
+    }[]
+  }>
+}
+
+export type HostListResponse = {
+  ok: true
+  sessions: string[]
+}
+
 export type HostInfoResponse = {
   host: string
   ok: boolean
-  info: Option<{
-    socket_info: Option<{
-      local_addr: Option<string>
-      remote_addr: Option<string>
-    }>
-    system_info: Option<{
-      total_memory: number
-      name: Option<string>
-      kernel_version: Option<string>
-      cpu: {
-        names: string[]
-        vendor_id: string
-        brand: number
-      }[]
-      disks: {
-        kind: 'HDD' | 'SSD' | 'Unknown'
-        device_name: string
-        file_system: string
-        mount_point: string
-        total_space: number
-        is_removeable: boolean
-        is_read_only: boolean
-      }[]
-      nics: {
-        mac_address: string
-        mtu: number
-        ip: {
-          addr: string
-          version: 4 | 6
-          prefix: number
-        }[]
-      }[]
-    }>
-  }>
+  info: Option<HostExtraInfo>
+}
+
+export type HostListInfoResponse = {
+  ok: true
+  hosts: {
+    host: string
+    info: Option<HostExtraInfo>
+  }
 }
 
 export type ApiResult<T> = Promise<[T, number]>
@@ -109,14 +125,16 @@ export class Mxc {
     return [(await response.json()) as R, response.status]
   }
 
-  public async getHostList(): ApiResult<{
-    sessions: string[]
-  }> {
+  public async getHostList(): ApiResult<HostListResponse> {
     return await this.request(`${this.endpoint}/list`, 'GET')
   }
 
   public async getHostInfo(hostId: string): ApiResult<HostInfoResponse> {
     return await this.request(`${this.endpoint}/info?host=${hostId}`, 'GET')
+  }
+
+  public async getHostListInfo(hostId: string): ApiResult<HostListInfoResponse> {
+    return await this.request(`${this.endpoint}/list-info?host=${hostId}`, 'GET')
   }
 
   public async getResult(hostId: string, taskId: number): ApiResult<TaskResult> {
@@ -169,5 +187,22 @@ export class Mxc {
       path: targetPath,
       op: 'download',
     })
+  }
+
+  public async addFileMap(file: string, publishName: string): ApiResult<string> {
+    return await this.request(`${this.endpoint}/file-map`, 'POST', {
+      file: file,
+      publish_name: publishName,
+    })
+  }
+
+  public async removeFileMap(file: string): ApiResult<string> {
+    return await this.request(`${this.endpoint}/file-map`, 'DELETE', {
+      file: file,
+    })
+  }
+
+  public async getFileMap(): ApiResult<string[]> {
+    return await this.request(`${this.endpoint}/file-map`, 'GET')
   }
 }
