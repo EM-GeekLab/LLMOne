@@ -1,9 +1,6 @@
 import type { ReactNode } from 'react'
 
-import DebianLogo from '@/icons/debian.svg'
-import FedoraLogo from '@/icons/fedora.svg'
-import OpenEulerLogo from '@/icons/openEuler.svg'
-import UbuntuLogo from '@/icons/ubuntu.svg'
+import { DistroLogo } from '@/components/base/distro-logo'
 import type { OsDistribution } from '@/stores'
 
 export type OsDistributionInfo = {
@@ -18,28 +15,28 @@ export const distributions: OsDistributionInfo[] = [
   {
     id: 'openEuler',
     name: 'openEuler',
-    logo: <OpenEulerLogo className="w-33" />,
+    logo: <DistroLogo distro="openEuler" />,
     description: '开放、安全、高性能的 Linux 服务器操作系统，专为 AI 和云计算场景优化。',
     url: 'https://www.openeuler.org/',
   },
   {
     id: 'ubuntu',
     name: 'Ubuntu',
-    logo: <UbuntuLogo className="w-28 -translate-y-px" />,
+    logo: <DistroLogo distro="ubuntu" />,
     description: '流行的 Linux 发行版，提供长期支持版本和广泛的软件兼容性。',
     url: 'https://ubuntu.com/',
   },
   {
     id: 'fedora',
     name: 'Fedora',
-    logo: <FedoraLogo className="w-28" />,
+    logo: <DistroLogo distro="fedora" />,
     description: '社区驱动的 Linux 发行版，注重最新技术和创新。',
     url: 'https://fedoraproject.org/',
   },
   {
     id: 'debian',
     name: 'Debian',
-    logo: <DebianLogo className="w-25" />,
+    logo: <DistroLogo distro="debian" />,
     description: '稳定、安全的 Linux 发行版，广泛用于服务器和桌面环境。',
     url: 'https://www.debian.org/',
   },
