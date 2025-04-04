@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
+import { OsArchitecture, OsDistribution } from '@/lib/os'
 import { DistroLogo } from '@/components/base/distro-logo'
-import type { OsDistribution } from '@/stores'
 
 export type OsDistributionInfo = {
   id: OsDistribution
@@ -11,43 +11,43 @@ export type OsDistributionInfo = {
   url?: string
 }
 
-export const distributions: OsDistributionInfo[] = [
-  {
+export const distroInfo: Record<OsDistribution, OsDistributionInfo> = {
+  openEuler: {
     id: 'openEuler',
     name: 'openEuler',
     logo: <DistroLogo distro="openEuler" />,
     description: '开放、安全、高性能的 Linux 服务器操作系统，专为 AI 和云计算场景优化。',
     url: 'https://www.openeuler.org/',
   },
-  {
+  ubuntu: {
     id: 'ubuntu',
     name: 'Ubuntu',
     logo: <DistroLogo distro="ubuntu" />,
     description: '流行的 Linux 发行版，提供长期支持版本和广泛的软件兼容性。',
     url: 'https://ubuntu.com/',
   },
-  {
+  fedora: {
     id: 'fedora',
     name: 'Fedora',
     logo: <DistroLogo distro="fedora" />,
     description: '社区驱动的 Linux 发行版，注重最新技术和创新。',
     url: 'https://fedoraproject.org/',
   },
-  {
+  debian: {
     id: 'debian',
     name: 'Debian',
     logo: <DistroLogo distro="debian" />,
     description: '稳定、安全的 Linux 发行版，广泛用于服务器和桌面环境。',
     url: 'https://www.debian.org/',
   },
-]
+}
 
 export type OsVersionInfo = {
   name: string
   value: string
   description?: string
   tags?: string[]
-  architectures?: string[]
+  architectures?: OsArchitecture[]
   releaseDate?: Date
   endOfLife?: Date
   recommended?: boolean
@@ -106,13 +106,13 @@ export const versions: Record<OsDistribution, OsVersionInfo[]> = {
     {
       name: 'Debian 12.10 Bookworm',
       value: 'Debian 12.10',
-      architectures: ['amd64', 'aarch64', 'armel', 'armhf', 'i386', 'mips64el', 'mipsel', 'ppc64el', 's390x'],
+      architectures: ['x86_64', 'aarch64', 'armel', 'armhf', 'i386', 'mips64el', 'mipsel', 'ppc64le', 's390x'],
       recommended: true,
     },
     {
       name: 'Debian 11.11 Bullseye',
       value: 'Debian 11.11',
-      architectures: ['amd64', 'aarch64', 'armel', 'armhf', 'i386', 'mips64el', 'mips', 'mipsel', 'ppc64el', 's390x'],
+      architectures: ['x86_64', 'aarch64', 'armel', 'armhf', 'i386', 'mips64el', 'mips', 'mipsel', 'ppc64le', 's390x'],
     },
   ],
 }
