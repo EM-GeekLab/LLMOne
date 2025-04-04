@@ -14,7 +14,7 @@ async function readManifest(path: string) {
     return resourceManifestSchema.parse(JSON.parse(fileContent))
   } catch (err) {
     throw new TRPCError({
-      message: '配置清单文件格式错误',
+      message: `${path} 格式错误`,
       code: 'BAD_REQUEST',
       cause: err,
     })
@@ -27,7 +27,7 @@ async function readOsInfo(path: string) {
     return resourceOsInfoSchema.parse(JSON.parse(fileContent))
   } catch (err) {
     throw new TRPCError({
-      message: '操作系统信息文件格式错误',
+      message: `${path} 格式错误`,
       code: 'BAD_REQUEST',
       cause: err,
     })
