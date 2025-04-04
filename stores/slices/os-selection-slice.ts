@@ -1,6 +1,6 @@
-import { ImmerStateCreator } from '../utils'
+import { OsDistribution } from '@/lib/os'
 
-export type OsDistribution = 'debian' | 'fedora' | 'openEuler' | 'ubuntu' | string
+import { ImmerStateCreator } from '../utils'
 
 export type OsSelectionInfo = {
   distribution?: OsDistribution
@@ -13,6 +13,8 @@ export type OsSelectionState = {
     bootstrapImagePath?: string
     systemImagePath?: string
   }
+  osManifestPath?: string
+  osInfoPath?: string
 }
 
 export type OsSelectionActions = {
@@ -21,6 +23,8 @@ export type OsSelectionActions = {
     setBootstrapImagePath: (path?: string) => void
     setSystemImagePath: (path?: string) => void
   }
+  setOsManifestPath: (path?: string) => void
+  setOsInfoPath: (path?: string) => void
 }
 
 export type OsSelectionSlice = OsSelectionState & OsSelectionActions
@@ -42,4 +46,12 @@ export const createOsSelectionSlice: ImmerStateCreator<OsSelectionActions> = (se
         state.osPackagePaths.systemImagePath = path
       }),
   },
+  setOsManifestPath: (path) =>
+    set((state) => {
+      state.osManifestPath = path
+    }),
+  setOsInfoPath: (path) =>
+    set((state) => {
+      state.osInfoPath = path
+    }),
 })
