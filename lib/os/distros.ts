@@ -2,7 +2,7 @@ export const distributions = ['openEuler', 'ubuntu', 'fedora', 'debian'] as cons
 export type OsDistribution = (typeof distributions)[number]
 
 export const architectures = [
-  'aarch64',
+  'ARM64',
   'ARM32',
   'LoongArch64',
   'RISC-V',
