@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 
+import { OsDistribution } from '@/lib/os'
 import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { OsDistroSelector } from '@/app/select-os/os-distro-selector'
-import { OsDistribution, useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
+import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 
+import { OsDistroSelector } from './os-distro-selector'
 import { versions } from './os-list'
 
 export function OnlineOsSelector() {

@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { useControllableState } from '@radix-ui/react-use-controllable-state'
 
-import { distributions } from '@/lib/os'
+import { distributions, OsDistribution } from '@/lib/os'
 import { CardSelectGroup, CardSelectIndicator, CardSelectItem } from '@/components/base/card-select'
-import { distroInfo, OsDistributionInfo } from '@/app/select-os/os-list'
-import { OsDistribution } from '@/stores'
+
+import { distroInfo, OsDistributionInfo } from './os-list'
 
 export function OsDistroSelector({
   value,
   defaultValue,
   onValueChange,
-  distroIds = distributions,
+  distroIds = [...distributions],
 }: {
   distroIds?: OsDistribution[]
   value?: OsDistribution
@@ -22,7 +22,7 @@ export function OsDistroSelector({
     defaultProp: defaultValue,
     onChange: onValueChange,
   })
-  const [hoveringId, setHoveringId] = useState<string>()
+  const [hoveringId, setHoveringId] = useState<OsDistribution>()
   const hoveringInfo = hoveringId ? distroInfo[hoveringId] : undefined
   const selectingInfo = distro ? distroInfo[distro] : undefined
 
@@ -30,7 +30,7 @@ export function OsDistroSelector({
     <>
       <CardSelectGroup
         value={distro}
-        onValueChange={setDistro}
+        onValueChange={(v: OsDistribution) => setDistro(v)}
         className="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-3"
       >
         {distroIds.map((id) => {

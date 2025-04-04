@@ -1,11 +1,11 @@
 import { Slot } from '@radix-ui/react-slot'
 import { match } from 'ts-pattern'
 
+import { OsDistribution } from '@/lib/os'
 import DebianLogo from '@/icons/debian.svg'
 import FedoraLogo from '@/icons/fedora.svg'
 import OpenEulerLogo from '@/icons/openEuler.svg'
 import UbuntuLogo from '@/icons/ubuntu.svg'
-import { OsDistribution } from '@/stores'
 
 export function DistroLogo({ distro, className }: { distro: OsDistribution; className?: string }) {
   return (

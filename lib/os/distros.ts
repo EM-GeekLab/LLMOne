@@ -1,4 +1,4 @@
-export const distributions = ['openEuler', 'ubuntu', 'fedora', 'debian']
+export const distributions = ['openEuler', 'ubuntu', 'fedora', 'debian'] as const
 export type OsDistribution = (typeof distributions)[number]
 
 export const architectures = [
@@ -16,5 +16,5 @@ export const architectures = [
   'mips64el',
   'mips',
   'mipsel',
-]
+] as const
 export type OsArchitecture = (typeof architectures)[number]

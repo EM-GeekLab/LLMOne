@@ -14,7 +14,7 @@ import { debounceFunction, debounceSubscribe } from './utils'
 type GlobalStoreApi = ReturnType<typeof createGlobalStore>
 export const GlobalStoreContext = createContext<GlobalStoreApi | null>(null)
 
-export function GlobalStoreProvider({ children, initState }: { children: ReactNode; initState: GlobalState }) {
+export function GlobalStoreProvider({ children, initState }: { children: ReactNode; initState?: GlobalState }) {
   const trpc = useTRPCClient()
 
   const localStoreApi = useLocalStoreApi()
@@ -32,7 +32,10 @@ export function GlobalStoreProvider({ children, initState }: { children: ReactNo
 
   const storeRef = useRef<GlobalStoreApi | null>(null)
   if (storeRef.current === null) {
-    storeRef.current = createGlobalStore(assign(defaultGlobalState, initState), debounceFunction(mutate))
+    storeRef.current = createGlobalStore(
+      initState ? assign(defaultGlobalState, initState) : defaultGlobalState,
+      debounceFunction(mutate),
+    )
   }
 
   return <GlobalStoreContext.Provider value={storeRef.current}>{children}</GlobalStoreContext.Provider>
