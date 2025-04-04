@@ -13,10 +13,10 @@ import {
 import { PasswordInput } from '@/components/base/password-input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useHostInfoContext } from '@/app/host-info/context'
 import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 import { HostAccountConfig } from '@/stores/slices/host-info-slice'
 
+import { useHostInfoContext } from './context'
 import { accountConfigSchema } from './schemas'
 
 export function AccountConfig() {

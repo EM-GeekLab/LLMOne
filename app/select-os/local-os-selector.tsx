@@ -9,12 +9,12 @@ import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { OsDistroSelector } from '@/app/select-os/os-distro-selector'
 import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 import { useTRPC } from '@/trpc/client'
 import { AppRouter } from '@/trpc/router'
 
 import { ManifestSelect } from './manifest-select'
+import { OsDistroSelector } from './os-distro-selector'
 
 export function LocalOsSelector() {
   return (
