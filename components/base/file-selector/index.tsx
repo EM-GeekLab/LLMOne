@@ -58,7 +58,7 @@ interface FileSelectorProps {
 const FileSelectorContext = createSafeContext<{
   // File path selected by the user
   filePath: string | undefined
-  setFilePath: (path: string) => void
+  setFilePath: (path?: string) => void
   filter?: (item: FileItem) => boolean
   filterDirectory: boolean
   showSize: boolean
@@ -461,6 +461,28 @@ export function FileSelectorTrigger({ children, ...props }: ComponentProps<typeo
         {children}
       </Button>
     </DialogTrigger>
+  )
+}
+
+export function FileSelectorClear({ className, onClick, ...props }: ComponentProps<typeof Button>) {
+  const { filePath, setFilePath } = FileSelectorContext.useContext()
+
+  if (!filePath) return null
+
+  return (
+    <Button
+      variant="outline"
+      size="icon"
+      className={cn('size-7', className)}
+      onClick={(e) => {
+        setFilePath()
+        onClick?.(e)
+      }}
+      {...props}
+    >
+      <XIcon className="size-4" />
+      <span className="sr-only">清除选择</span>
+    </Button>
   )
 }
 
