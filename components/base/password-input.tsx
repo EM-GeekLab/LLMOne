@@ -30,6 +30,7 @@ export function PasswordInput({ className, ...props }: ComponentProps<typeof Inp
         onClick={() => setVisible((v) => !v)}
       >
         {visible ? <EyeIcon /> : <EyeOffIcon />}
+        <span className="sr-only">{visible ? '隐藏密码' : '显示密码'}</span>
       </Button>
     </InputWrapper>
   )
