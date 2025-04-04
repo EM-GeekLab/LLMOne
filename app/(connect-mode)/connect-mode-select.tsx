@@ -1,7 +1,6 @@
 'use client'
 
 import { ComponentProps } from 'react'
-import { useNetwork } from '@mantine/hooks'
 import { ServerIcon, SquareTerminalIcon, TriangleAlertIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -11,13 +10,12 @@ import { Badge } from '@/components/ui/badge'
 import { ConnectMode, useGlobalStore } from '@/stores'
 
 export function ConnectModeSelect({ ...props }: ComponentProps<typeof CardSelectGroup>) {
-  const { online } = useNetwork()
   const mode = useGlobalStore((s) => s.connectMode)
   const setMode = useGlobalStore((s) => s.setConnectMode)
 
   return (
     <CardSelectGroup value={mode} onValueChange={(v: ConnectMode) => setMode(v)} {...props}>
-      <CardSelectItem value="bmc" disabled={!online}>
+      <CardSelectItem value="bmc">
         <CardSelectIndicator />
         <ModeSelectHeader>
           <ModelSelectorIcon>
