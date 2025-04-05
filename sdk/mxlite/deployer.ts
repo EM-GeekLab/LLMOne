@@ -1,4 +1,5 @@
 import type { Mxc, OperationError } from '.'
+import { configToYaml, type NetplanConfiguration } from './netplan'
 
 export type DeployStage =
   | 'Pending'
@@ -107,6 +108,51 @@ export class Deployer {
     }
   }
 
+  private async downloadFile(
+    url: string,
+    path: string,
+    xxh3?: string,
+  ): Promise<{
+    error: DeployerError
+    reason?: OperationError
+  }> {
+    const [r] = await this.mxc.downloadFile(this.hostId, url, path)
+    if (!r.ok) {
+      return {
+        error: 'FailedToExec',
+        reason: r.reason,
+      }
+    }
+    const taskId = r.taskId
+    const r2 = await this.mxc.blockUntilTaskComplete(this.hostId, taskId, 100)
+    if (!r2.ok) {
+      return {
+        error: 'FailedToExec',
+        reason: r2.reason,
+      }
+    }
+    if (r2.payload.payload.type !== 'FileOperationResponse') {
+      return {
+        error: 'ReturnTypeMismatch',
+      }
+    }
+    if (!r2.payload.payload.success) {
+      return {
+        error: 'ExecError',
+      }
+    }
+    if (r2.payload.payload.hash !== null && !!xxh3) {
+      if (r2.payload.payload.hash !== xxh3) {
+        return {
+          error: 'ExecError',
+        }
+      }
+    }
+    return {
+      error: 'Ok',
+    }
+  }
+
   public async preinstall(): Promise<{
     error: DeployerError
     reason?: OperationError
@@ -133,38 +179,11 @@ ${PREINSTALL_SCRIPT}`
       throw new Error(`StageError: ${this.stage}`)
     }
     this.stage = 'Downloading'
-    const [r] = await this.mxc.downloadFile(this.hostId, this.rootfsUrl, '/installer_tmp/image.tar.zst')
-    if (!r.ok) {
-      return {
-        error: 'FailedToExec',
-        reason: r.reason,
-      }
+    const r = await this.downloadFile(this.rootfsUrl, '/installer_tmp/image.tar.zst')
+    if (r.error === 'Ok') {
+      this.stage = 'Downloaded'
     }
-    const taskId = r.taskId
-    const r2 = await this.mxc.blockUntilTaskComplete(this.hostId, taskId, 100)
-    if (!r2.ok) {
-      return {
-        error: 'FailedToExec',
-        reason: r2.reason,
-      }
-    }
-    if (r2.payload.payload.type !== 'FileOperationResponse') {
-      return {
-        error: 'ReturnTypeMismatch',
-      }
-    }
-    if (!r2.payload.payload.success) {
-      return {
-        error: 'ExecError',
-      }
-    }
-    if (r2.payload.payload.hash !== null) {
-      // TODO: perform xxh3 hash check here
-    }
-    this.stage = 'Downloaded'
-    return {
-      error: 'Ok',
-    }
+    return r
   }
 
   public async install(): Promise<{
@@ -202,17 +221,34 @@ ${POSTINSTALL_SCRIPT}
     return r
   }
 
-  public async applyNetplan() {
+  public async applyNetplan(config: NetplanConfiguration, confName = '00-default.yaml') {
     if (this.stage !== 'Postinstalled') {
       throw new Error(`StageError: ${this.stage}`)
     }
-    // TODO: apply netplan
+    const script = `mkdir -p /mnt/etc/netplan && cat <<EOFEOFEOF > /mnt/etc/netplan/${confName}
+${configToYaml(config)}
+EOFEOFEOF`
+    return await this.execScript(script)
   }
 
-  public async applyUserconfig() {
+  private async execScriptChroot(inner: string) {
     if (this.stage !== 'Postinstalled') {
       throw new Error(`StageError: ${this.stage}`)
     }
-    // TODO: apply userconfig
+    const script = `chroot /mnt bash << EOFEOFEOF
+${inner}
+EOFEOFEOF`
+    return await this.execScript(script)
+  }
+
+  public async applyUserconfig(username: string, password: string) {
+    let script = `echo "root:${password}" | chpasswd`
+    if (username !== 'root') {
+      script += `
+useradd -m -G sudo -s /bin/bash ${username}
+echo "${username}:${password}" | chpasswd
+}`
+    }
+    return this.execScriptChroot(script)
   }
 }
