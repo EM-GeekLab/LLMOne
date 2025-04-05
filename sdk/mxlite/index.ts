@@ -96,19 +96,19 @@ export type HostInfoResponse = {
 
 export type HostListInfoResponse = {
   ok: true
-  hosts: {
+  hosts: Array<{
     host: string
     info: Option<HostExtraInfo>
-  }
+  }>
 }
 
 export type ApiResult<T> = Promise<[T, number]>
 
 export class Mxc {
   private readonly endpoint: string
-  private readonly token: string
+  private readonly token?: string
 
-  constructor(endpoint: string, token: string) {
+  constructor(endpoint: string, token?: string) {
     this.endpoint = endpoint
     this.token = token
   }
@@ -118,7 +118,7 @@ export class Mxc {
       method: method,
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.token}`,
+        Authorization: this.token ? `Bearer ${this.token}` : '',
       },
       body: body && JSON.stringify(body),
     })
@@ -133,8 +133,8 @@ export class Mxc {
     return await this.request(`${this.endpoint}/info?host=${hostId}`, 'GET')
   }
 
-  public async getHostListInfo(hostId: string): ApiResult<HostListInfoResponse> {
-    return await this.request(`${this.endpoint}/list-info?host=${hostId}`, 'GET')
+  public async getHostListInfo(): ApiResult<HostListInfoResponse> {
+    return await this.request(`${this.endpoint}/list-info`, 'GET')
   }
 
   public async getResult(hostId: string, taskId: number): ApiResult<TaskResult> {
