@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { cn } from '@/lib/utils'
@@ -25,7 +25,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { ConnectModeIf } from '@/app/_shared/condition'
 import { validateBmcHosts, validateSshHosts } from '@/app/connect-info/utils'
 import { useGlobalStore, useGlobalStoreApi } from '@/stores'
-import { useTRPCClient } from '@/trpc/client'
+import { useTRPC, useTRPCClient } from '@/trpc/client'
 
 import { useIsAllConnected } from './hooks'
 
@@ -59,7 +59,9 @@ function BmcNextStepButton() {
 
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  const trpc = useTRPCClient()
+  const queryClient = useQueryClient()
+  const trpcClient = useTRPCClient()
+  const trpc = useTRPC()
   const { mutate, isPending, error } = useMutation({
     mutationFn: async () => {
       const { bmcHosts, defaultCredentials } = storeApi.getState()
@@ -73,7 +75,11 @@ function BmcNextStepButton() {
           toast.error('请先选择离线安装配置')
           return
         }
-        await trpc.connection.bmc.checkAndBootLocal.mutate({ bmcHosts: result.data, manifestPath })
+        const { architecture } = await trpcClient.connection.bmc.checkAndBootLocal.mutate({
+          bmcHosts: result.data,
+          manifestPath,
+        })
+        queryClient.setQueryData(trpc.connection.bmc.getDefaultArchitecture.queryKey(), architecture)
       }
     },
     onSuccess: () => {

@@ -79,6 +79,8 @@ export const connectionRouter = createRouter({
                 .join(', '),
             })
           }
+
+          return { architecture }
         } finally {
           await bmcClients.dispose()
         }
