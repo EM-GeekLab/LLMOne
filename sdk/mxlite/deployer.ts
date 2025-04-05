@@ -61,19 +61,19 @@ chroot /mnt sh -c 'ln -rs /usr/lib/systemd/systemd /sbin/init'`
 export class Deployer {
   private mxc: Mxc
   private stage: DeployStage
-  private hostId: string
-  private disk_name: string
-  private rootfs_url: string
+  private readonly hostId: string
+  private readonly diskName: string
+  private readonly rootfsUrl: string
 
-  constructor(mxc: Mxc, hostId: string, disk_name: string, rootfs_url: string) {
+  constructor(mxc: Mxc, hostId: string, diskName: string, rootfsUrl: string) {
     this.mxc = mxc
     this.stage = 'Pending'
     this.hostId = hostId
-    this.disk_name = disk_name
-    this.rootfs_url = rootfs_url
+    this.diskName = diskName
+    this.rootfsUrl = rootfsUrl
   }
 
-  private async exec_script(script: string): Promise<{
+  private async execScript(script: string): Promise<{
     error: DeployerError
     reason?: OperationError
   }> {
@@ -84,8 +84,8 @@ export class Deployer {
         reason: r.reason,
       }
     }
-    const task_id = r.task_id
-    const r2 = await this.mxc.blockUntilTaskComplete(this.hostId, task_id, 100)
+    const taskId = r.taskId
+    const r2 = await this.mxc.blockUntilTaskComplete(this.hostId, taskId, 100)
     if (!r2.ok) {
       return {
         error: 'FailedToExec',
@@ -115,17 +115,17 @@ export class Deployer {
       throw new Error(`StageError: ${this.stage}`)
     }
     this.stage = 'Preinstalling'
-    const script = `export DISK="${this.disk_name}";
+    const script = `export DISK="${this.diskName}";
 ${PREINSTALL_SCRIPT}`
 
-    const r = await this.exec_script(script)
+    const r = await this.execScript(script)
     if (r.error === 'Ok') {
       this.stage = 'Preinstalled'
     }
     return r
   }
 
-  public async download_rootfs(): Promise<{
+  public async downloadRootfs(): Promise<{
     error: DeployerError
     reason?: OperationError
   }> {
@@ -133,15 +133,15 @@ ${PREINSTALL_SCRIPT}`
       throw new Error(`StageError: ${this.stage}`)
     }
     this.stage = 'Downloading'
-    const [r] = await this.mxc.downloadFile(this.hostId, this.rootfs_url, '/installer_tmp/image.tar.zst')
+    const [r] = await this.mxc.downloadFile(this.hostId, this.rootfsUrl, '/installer_tmp/image.tar.zst')
     if (!r.ok) {
       return {
         error: 'FailedToExec',
         reason: r.reason,
       }
     }
-    const task_id = r.task_id
-    const r2 = await this.mxc.blockUntilTaskComplete(this.hostId, task_id, 100)
+    const taskId = r.taskId
+    const r2 = await this.mxc.blockUntilTaskComplete(this.hostId, taskId, 100)
     if (!r2.ok) {
       return {
         error: 'FailedToExec',
@@ -177,7 +177,7 @@ ${PREINSTALL_SCRIPT}`
     this.stage = 'Installing'
     const script = 'cd /installer_tmp && tar xf image.tar.zst -C /mnt --preserve-permissions --same-owner --zstd'
 
-    const r = await this.exec_script(script)
+    const r = await this.execScript(script)
     if (r.error === 'Ok') {
       this.stage = 'Installed'
     }
@@ -192,24 +192,24 @@ ${PREINSTALL_SCRIPT}`
       throw new Error(`StageError: ${this.stage}`)
     }
     this.stage = 'Postinstalling'
-    const script = `export DISK="${this.disk_name}";
+    const script = `export DISK="${this.diskName}";
 ${POSTINSTALL_SCRIPT}
 `
-    const r = await this.exec_script(script)
+    const r = await this.execScript(script)
     if (r.error === 'Ok') {
       this.stage = 'Postinstalled'
     }
     return r
   }
 
-  public async apply_netplan() {
+  public async applyNetplan() {
     if (this.stage !== 'Postinstalled') {
       throw new Error(`StageError: ${this.stage}`)
     }
     // TODO: apply netplan
   }
 
-  public async apply_userconfig() {
+  public async applyUserconfig() {
     if (this.stage !== 'Postinstalled') {
       throw new Error(`StageError: ${this.stage}`)
     }

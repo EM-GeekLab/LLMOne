@@ -40,7 +40,7 @@ export type TaskResult =
 export type AddTaskResult =
   | {
       ok: true
-      task_id: number
+      taskId: number
     }
   | {
       ok: false
@@ -192,7 +192,7 @@ export class Mxc {
   public async addFileMap(file: string, publishName: string): ApiResult<string> {
     return await this.request(`${this.endpoint}/file-map`, 'POST', {
       file: file,
-      publish_name: publishName,
+      publish_name: publishName, // eslint-disable-line camelcase
     })
   }
 
