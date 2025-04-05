@@ -105,7 +105,7 @@ export type HostListInfoResponse = {
 export type ApiResult<T> = Promise<[T, number]>
 
 export class Mxc {
-  private readonly endpoint: string
+  readonly endpoint: string
   private readonly token?: string
 
   constructor(endpoint: string, token?: string) {
