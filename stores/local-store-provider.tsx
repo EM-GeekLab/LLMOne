@@ -3,7 +3,7 @@
 import { createContext, useContext, useRef } from 'react'
 import { useStore } from 'zustand/react'
 
-import { createLocalStore, LocalStore } from './local-store'
+import { createLocalStore, defaultLocalStoreState, LocalStore } from './local-store'
 
 type LocalStoreApi = ReturnType<typeof createLocalStore>
 
@@ -12,7 +12,7 @@ export const LocalStoreContext = createContext<LocalStoreApi | null>(null)
 export function LocalStoreProvider({ children }: { children: React.ReactNode }) {
   const storeRef = useRef<LocalStoreApi | null>(null)
   if (storeRef.current === null) {
-    storeRef.current = createLocalStore()
+    storeRef.current = createLocalStore(defaultLocalStoreState)
   }
 
   return <LocalStoreContext.Provider value={storeRef.current}>{children}</LocalStoreContext.Provider>
