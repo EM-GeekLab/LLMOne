@@ -1,3 +1,4 @@
+import { unique } from 'radash'
 import { autoDetect, iBMCRedfishClient, iDRACRedfishClient } from 'redfish-client'
 
 import { BmcFinalConnectionInfo } from '@/app/connect-info/schemas'
@@ -35,6 +36,17 @@ export class BmcClients {
         return await callback({ ...c, defaultId })
       }),
     )
+  }
+
+  /**
+   * Get the CPU architecture of all BMC clients. Unique values are returned.
+   */
+  async getArchitectures(): Promise<string[]> {
+    const architectures = await this.map(async ({ defaultId, client }) => {
+      const cpu = await client.getCPUInfo(defaultId)
+      return cpu[0].architecture
+    })
+    return unique(architectures)
   }
 
   async dispose() {
