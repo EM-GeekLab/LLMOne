@@ -6,9 +6,9 @@ import { group } from 'radash'
 
 import { OsDistribution } from '@/lib/os'
 import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
-import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Spinner } from '@/components/ui/spinner'
 import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 import { useTRPC } from '@/trpc/client'
 import { AppRouter } from '@/trpc/router'
@@ -27,9 +27,13 @@ export function LocalOsSelector() {
 
 function OsSelectorContainer() {
   const trpc = useTRPC()
+  const bmcHosts = useGlobalStore((s) => s.finalBmcHosts)
 
   const manifestPath = useGlobalStore((s) => s.osManifestPath)
-  const { data, error, isError, isPending } = useQuery(
+  const defaultArch = useQuery(
+    trpc.connection.bmc.getDefaultArchitecture.queryOptions(bmcHosts, { enabled: !!manifestPath }),
+  )
+  const distros = useQuery(
     manifestPath
       ? trpc.resource.getDistributions.queryOptions(manifestPath)
       : {
@@ -39,11 +43,19 @@ function OsSelectorContainer() {
         },
   )
 
-  if (isPending) return null
+  if (distros.isPending || defaultArch.isPending)
+    return (
+      <AppCardSection className="text-muted-foreground flex flex-row items-center gap-2">
+        <Spinner className="size-4" />
+        <div>加载中...</div>
+      </AppCardSection>
+    )
 
-  if (isError) return <AppCardSection>{error?.message}</AppCardSection>
+  if (distros.isError) return <AppCardSection>{distros.error?.message}</AppCardSection>
 
-  return <OsSelector data={data} />
+  if (defaultArch.isError) return <AppCardSection>{defaultArch.error?.message}</AppCardSection>
+
+  return <OsSelector data={distros.data.filter((distro) => distro.arch === defaultArch.data)} />
 }
 
 function OsSelector({ data }: { data: Awaited<ReturnType<AppRouter['resource']['getDistributions']>> }) {
@@ -89,9 +101,7 @@ function VersionSelector({
               <RadioGroupItem id={value} value={value}></RadioGroupItem>
               <Label className="cursor-pointer" htmlFor={value}>
                 {displayName}
-                <Badge className="-my-1" variant="outline" color="secondary">
-                  {arch}
-                </Badge>
+                <div className="text-muted-foreground/75 text-xs font-normal">{arch}</div>
               </Label>
             </div>
           ))}
