@@ -4,7 +4,8 @@ import { dirname, join } from 'path'
 import { addAbsolutePaths } from '@/lib/file/server-path'
 import { z } from '@/lib/zod'
 import { baseProcedure, createRouter } from '@/trpc/init'
-import { readManifest, readOsInfo } from '@/trpc/router/resource-utils'
+
+import { readManifest, readOsInfo } from './resource-utils'
 
 export const resourceRouter = createRouter({
   getDistributions: baseProcedure.input(z.string()).query(async ({ input }) => {
