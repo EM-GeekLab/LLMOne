@@ -24,7 +24,7 @@ export function AccountConfig() {
     <AppCardSection>
       <AppCardSectionHeader>
         <AppCardSectionTitle>操作系统账户</AppCardSectionTitle>
-        <AppCardSectionDescription>配置每台主机的操作系统账户信息。</AppCardSectionDescription>
+        <AppCardSectionDescription>统一配置每台主机的操作系统账户信息。</AppCardSectionDescription>
       </AppCardSectionHeader>
       <div className="grid max-w-xl gap-3.5 rounded-lg border p-3.5">
         <AccountConfigForm />

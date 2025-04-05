@@ -30,7 +30,7 @@ export function NetworkConfig() {
     <AppCardSection>
       <AppCardSectionHeader>
         <AppCardSectionTitle>网络</AppCardSectionTitle>
-        <AppCardSectionDescription>配置每台主机的基础网络信息。</AppCardSectionDescription>
+        <AppCardSectionDescription>统一配置每台主机的基础网络信息。</AppCardSectionDescription>
       </AppCardSectionHeader>
       <NetworkConfigForm />
     </AppCardSection>
