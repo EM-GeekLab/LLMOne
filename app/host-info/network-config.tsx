@@ -55,11 +55,9 @@ function NetworkConfigForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(setValue)} className="grid max-w-xs gap-3.5">
-        <CardWrapper>
-          <Ipv4FormSection />
-          <DnsFormSection />
-        </CardWrapper>
+      <form onSubmit={form.handleSubmit(setValue)} className="grid max-w-2xl grid-cols-2 items-start gap-3.5">
+        <Ipv4FormSection />
+        <DnsFormSection />
         <button type="submit" className="hidden" />
       </form>
     </Form>
@@ -73,8 +71,9 @@ function Ipv4FormSection() {
   const type = useWatch({ control, name: 'ipv4.type' })
 
   return (
-    <div className="grid gap-4">
-      <div className="col-span-full flex items-center justify-between gap-5">
+    <CardWrapper>
+      <div className="col-span-full flex items-center justify-between gap-3">
+        <Label className="data-[error=true]:text-destructive">网关</Label>
         <FormField
           control={control}
           name="ipv4.type"
@@ -83,7 +82,7 @@ function Ipv4FormSection() {
               <FormLabel className="sr-only">IPv4 类型</FormLabel>
               <FormControl>
                 <RadioGroup
-                  className="flex items-center gap-x-4 *:gap-1.5"
+                  className="flex items-center gap-x-3 *:gap-1.5"
                   value={value}
                   onValueChange={(v: 'dhcp' | 'static') => {
                     actions.setType(v)
@@ -107,7 +106,7 @@ function Ipv4FormSection() {
             name="ipv4.gateway"
             render={({ field: { value = '', onChange, ...rest } }) => (
               <FormItem>
-                <FormLabel>网关</FormLabel>
+                <FormLabel className="sr-only">网关</FormLabel>
                 <FormControl>
                   <Input
                     value={value}
@@ -124,102 +123,130 @@ function Ipv4FormSection() {
           />
         </>
       )}
-      {type === 'dhcp' && <EmptyMessage>主机将通过 DHCP 自动获取 IP 地址和网关。</EmptyMessage>}
-    </div>
+      {type === 'dhcp' && <EmptyMessage>主机将通过 DHCP 自动获取网关。</EmptyMessage>}
+    </CardWrapper>
   )
 }
 
 function DnsFormSection() {
   const actions = useGlobalStore((s) => s.hostConfigActions.network.dns)
-  const dnsList = useGlobalStore((s) => s.hostConfig.network.dns)
+  const dnsList = useGlobalStore((s) => s.hostConfig.network.dns.list)
 
   const { control } = useFormContext<HostNetworkConfig>()
-  const {
-    errors: { dns: error },
-  } = useFormState({ control, name: 'dns' })
+  const { errors } = useFormState({ control, name: 'dns.list' })
+  const error = errors.dns?.list?.root
 
   // @ts-expect-error use-field-array hook bug
-  const { append, remove } = useFieldArray({ control, name: 'dns' })
+  const { append, remove } = useFieldArray({ control, name: 'dns.list' })
+
+  const type = useWatch({ control, name: 'dns.type' })
 
   const inputRefs = useRef<HTMLInputElement[]>([])
 
   return (
-    <div className="grid gap-2">
-      <div className="col-span-full flex items-center gap-3">
-        <Label data-error={!!error} className="data-[error=true]:text-destructive">
-          DNS
-        </Label>
-        {error && (
-          <p data-slot="form-message" className="text-destructive text-xs">
-            {error.message}
-          </p>
-        )}
-      </div>
-      {dnsList.map((_item, index) => (
+    <CardWrapper>
+      <div className="flex items-center justify-between gap-3">
+        <Label>DNS</Label>
         <FormField
-          key={index}
           control={control}
-          name={`dns.${index}`}
-          render={({ field: { value = '', onChange, ref, ...rest } }) => (
+          name="dns.type"
+          render={({ field: { value, onChange, ...rest } }) => (
             <FormItem>
-              <div className="join join-with-input flex">
-                <div className="border-input text-muted-foreground bg-muted pointer-events-none flex size-9 shrink-0 items-center justify-center rounded-md border">
-                  {index + 1}
-                </div>
-                <FormControl>
-                  <Input
-                    ref={(el) => {
-                      if (el) {
-                        inputRefs.current[index] = el
-                        ref(el)
-                      }
-                    }}
-                    value={value}
-                    onChange={(e) => {
-                      actions.set(index, e.target.value)
-                      onChange(e)
-                    }}
-                    {...rest}
-                  />
-                </FormControl>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    actions.remove(index)
-                    remove(index)
-                    inputRefs.current.splice(index, 1)
+              <FormLabel className="sr-only">DNS 类型</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  className="flex items-center gap-x-3 *:gap-1.5"
+                  value={value}
+                  onValueChange={(v: 'dhcp' | 'static') => {
+                    actions.setType(v)
+                    onChange(v)
                   }}
+                  {...rest}
                 >
-                  <MinusCircleIcon />
-                  <span className="sr-only">移除</span>
-                </Button>
-              </div>
+                  <RadioItem value="dhcp">自动</RadioItem>
+                  <RadioItem value="static">手动</RadioItem>
+                </RadioGroup>
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-      ))}
-      {dnsList.length < 4 && (
-        <Button
-          className="border-dashed"
-          variant="outline"
-          onClick={() => {
-            actions.push()
-            append('')
-            setTimeout(() => inputRefs.current[dnsList.length]?.focus())
-          }}
-        >
-          <PlusIcon /> 添加
-        </Button>
+      </div>
+      {type === 'static' && (
+        <div className="grid gap-2">
+          {dnsList.map((_item, index) => (
+            <FormField
+              key={index}
+              control={control}
+              name={`dns.list.${index}`}
+              render={({ field: { value = '', onChange, ref, ...rest } }) => (
+                <FormItem>
+                  <div className="join join-with-input flex">
+                    <div className="border-input text-muted-foreground bg-muted pointer-events-none flex size-9 shrink-0 items-center justify-center rounded-md border">
+                      {index + 1}
+                    </div>
+                    <FormControl>
+                      <Input
+                        ref={(el) => {
+                          if (el) {
+                            inputRefs.current[index] = el
+                            ref(el)
+                          }
+                        }}
+                        value={value}
+                        onChange={(e) => {
+                          actions.set(index, e.target.value)
+                          onChange(e)
+                        }}
+                        {...rest}
+                      />
+                    </FormControl>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        actions.remove(index)
+                        remove(index)
+                        inputRefs.current.splice(index, 1)
+                      }}
+                    >
+                      <MinusCircleIcon />
+                      <span className="sr-only">移除</span>
+                    </Button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ))}
+          {dnsList.length < 10 && (
+            <Button
+              className="border-dashed"
+              variant="outline"
+              onClick={() => {
+                actions.push()
+                append('')
+                setTimeout(() => inputRefs.current[dnsList.length]?.focus())
+              }}
+            >
+              <PlusIcon /> 添加
+            </Button>
+          )}
+          {error && (
+            <p data-slot="form-message" className="text-destructive -mt-1 text-xs">
+              {error.message}
+            </p>
+          )}
+        </div>
       )}
-    </div>
+      {type === 'dhcp' && <EmptyMessage>主机将通过 DHCP 自动获取 DNS。</EmptyMessage>}
+    </CardWrapper>
   )
 }
 
 function CardWrapper({ className, children, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('grid content-start items-start gap-4', className)} {...props}>
+    <div className={cn('grid content-start items-start gap-3.5 rounded-lg border p-3.5', className)} {...props}>
       {children}
     </div>
   )
@@ -227,7 +254,7 @@ function CardWrapper({ className, children, ...props }: ComponentProps<'div'>) {
 
 function EmptyMessage({ className, children, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('text-muted-foreground col-span-full text-sm', className)} {...props}>
+    <div className={cn('text-muted-foreground col-span-full py-2 text-center text-sm', className)} {...props}>
       {children}
     </div>
   )

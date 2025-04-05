@@ -10,7 +10,10 @@ export type HostNetworkConfig = {
     type: 'dhcp' | 'static'
     gateway?: string
   }
-  dns: string[]
+  dns: {
+    type: 'dhcp' | 'static'
+    list: string[]
+  }
 }
 
 export type HostConfig = {
@@ -36,6 +39,7 @@ export type HostInfoAction = {
         setGateway: (gateway?: string) => void
       }
       dns: {
+        setType: (type: 'dhcp' | 'static') => void
         set: (index: number, dns: string) => void
         push: () => void
         remove: (index: number) => void
@@ -49,7 +53,7 @@ export const defaultHostInfoState: HostInfoState = {
     account: {},
     network: {
       ipv4: { type: 'dhcp' },
-      dns: [''],
+      dns: { type: 'dhcp', list: [] },
     },
   },
 }
@@ -86,17 +90,21 @@ export const createHostInfoSlice: ImmerStateCreator<HostInfoAction> = (set) => (
           }),
       },
       dns: {
+        setType: (type) =>
+          set((state) => {
+            state.hostConfig.network.dns.type = type
+          }),
         set: (index, dns) =>
           set((state) => {
-            state.hostConfig.network.dns[index] = dns
+            state.hostConfig.network.dns.list[index] = dns
           }),
         push: () =>
           set((state) => {
-            state.hostConfig.network.dns.push('')
+            state.hostConfig.network.dns.list.push('')
           }),
         remove: (index) =>
           set((state) => {
-            state.hostConfig.network.dns.splice(index, 1)
+            state.hostConfig.network.dns.list.splice(index, 1)
           }),
       },
     },

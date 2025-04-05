@@ -17,10 +17,15 @@ export const networkIPv4ConfigSchema = z.discriminatedUnion('type', [
   }),
 ])
 
-export const networkDnsConfigSchema = z
-  .array(z.string().ip('DNS 地址格式错误'))
-  .min(1, '至少需要 1 个 DNS 地址')
-  .max(4, '最多支持 4 个 DNS 地址')
+export const networkDnsConfigSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('dhcp'),
+  }),
+  z.object({
+    type: z.literal('static'),
+    list: z.array(z.string().ip('DNS 地址格式错误')).min(1, '至少需要 1 个 DNS 地址').max(4, '最多支持 4 个 DNS 地址'),
+  }),
+])
 
 export const networkConfigSchema = z.object({
   ipv4: networkIPv4ConfigSchema,
