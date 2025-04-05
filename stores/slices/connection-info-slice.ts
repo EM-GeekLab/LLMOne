@@ -1,4 +1,5 @@
 import { generateId } from '@/lib/id'
+import { BmcFinalConnectionInfo, SshFinalConnectionInfo } from '@/app/connect-info/schemas'
 import { ImmerStateCreator, WithId } from '@/stores/utils'
 
 export type CredentialType = 'password' | 'key' | 'no-password'
@@ -31,6 +32,8 @@ export type ConnectionInfoState = {
   defaultCredentials: DefaultCredentials
   bmcHosts: WithId<BmcConnectionInfo>[]
   sshHosts: WithId<SshConnectionInfo>[]
+  finalBmcHosts: BmcFinalConnectionInfo[]
+  finalSshHosts: SshFinalConnectionInfo[]
 }
 
 export type ConnectionInfoActions = {
@@ -47,6 +50,8 @@ export type ConnectionInfoActions = {
   updateSshHost: (id: string, host: SshConnectionInfo) => void
   // Returns the removed host and a function to restore the original state
   removeSshHost: (id: string) => { removed: WithId<SshConnectionInfo>; restore: () => void }
+  setFinalBmcHosts: (hosts: BmcFinalConnectionInfo[]) => void
+  setFinalSshHosts: (hosts: SshFinalConnectionInfo[]) => void
 }
 
 export type ConnectionInfoSlice = ConnectionInfoState & ConnectionInfoActions
@@ -58,6 +63,8 @@ export const defaultConnectionInfoState: ConnectionInfoState = {
   },
   bmcHosts: [],
   sshHosts: [],
+  finalBmcHosts: [],
+  finalSshHosts: [],
 }
 
 export const createConnectionInfoSlice: ImmerStateCreator<ConnectionInfoActions> = (set, get) => ({
@@ -135,4 +142,12 @@ export const createConnectionInfoSlice: ImmerStateCreator<ConnectionInfoActions>
         }),
     }
   },
+  setFinalBmcHosts: (hosts) =>
+    set((state) => {
+      state.finalBmcHosts = hosts
+    }),
+  setFinalSshHosts: (hosts) =>
+    set((state) => {
+      state.finalSshHosts = hosts
+    }),
 })
