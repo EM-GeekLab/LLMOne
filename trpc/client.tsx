@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react'
 import { isServer, QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createTRPCClient, httpBatchStreamLink, httpSubscriptionLink, splitLink } from '@trpc/client'
+import { createTRPCClient, httpBatchLink, httpBatchStreamLink, httpSubscriptionLink, splitLink } from '@trpc/client'
 import { createTRPCContext } from '@trpc/tanstack-react-query'
 import superjson from 'superjson'
 
@@ -32,7 +32,9 @@ export function TrpcReactProvider({
   const queryClient = getQueryClient()
 
   const [trpcClient] = useState(() => {
-    const commonOptions: Parameters<typeof httpBatchStreamLink>[0] & Parameters<typeof httpSubscriptionLink>[0] = {
+    const commonOptions: Parameters<typeof httpBatchStreamLink>[0] &
+      Parameters<typeof httpSubscriptionLink>[0] &
+      Parameters<typeof httpBatchLink>[0] = {
       transformer: superjson,
       url: `${isServer ? '' : location.origin}/rpc`,
     }
@@ -41,7 +43,11 @@ export function TrpcReactProvider({
         splitLink({
           condition: (op) => op.type === 'subscription',
           true: httpSubscriptionLink({ ...commonOptions }),
-          false: httpBatchStreamLink({ ...commonOptions }),
+          false: splitLink({
+            condition: (op) => op.context.stream === true,
+            true: httpBatchStreamLink({ ...commonOptions }),
+            false: httpBatchLink({ ...commonOptions }),
+          }),
         }),
       ],
     })
