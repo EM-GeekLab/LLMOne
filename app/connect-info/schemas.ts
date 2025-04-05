@@ -47,7 +47,7 @@ export const bmcFinalConnectionInfoSchema = z.object({
 
 export type BmcFinalConnectionInfo = z.infer<typeof bmcFinalConnectionInfoSchema>
 
-export const bmcHostsListSchema = z.array(bmcFinalConnectionInfoSchema)
+export const bmcHostsListSchema = z.array(bmcFinalConnectionInfoSchema).min(1, '至少需要 1 个 BMC 主机')
 
 export const sshConnectionInfoSchema = z.object({
   ip: z.string({ message: 'IP 地址不能为空' }).nonempty('IP 地址不能为空').ip(),
@@ -84,7 +84,7 @@ export const sshFinalConnectionInfoSchema = z
       ],
       {
         errorMap: makeErrorMap({
-          invalid_union_discriminator: '请选择凭据类型',
+          invalid_union_discriminator: '请选择凭据类型', // eslint-disable-line camelcase
         }),
       },
     ),
@@ -92,4 +92,4 @@ export const sshFinalConnectionInfoSchema = z
 
 export type SshFinalConnectionInfo = z.infer<typeof sshFinalConnectionInfoSchema>
 
-export const sshHostsListSchema = z.array(sshFinalConnectionInfoSchema)
+export const sshHostsListSchema = z.array(sshFinalConnectionInfoSchema).min(1, '至少需要 1 个 SSH 主机')
