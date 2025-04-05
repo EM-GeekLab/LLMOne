@@ -1,0 +1,19 @@
+import { ComponentProps } from 'react'
+import { AlertCircleIcon } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
+
+export function ErrorAlert({ className, children, ...props }: ComponentProps<'div'>) {
+  return (
+    <div
+      className={cn(
+        'bg-destructive/5 border-destructive/25 grid grid-cols-[auto_1fr] items-center gap-2 rounded-md border px-3 py-2 text-sm',
+        className,
+      )}
+      {...props}
+    >
+      <AlertCircleIcon className="text-destructive size-4" />
+      <p>{children}</p>
+    </div>
+  )
+}
