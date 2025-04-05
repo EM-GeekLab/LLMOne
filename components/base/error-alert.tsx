@@ -7,12 +7,12 @@ export function ErrorAlert({ className, children, ...props }: ComponentProps<'di
   return (
     <div
       className={cn(
-        'bg-destructive/5 border-destructive/25 grid grid-cols-[auto_1fr] items-center gap-2 rounded-md border px-3 py-2 text-sm',
+        'bg-destructive/5 border-destructive/25 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 overflow-auto rounded-md border px-3 py-2 text-sm',
         className,
       )}
       {...props}
     >
-      <AlertCircleIcon className="text-destructive size-4" />
+      <AlertCircleIcon className="text-destructive size-4 translate-y-0.5" />
       <p>{children}</p>
     </div>
   )
