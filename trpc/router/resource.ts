@@ -1,38 +1,10 @@
-import { readdir, readFile, stat } from 'node:fs/promises'
+import { readdir, stat } from 'node:fs/promises'
 import { dirname, join } from 'path'
-
-import { TRPCError } from '@trpc/server'
 
 import { addAbsolutePaths } from '@/lib/file/server-path'
 import { z } from '@/lib/zod'
-import { resourceManifestSchema, resourceOsInfoSchema } from '@/app/select-os/rescource-schema'
 import { baseProcedure, createRouter } from '@/trpc/init'
-
-async function readManifest(path: string) {
-  const fileContent = await readFile(path, 'utf-8')
-  try {
-    return resourceManifestSchema.parse(JSON.parse(fileContent))
-  } catch (err) {
-    throw new TRPCError({
-      message: `${path} 格式错误`,
-      code: 'BAD_REQUEST',
-      cause: err,
-    })
-  }
-}
-
-async function readOsInfo(path: string) {
-  const fileContent = await readFile(path, 'utf-8')
-  try {
-    return resourceOsInfoSchema.parse(JSON.parse(fileContent))
-  } catch (err) {
-    throw new TRPCError({
-      message: `${path} 格式错误`,
-      code: 'BAD_REQUEST',
-      cause: err,
-    })
-  }
-}
+import { readManifest, readOsInfo } from '@/trpc/router/resource-utils'
 
 export const resourceRouter = createRouter({
   getDistributions: baseProcedure.input(z.string()).query(async ({ input }) => {
