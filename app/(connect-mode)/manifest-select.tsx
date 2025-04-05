@@ -13,13 +13,17 @@ import {
 import { useGlobalStore } from '@/stores'
 
 export function ManifestSelect() {
+  const mode = useGlobalStore((s) => s.deployMode)
+
   return (
-    <AppCardSection>
-      <AppCardSectionHeader>
-        <AppCardSectionTitle>选择离线安装配置</AppCardSectionTitle>
-      </AppCardSectionHeader>
-      <ManifestSelectContent />
-    </AppCardSection>
+    mode === 'local' && (
+      <AppCardSection>
+        <AppCardSectionHeader>
+          <AppCardSectionTitle>选择离线安装配置</AppCardSectionTitle>
+        </AppCardSectionHeader>
+        <ManifestSelectContent />
+      </AppCardSection>
+    )
   )
 }
 

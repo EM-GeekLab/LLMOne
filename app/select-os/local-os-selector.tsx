@@ -13,13 +13,11 @@ import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 import { useTRPC } from '@/trpc/client'
 import { AppRouter } from '@/trpc/router'
 
-import { ManifestSelect } from './manifest-select'
 import { OsDistroSelector } from './os-distro-selector'
 
 export function LocalOsSelector() {
   return (
     <>
-      <ManifestSelect />
       <OsSelectorContainer />
     </>
   )
