@@ -26,6 +26,7 @@ const typeMap: Record<ZodParsedType, string> = {
   set: '集合',
 }
 
+/* eslint-disable camelcase */
 export const zhErrorMap = makeErrorMap({
   invalid_type: ({ expected, received }) => `类型错误，预期为${typeMap[expected]}，实际为${typeMap[received]}`,
   invalid_type_received_undefined: () => `必填`,
