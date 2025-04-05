@@ -7,7 +7,7 @@ import FedoraLogo from '@/icons/fedora.svg'
 import OpenEulerLogo from '@/icons/openEuler.svg'
 import UbuntuLogo from '@/icons/ubuntu.svg'
 
-export function DistroLogo({ distro, className }: { distro: OsDistribution; className?: string }) {
+export function DistroLogo({ distro, className }: { distro?: OsDistribution; className?: string }) {
   return (
     <Slot className={className}>
       {match(distro)
