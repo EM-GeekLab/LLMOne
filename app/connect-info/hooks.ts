@@ -21,6 +21,7 @@ function showErrorMessage(message?: string) {
 }
 
 export function useAutoCheckConnection(id: string) {
+  const store = useGlobalStoreApi()
   const mode = useGlobalStore((s) => s.connectMode)
   const list = useGlobalStore((s) => (mode === 'ssh' ? s.sshHosts : s.bmcHosts))
   const host = useMemo(() => findById(id, list), [id, list])
@@ -40,6 +41,12 @@ export function useAutoCheckConnection(id: string) {
         throw new Error('连接配置不完整')
       }
       const parsedDefault = parseResult.data
+
+      const hostList = mode === 'ssh' ? store.getState().sshHosts : store.getState().bmcHosts
+      const hostIpCount = hostList.reduce((acc, { ip }) => (ip === host.ip ? acc + 1 : acc), 0)
+      if (hostIpCount > 1) {
+        throw new Error('主机 IP 地址重复')
+      }
 
       const [ok, err] = await (async () => {
         switch (mode) {
