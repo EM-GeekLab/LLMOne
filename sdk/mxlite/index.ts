@@ -122,7 +122,13 @@ export class Mxc {
       },
       body: body && JSON.stringify(body),
     })
-    return [(await response.json()) as R, response.status]
+    try {
+      const json = (await response.json()) as R
+      return [json, response.status]
+    } catch (err) {
+      console.error(err)
+      throw err
+    }
   }
 
   public async getHostList(): ApiResult<HostListResponse> {
@@ -191,14 +197,14 @@ export class Mxc {
 
   public async addFileMap(file: string, publishName: string): ApiResult<string> {
     return await this.request(`${this.endpoint}/file-map`, 'POST', {
-      file: file,
+      path: file,
       publish_name: publishName, // eslint-disable-line camelcase
     })
   }
 
   public async removeFileMap(file: string): ApiResult<string> {
     return await this.request(`${this.endpoint}/file-map`, 'DELETE', {
-      file: file,
+      publish_name: file, // eslint-disable-line camelcase
     })
   }
 
