@@ -160,6 +160,7 @@ export class Deployer {
 ${PREINSTALL_SCRIPT}`
 
     await this.execScript(script)
+    this.stage = 'Preinstalled'
   }
 
   public async downloadRootfs() {
@@ -168,6 +169,7 @@ ${PREINSTALL_SCRIPT}`
     }
     this.stage = 'Downloading'
     await this.downloadFile(this.rootfsUrl, '/installer_tmp/image.tar.zst')
+    this.stage = 'Downloaded'
   }
 
   public async install() {
@@ -178,6 +180,7 @@ ${PREINSTALL_SCRIPT}`
     const script = 'cd /installer_tmp && tar xf image.tar.zst -C /mnt --preserve-permissions --same-owner --zstd'
 
     await this.execScript(script)
+    this.stage = 'Installed'
   }
 
   public async postinstall() {
@@ -189,6 +192,7 @@ ${PREINSTALL_SCRIPT}`
 ${POSTINSTALL_SCRIPT}
 `
     await this.execScript(script)
+    this.stage = 'Postinstalled'
   }
 
   public async applyNetplan(config: NetplanConfiguration, confName = '00-default.yaml') {
