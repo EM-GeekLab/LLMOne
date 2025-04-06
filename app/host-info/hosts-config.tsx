@@ -169,9 +169,11 @@ function HostConfigForm({ id, bmcIp, disks }: { id: string; bmcIp: string; disks
                 <SelectContent position="item-aligned">
                   {disks.map(({ path, model, size }) => (
                     <SelectItem key={path} value={path}>
-                      <span>{path}</span>
-                      <span className="text-muted-foreground flex-1 truncate text-xs">{model}</span>
-                      <span className="text-muted-foreground -ml-1 text-xs">({readableSize(size)})</span>
+                      <div className="flex items-baseline gap-2">
+                        <span>{path}</span>
+                        <span className="text-muted-foreground flex-1 truncate text-xs">{model}</span>
+                        <span className="text-muted-foreground -ml-1 text-xs">({readableSize(size)})</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
