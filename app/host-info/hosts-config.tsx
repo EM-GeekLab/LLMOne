@@ -1,5 +1,6 @@
 'use client'
 
+import { useImperativeHandle } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { omit } from 'radash'
@@ -17,10 +18,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
-import { hostConfigSchema, HostConfigType } from '@/app/host-info/schemas'
 import type { HostExtraInfo } from '@/sdk/mxlite'
 import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 import { useTRPC, useTRPCClient } from '@/trpc/client'
+
+import { useHostInfoContext, Validator } from './context'
+import { hostConfigSchema, HostConfigType } from './schemas'
 
 export function HostsConfig() {
   return (
@@ -86,7 +89,20 @@ function HostConfigForm({ id, bmcIp, disks }: { id: string; bmcIp: string; disks
   const form = useForm<HostConfigType>({
     resolver: zodResolver(hostConfigSchema),
     defaultValues,
+    mode: 'all',
   })
+
+  const { hostsFormRef } = useHostInfoContext()
+
+  useImperativeHandle<Validator, Validator>(
+    (instance) => {
+      if (instance) hostsFormRef.current.set(id, instance)
+      else hostsFormRef.current.delete(id)
+    },
+    () => ({
+      validate: () => form.trigger(),
+    }),
+  )
 
   const handleSubmit = form.handleSubmit((values) => actions.set(id, { ...values, id, bmcIp }))
 
