@@ -125,9 +125,14 @@ export const connectionRouter = createRouter({
               id: host,
               mac: info?.system_info?.nics.map((nic) => nic.mac_address.toLowerCase()) ?? [],
               disks:
-                (info?.system_info?.blks.filter(
-                  (disk) => disk.path != null && disk.size > 32 * 1024 * 1024,
-                ) as DiskInfo) ?? [],
+                (info?.system_info?.blks
+                  .map((disk) => ({ ...disk, size: disk.size / 8 /* FIXME: fix agent API */ }))
+                  .filter(
+                    (disk) =>
+                      disk.path !== null &&
+                      !disk.path.match(/^\/dev\/(loop|ram|sr)/) &&
+                      disk.size >= 1024 * 1024 * 1024,
+                  ) as DiskInfo) ?? [],
             }
           })
 
@@ -155,6 +160,9 @@ export const connectionRouter = createRouter({
       } finally {
         await bmcClients.dispose()
       }
+    }),
+    getHostInfo: baseProcedure.input(inputType<string>).query(async ({ input }) => {
+      return await mxc.getHostInfo(input)
     }),
   },
   ssh: {
