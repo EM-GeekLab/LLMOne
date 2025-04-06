@@ -40,6 +40,7 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
         description: error.message,
       })
     },
+    retry: false,
   })
 
   usePreventUnload(mutation.isPending)

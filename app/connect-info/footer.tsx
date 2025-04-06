@@ -103,6 +103,7 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
     onError: (error) => {
       console.error(error)
     },
+    retry: false,
   })
 
   return (
