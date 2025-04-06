@@ -22,13 +22,15 @@ export const netplanConfigurationSchema = z.object({
       }),
       dhcp4: z.boolean().optional(),
       dhcp6: z.boolean().optional(),
-      routes: z.array(
-        z.object({
-          to: z.union([z.string().cidr(), z.literal('default')]).default('default'),
-          via: z.string().ip(),
-          metric: z.number().optional(),
-        }),
-      ),
+      routes: z
+        .array(
+          z.object({
+            to: z.union([z.string().cidr(), z.literal('default')]).default('default'),
+            via: z.string().ip(),
+            metric: z.number().optional(),
+          }),
+        )
+        .optional(),
       'dhcp4-overrides': dhcpOverrideSchema.optional(),
       'dhcp6-overrides': dhcpOverrideSchema.optional(),
       addresses: z
