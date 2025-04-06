@@ -8,9 +8,14 @@ export const deployRouter = createRouter({
     installAll: baseProcedure.input(installConfigSchema).mutation(async function* ({
       input: { hosts, account, network, osInfoPath },
     }) {
-      const osInfo = await readOsInfoAbsolute(osInfoPath)
-      const mxd = await MxdManager.create({ hosts, account, network, systemImagePath: osInfo.file })
-      yield* mxd.installAll()
+      try {
+        const osInfo = await readOsInfoAbsolute(osInfoPath)
+        const mxd = await MxdManager.create({ hosts, account, network, systemImagePath: osInfo.file })
+        yield* mxd.installAll()
+      } catch (err) {
+        console.log(err)
+        throw err
+      }
     }),
   },
 })
