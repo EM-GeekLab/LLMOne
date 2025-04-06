@@ -136,6 +136,15 @@ export class Mxc {
       body: body && JSON.stringify(body),
     })
     const resp = await response.text()
+    if (response.status >= 400) {
+      console.error({
+        url,
+        method,
+        body,
+        status: response.status,
+        text: resp,
+      })
+    }
     try {
       const json = (await JSON.parse(resp)) as R
       return [json, response.status]

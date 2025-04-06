@@ -59,6 +59,20 @@ EOF
 chroot /mnt sh -c 'update-initramfs -c -k all && grub-install --target=x86_64-efi --efi-directory=/boot/efi --recheck && update-grub'
 chroot /mnt sh -c 'ln -rs /usr/lib/systemd/systemd /sbin/init'`
 
+class DeployError extends Error {
+  public reason?: OperationError
+
+  constructor({ error, reason }: { error: DeployerError; reason?: OperationError }) {
+    super(error)
+    this.name = error
+    this.reason = reason
+  }
+
+  toString() {
+    return this.reason ? `${this.name}: ${this.reason}` : this.name
+  }
+}
+
 export class Deployer {
   private mxc: Mxc
   private stage: DeployStage
@@ -74,89 +88,70 @@ export class Deployer {
     this.rootfsUrl = rootfsUrl
   }
 
-  private async execScript(script: string): Promise<{
-    error: DeployerError
-    reason?: OperationError
-  }> {
+  private async execScript(script: string) {
     const [r] = await this.mxc.commandExec(this.hostId, script)
     if (!r.ok) {
-      return {
+      throw new DeployError({
         error: 'FailedToExec',
         reason: r.reason,
-      }
+      })
     }
     const taskId = r.task_id
     const r2 = await this.mxc.blockUntilTaskComplete(this.hostId, taskId, 100)
     if (!r2.ok) {
-      return {
+      throw new DeployError({
         error: 'FailedToExec',
         reason: r2.reason,
-      }
+      })
     }
     if (r2.payload.payload.type !== 'CommandExecutionResponse') {
-      return {
+      throw new DeployError({
         error: 'ReturnTypeMismatch',
-      }
+      })
     }
     if (r2.payload.payload.code !== 0) {
-      return {
+      throw new DeployError({
         error: 'ExecError',
-      }
-    }
-    return {
-      error: 'Ok',
+      })
     }
   }
 
-  private async downloadFile(
-    url: string,
-    path: string,
-    xxh3?: string,
-  ): Promise<{
-    error: DeployerError
-    reason?: OperationError
-  }> {
+  private async downloadFile(url: string, path: string, xxh3?: string) {
     const [r] = await this.mxc.downloadFile(this.hostId, url, path)
     if (!r.ok) {
-      return {
+      throw new DeployError({
         error: 'FailedToExec',
         reason: r.reason,
-      }
+      })
     }
     const taskId = r.task_id
     const r2 = await this.mxc.blockUntilTaskComplete(this.hostId, taskId, 100)
     if (!r2.ok) {
-      return {
+      throw new DeployError({
         error: 'FailedToExec',
         reason: r2.reason,
-      }
+      })
     }
     if (r2.payload.payload.type !== 'FileOperationResponse') {
-      return {
+      throw new DeployError({
         error: 'ReturnTypeMismatch',
-      }
+      })
     }
     if (!r2.payload.payload.success) {
-      return {
+      throw new DeployError({
         error: 'ExecError',
-      }
+      })
     }
     if (r2.payload.payload.hash !== null && !!xxh3) {
       if (r2.payload.payload.hash !== xxh3) {
-        return {
+        throw new DeployError({
           error: 'ExecError',
-        }
+        })
       }
-    }
-    return {
-      error: 'Ok',
     }
   }
 
-  public async preinstall(): Promise<{
-    error: DeployerError
-    reason?: OperationError
-  }> {
+  public async preinstall() {
     if (this.stage !== 'Pending') {
       throw new Error(`StageError: ${this.stage}`)
     }
@@ -164,49 +159,28 @@ export class Deployer {
     const script = `export DISK="${this.diskName}";
 ${PREINSTALL_SCRIPT}`
 
-    const r = await this.execScript(script)
-    if (r.error === 'Ok') {
-      this.stage = 'Preinstalled'
-    }
-    return r
+    await this.execScript(script)
   }
 
-  public async downloadRootfs(): Promise<{
-    error: DeployerError
-    reason?: OperationError
-  }> {
+  public async downloadRootfs() {
     if (this.stage !== 'Preinstalled') {
       throw new Error(`StageError: ${this.stage}`)
     }
     this.stage = 'Downloading'
-    const r = await this.downloadFile(this.rootfsUrl, '/installer_tmp/image.tar.zst')
-    if (r.error === 'Ok') {
-      this.stage = 'Downloaded'
-    }
-    return r
+    await this.downloadFile(this.rootfsUrl, '/installer_tmp/image.tar.zst')
   }
 
-  public async install(): Promise<{
-    error: DeployerError
-    reason?: OperationError
-  }> {
+  public async install() {
     if (this.stage !== 'Downloaded') {
       throw new Error(`StageError: ${this.stage}`)
     }
     this.stage = 'Installing'
     const script = 'cd /installer_tmp && tar xf image.tar.zst -C /mnt --preserve-permissions --same-owner --zstd'
 
-    const r = await this.execScript(script)
-    if (r.error === 'Ok') {
-      this.stage = 'Installed'
-    }
-    return r
+    await this.execScript(script)
   }
 
-  public async postinstall(): Promise<{
-    error: DeployerError
-    reason?: OperationError
-  }> {
+  public async postinstall() {
     if (this.stage !== 'Installed') {
       throw new Error(`StageError: ${this.stage}`)
     }
@@ -214,11 +188,7 @@ ${PREINSTALL_SCRIPT}`
     const script = `export DISK="${this.diskName}";
 ${POSTINSTALL_SCRIPT}
 `
-    const r = await this.execScript(script)
-    if (r.error === 'Ok') {
-      this.stage = 'Postinstalled'
-    }
-    return r
+    await this.execScript(script)
   }
 
   public async applyNetplan(config: NetplanConfiguration, confName = '00-default.yaml') {
@@ -228,7 +198,7 @@ ${POSTINSTALL_SCRIPT}
     const script = `mkdir -p /mnt/etc/netplan && cat <<EOFEOFEOF > /mnt/etc/netplan/${confName}
 ${configToYaml(config)}
 EOFEOFEOF`
-    return await this.execScript(script)
+    await this.execScript(script)
   }
 
   private async execScriptChroot(inner: string) {
@@ -238,7 +208,7 @@ EOFEOFEOF`
     const script = `chroot /mnt bash << EOFEOFEOF
 ${inner}
 EOFEOFEOF`
-    return await this.execScript(script)
+    await this.execScript(script)
   }
 
   public async applyUserconfig(username: string, password: string) {
@@ -249,15 +219,15 @@ useradd -m -G sudo -s /bin/bash ${username}
 echo "${username}:${password}" | chpasswd
 }`
     }
-    return this.execScriptChroot(script)
+    await this.execScriptChroot(script)
   }
 
   public async applyHostname(hostname: string) {
-    return this.execScriptChroot(`echo "${hostname}" > /etc/hostname`)
+    await this.execScriptChroot(`echo "${hostname}" > /etc/hostname`)
   }
 
   public async applyAptSources(sources: string) {
-    return this.execScriptChroot(`cat <<EOF > /etc/apt/sources.list
+    await this.execScriptChroot(`cat <<EOF > /etc/apt/sources.list
 ${sources}
 EOF
 rm /etc/apt/sources.list.d/*
