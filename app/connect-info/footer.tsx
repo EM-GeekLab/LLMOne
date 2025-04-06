@@ -23,11 +23,11 @@ import {
 } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
 import { ConnectModeIf } from '@/app/_shared/condition'
-import { validateBmcHosts, validateSshHosts } from '@/app/connect-info/utils'
 import { useGlobalStore, useGlobalStoreApi } from '@/stores'
 import { useTRPC, useTRPCClient } from '@/trpc/client'
 
 import { useIsAllConnected } from './hooks'
+import { validateBmcHosts, validateSshHosts } from './utils'
 
 const noHostMessage = '至少添加一台主机'
 const connectionMessage = '需要成功连接所有服务器'
