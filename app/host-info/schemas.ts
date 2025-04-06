@@ -39,6 +39,8 @@ export const networkConfigSchema = z.object({
 export type NetworkConfigType = z.infer<typeof networkConfigSchema>
 
 export const hostConfigSchema = z.object({
+  id: z.string(),
+  bmcIp: z.string().ip('BMC IP 地址格式错误'),
   hostname: z
     .string()
     .nonempty('主机名不能为空')
@@ -49,3 +51,12 @@ export const hostConfigSchema = z.object({
 })
 
 export type HostConfigType = z.infer<typeof hostConfigSchema>
+
+export const installConfigSchema = z.object({
+  hosts: z.array(hostConfigSchema),
+  account: accountConfigSchema,
+  network: networkConfigSchema,
+  osInfoPath: z.string(),
+})
+
+export type InstallConfigType = z.infer<typeof installConfigSchema>
