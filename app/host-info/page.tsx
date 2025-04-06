@@ -4,6 +4,7 @@ import { AppFrame } from '@/components/app/app-frame'
 import { AccountConfig } from './account-config'
 import { HostInfoContextProvider } from './context'
 import { Footer } from './footer'
+import { HostsConfig } from './hosts-config'
 import { LogoDisplay } from './logo-display'
 import { NetworkConfig } from './network-config'
 
@@ -19,6 +20,7 @@ export default function Page() {
         <AppCardContent>
           <AccountConfig />
           <NetworkConfig />
+          <HostsConfig />
         </AppCardContent>
         <Footer />
       </HostInfoContextProvider>

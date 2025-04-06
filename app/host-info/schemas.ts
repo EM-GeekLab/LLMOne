@@ -33,3 +33,11 @@ export const networkConfigSchema = z.object({
 })
 
 export type NetworkConfigType = z.infer<typeof networkConfigSchema>
+
+export const hostConfigSchema = z.object({
+  hostname: z.string().nonempty('主机名不能为空'),
+  ip: z.string().cidr(),
+  disk: z.string(),
+})
+
+export type HostConfigType = z.infer<typeof hostConfigSchema>
