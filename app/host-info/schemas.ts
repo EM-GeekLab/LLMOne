@@ -1,7 +1,11 @@
 import { z } from '@/lib/zod'
 
 export const accountConfigSchema = z.object({
-  username: z.string().nonempty('用户名不能为空'),
+  username: z
+    .string()
+    .nonempty('用户名不能为空')
+    .max(30, '用户名不能超过 30 个字符')
+    .regex(/[a-z_][a-z0-9_-]*[$]?/, '用户名只能包含字母、数字、下划线和连字符'),
   password: z.string().optional(),
 })
 
@@ -35,7 +39,11 @@ export const networkConfigSchema = z.object({
 export type NetworkConfigType = z.infer<typeof networkConfigSchema>
 
 export const hostConfigSchema = z.object({
-  hostname: z.string().nonempty('主机名不能为空'),
+  hostname: z
+    .string()
+    .nonempty('主机名不能为空')
+    .max(63, '主机名不能超过 63 个字符')
+    .regex(/^[a-zA-Z0-9-]+$/, '主机名只能包含字母、数字和连字符'),
   ip: z.string().cidr(),
   disk: z.string(),
 })
