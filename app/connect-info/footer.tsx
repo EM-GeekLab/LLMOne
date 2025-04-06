@@ -131,7 +131,7 @@ function ConfirmDialogContent({
       </div>
       {error && <ErrorAlert>{error.message}</ErrorAlert>}
       <DialogFooter>
-        <DialogClose asChild>
+        <DialogClose disabled={loading} asChild>
           <Button variant="outline">取消</Button>
         </DialogClose>
         <Button

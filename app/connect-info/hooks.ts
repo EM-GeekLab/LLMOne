@@ -160,7 +160,7 @@ export function useIsAllConnected() {
     )
 
     handleQueryResult(observer.getCurrentResult())
-    const unsubscribe = observer.subscribe((result) => handleQueryResult(result))
+    const unsubscribe = observer.subscribe(handleQueryResult)
 
     return () => unsubscribe()
   }, [bmcHosts, connectMode, defaultCredentials, queryClient, sshHosts])
