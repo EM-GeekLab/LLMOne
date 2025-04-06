@@ -49,15 +49,29 @@ export function Footer() {
 }
 
 function BmcNextStepButton() {
-  const { push } = useRouter()
-
   const { isAllConnected } = useIsAllConnected()
   const hasHost = useGlobalStore((s) => !!s.bmcHosts.length)
 
-  const storeApi = useGlobalStoreApi()
-  const setHosts = useGlobalStore((s) => s.setFinalBmcHosts)
-
   const [dialogOpen, setDialogOpen] = useState(false)
+
+  return (
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <NavButtonGuard pass={isAllConnected && hasHost} message={!hasHost ? noHostMessage : connectionMessage}>
+        <DialogTrigger asChild>
+          <Button>下一步</Button>
+        </DialogTrigger>
+      </NavButtonGuard>
+      <ConfirmDialogContent onClose={() => setDialogOpen(false)} />
+    </Dialog>
+  )
+}
+
+function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
+  const { push } = useRouter()
+
+  const hosts = useGlobalStore((s) => s.bmcHosts)
+  const setHosts = useGlobalStore((s) => s.setFinalBmcHosts)
+  const storeApi = useGlobalStoreApi()
 
   const queryClient = useQueryClient()
   const trpcClient = useTRPCClient()
@@ -83,36 +97,13 @@ function BmcNextStepButton() {
       }
     },
     onSuccess: () => {
-      setDialogOpen(false)
+      onClose()
       push('/select-os')
     },
     onError: (error) => {
       console.error(error)
     },
   })
-
-  return (
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <NavButtonGuard pass={isAllConnected && hasHost} message={!hasHost ? noHostMessage : connectionMessage}>
-        <DialogTrigger asChild>
-          <Button>下一步</Button>
-        </DialogTrigger>
-      </NavButtonGuard>
-      <ConfirmDialogContent onConfirm={mutate} loading={isPending} error={error} />
-    </Dialog>
-  )
-}
-
-function ConfirmDialogContent({
-  onConfirm,
-  loading,
-  error,
-}: {
-  onConfirm?: () => void
-  loading?: boolean
-  error: Error | null
-}) {
-  const hosts = useGlobalStore((s) => s.bmcHosts)
 
   return (
     <DialogContent>
@@ -131,15 +122,15 @@ function ConfirmDialogContent({
       </div>
       {error && <ErrorAlert>{error.message}</ErrorAlert>}
       <DialogFooter>
-        <DialogClose disabled={loading} asChild>
+        <DialogClose disabled={isPending} asChild>
           <Button variant="outline">取消</Button>
         </DialogClose>
         <Button
           variant="destructive"
-          className={cn(loading && 'pointer-events-none opacity-50')}
-          onClick={() => onConfirm?.()}
+          className={cn(isPending && 'pointer-events-none opacity-50')}
+          onClick={() => mutate()}
         >
-          {loading && <Spinner className="size-4" />}
+          {isPending && <Spinner className="size-4" />}
           继续
         </Button>
       </DialogFooter>
