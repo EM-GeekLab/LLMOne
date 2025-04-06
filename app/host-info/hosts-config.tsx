@@ -18,9 +18,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
-import type { HostExtraInfo } from '@/sdk/mxlite'
 import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 import { useTRPC, useTRPCClient } from '@/trpc/client'
+import type { DiskInfo } from '@/trpc/router/connection'
 
 import { useHostInfoContext, Validator } from './context'
 import { hostConfigSchema, HostConfigType } from './schemas'
@@ -36,8 +36,6 @@ export function HostsConfig() {
     </AppCardSection>
   )
 }
-
-type DiskInfo = NonNullable<HostExtraInfo['system_info']>['disks']
 
 function HostsConfigContent() {
   const bmcHosts = useGlobalStore((s) => s.finalBmcHosts)
@@ -68,7 +66,7 @@ function HostsConfigContent() {
   }
 
   return (
-    <div className="grid max-w-4xl grid-cols-[auto_1fr_1fr_1fr] gap-x-3 gap-y-2.5">
+    <div className="grid max-w-4xl grid-cols-[auto_0.64fr_0.64fr_1fr] gap-x-3 gap-y-2.5">
       <div className="text-muted-foreground col-span-full -mb-1 grid grid-cols-subgrid items-center *:font-medium">
         <div>BMC IP</div>
         <div>主机名</div>
@@ -168,15 +166,12 @@ function HostConfigForm({ id, bmcIp, disks }: { id: string; bmcIp: string; disks
                     <SelectValue placeholder="选择安装磁盘" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
-                  {/* eslint-disable camelcase */}
-                  {disks.map(({ device_name, kind, total_space }) => (
-                    <SelectItem key={device_name} value={device_name}>
-                      <span>{device_name}</span>
-                      <span className="text-muted-foreground">
-                        {readableSize(total_space)}
-                        {kind !== 'Unknown' && ` · ${kind}`}
-                      </span>
+                <SelectContent position="item-aligned">
+                  {disks.map(({ path, model, size }) => (
+                    <SelectItem key={path} value={path}>
+                      <span>{path}</span>
+                      <span className="text-muted-foreground flex-1 truncate text-xs">{model}</span>
+                      <span className="text-muted-foreground -ml-1 text-xs">({readableSize(size)})</span>
                     </SelectItem>
                   ))}
                 </SelectContent>

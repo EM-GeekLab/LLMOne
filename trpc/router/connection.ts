@@ -4,7 +4,7 @@ import { intersects } from 'radash'
 import { autoDetect, iBMCRedfishClient, iDRACRedfishClient } from 'redfish-client'
 
 import { BmcClients } from '@/lib/bmc-clients'
-import { mxc } from '@/lib/mxc'
+import { mxc } from '@/lib/metalx'
 import { selectIpInSameSubnet } from '@/lib/network'
 import { z } from '@/lib/zod'
 import { BmcFinalConnectionInfo, bmcHostsListSchema, SshFinalConnectionInfo } from '@/app/connect-info/schemas'
@@ -14,6 +14,8 @@ import { baseProcedure, createRouter } from '@/trpc/init'
 import { getDefaultArchitecture } from './bmc-utils'
 import { getBootstrapPath } from './resource-utils'
 import { inputType } from './utils'
+
+export type DiskInfo = (NonNullable<HostExtraInfo['system_info']>['blks'][number] & { path: string })[]
 
 export const connectionRouter = createRouter({
   bmc: {
@@ -104,7 +106,7 @@ export const connectionRouter = createRouter({
 
         let count = 0
         const MAX_SCAN_COUNT = 1800
-        let matchedHost: { id: string; bmcIp: string; disks: NonNullable<HostExtraInfo['system_info']>['disks'] }[] = []
+        let matchedHost: { id: string; bmcIp: string; disks: DiskInfo }[] = []
         while (true) {
           matchedHost = []
           if (signal?.aborted) break
@@ -122,7 +124,10 @@ export const connectionRouter = createRouter({
             return {
               id: host,
               mac: info?.system_info?.nics.map((nic) => nic.mac_address.toLowerCase()) ?? [],
-              disks: info?.system_info?.disks ?? [],
+              disks:
+                (info?.system_info?.blks.filter(
+                  (disk) => disk.path != null && disk.size > 32 * 1024 * 1024,
+                ) as DiskInfo) ?? [],
             }
           })
 
