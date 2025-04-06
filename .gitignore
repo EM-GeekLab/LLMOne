@@ -43,6 +43,9 @@ next-env.d.ts
 # IntelliJ
 /.idea
 
+# VS Code
+/.vscode
+
 # scripts for internal testing purposes
 .local
 

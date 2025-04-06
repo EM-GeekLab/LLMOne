@@ -251,4 +251,16 @@ echo "${username}:${password}" | chpasswd
     }
     return this.execScriptChroot(script)
   }
+
+  public async applyHostname(hostname: string) {
+    return this.execScriptChroot(`echo "${hostname}" > /etc/hostname`)
+  }
+
+  public async applyAptSources(sources: string) {
+    return this.execScriptChroot(`cat <<EOF > /etc/apt/sources.list
+${sources}
+EOF
+rm /etc/apt/sources.list.d/*
+`)
+  }
 }
