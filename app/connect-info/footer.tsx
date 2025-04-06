@@ -79,7 +79,7 @@ function BmcNextStepButton() {
           bmcHosts: result.data,
           manifestPath,
         })
-        queryClient.setQueryData(trpc.connection.bmc.getDefaultArchitecture.queryKey(), architecture)
+        queryClient.setQueryData(trpc.connection.bmc.getDefaultArchitecture.queryKey(result.data), architecture)
       }
     },
     onSuccess: () => {

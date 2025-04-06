@@ -36,7 +36,7 @@ function OsSelectorContainer() {
     manifestPath
       ? trpc.resource.getDistributions.queryOptions(manifestPath)
       : {
-          queryKey: trpc.resource.getDistributions.queryKey(),
+          queryKey: trpc.resource.getDistributions.queryKey(manifestPath),
           queryFn: () => Promise.resolve([]),
           enabled: false,
         },
