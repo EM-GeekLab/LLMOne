@@ -53,5 +53,5 @@ export type DhcpOverride = z.infer<typeof dhcpOverrideSchema>
 export type NetplanConfiguration = z.infer<typeof netplanConfigurationSchema>
 
 export function configToYaml(config: NetplanConfiguration): string {
-  return stringify(config)
+  return stringify(netplanConfigurationSchema.parse(config))
 }
