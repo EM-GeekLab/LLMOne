@@ -1,10 +1,11 @@
 import { match } from 'ts-pattern'
 
-import { mxc } from '@/lib/metalx/mxc'
 import type { AccountConfigType, HostConfigType, NetworkConfigType } from '@/app/host-info/schemas'
 import { HostExtraInfo } from '@/sdk/mxlite'
 import { Deployer } from '@/sdk/mxlite/deployer'
 import { NetplanConfiguration } from '@/sdk/mxlite/netplan'
+
+import { mxc } from './mxc'
 
 const installSteps = [
   'preinstall',
@@ -17,22 +18,35 @@ const installSteps = [
   'complete',
 ] as const
 
-type InstallStep = (typeof installSteps)[number] | null
+export type InstallStep = (typeof installSteps)[number] | null
 
-export type InstallProgress =
+const installStepProgressMap: Record<NonNullable<InstallStep>, [number, number]> = {
+  preinstall: [0, 25],
+  downloadRootfs: [25, 50],
+  install: [50, 75],
+  postinstall: [75, 85],
+  configNetwork: [85, 90],
+  configHostname: [90, 95],
+  configUser: [95, 100],
+  complete: [100, 100],
+}
+
+export type InstallProgress = {
+  host: HostConfigType
+  from: number
+  to: number
+} & (
   | {
       ok: true
-      host: HostConfigType
-      progress: number
       completed: InstallStep
       started: InstallStep
     }
   | {
       ok: false
-      host: HostConfigType
       step: InstallStep
       error: Error
     }
+)
 
 export type CreateMxdParams = {
   hosts: HostConfigType[]
@@ -59,7 +73,7 @@ export class MxdManager {
   }
 
   static async create({ hosts, account, network, systemImagePath }: CreateMxdParams) {
-    const [, status] = await mxc.addFileMap(systemImagePath, 'image.tar.zst')
+    const [, status] = await mxc.addFileMap('/srv/mkosi.output/image_ubuntu_noble_x86-64.tar.zst', 'image.tar.zst')
     if (status >= 400) {
       throw new Error(`系统镜像文件服务失败，状态码 ${status}`)
     }
@@ -102,34 +116,40 @@ export class MxdManager {
     const { host, info, deployer } = this.list[index]
 
     let started: InstallStep = null
+    let [from, to] = [0, 0]
     try {
       if (fromStepIndex <= 0) {
         started = 'preinstall'
-        yield { ok: true, host, progress: 0, completed: null, started }
+        ;[from, to] = installStepProgressMap.preinstall
+        yield { ok: true, host, from, to, completed: null, started }
         await deployer.preinstall()
       }
 
       if (fromStepIndex <= 1) {
         started = 'downloadRootfs'
-        yield { ok: true, host, progress: 25, completed: 'preinstall', started }
+        ;[from, to] = installStepProgressMap.downloadRootfs
+        yield { ok: true, host, from, to, completed: 'preinstall', started }
         await deployer.downloadRootfs()
       }
 
       if (fromStepIndex <= 2) {
         started = 'install'
-        yield { ok: true, host, progress: 50, completed: 'downloadRootfs', started }
+        ;[from, to] = installStepProgressMap.install
+        yield { ok: true, host, from, to, completed: 'downloadRootfs', started }
         await deployer.install()
       }
 
       if (fromStepIndex <= 3) {
         started = 'postinstall'
-        yield { ok: true, host, progress: 75, completed: 'install', started }
+        ;[from, to] = installStepProgressMap.postinstall
+        yield { ok: true, host, from, to, completed: 'install', started }
         await deployer.postinstall()
       }
 
       if (fromStepIndex <= 4) {
         started = 'configNetwork'
-        yield { ok: true, host, progress: 85, completed: 'postinstall', started }
+        ;[from, to] = installStepProgressMap.configNetwork
+        yield { ok: true, host, from, to, completed: 'postinstall', started }
         await deployer.applyNetplan({
           version: 2,
           renderer: 'networkd',
@@ -157,21 +177,24 @@ export class MxdManager {
 
       if (fromStepIndex <= 5) {
         started = 'configHostname'
-        yield { ok: true, host, progress: 90, completed: 'configNetwork', started }
+        ;[from, to] = installStepProgressMap.configHostname
+        yield { ok: true, host, from, to, completed: 'configNetwork', started }
         await deployer.applyHostname(host.hostname)
       }
 
       if (fromStepIndex <= 6) {
         started = 'configUser'
-        yield { ok: true, host, progress: 90, completed: 'configNetwork', started }
+        ;[from, to] = installStepProgressMap.configUser
+        yield { ok: true, host, from, to, completed: 'configNetwork', started }
         await deployer.applyUserconfig(this.account.username, this.account.password || '')
       }
 
       started = 'complete'
-      yield { ok: true, host, progress: 100, completed: 'postinstall', started }
+      ;[from, to] = installStepProgressMap.complete
+      yield { ok: true, host, from, to, completed: 'postinstall', started }
     } catch (err) {
       const error = err as Error
-      const info: InstallProgress = { ok: false, host, step: started, error }
+      const info: InstallProgress = { ok: false, host, from, to, step: started, error }
       console.error(info)
       yield info
     }
