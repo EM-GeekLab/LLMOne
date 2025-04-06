@@ -1,11 +1,10 @@
 import { readdir, stat } from 'node:fs/promises'
 import { dirname, join } from 'path'
 
-import { addAbsolutePaths } from '@/lib/file/server-path'
 import { z } from '@/lib/zod'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
-import { readManifest, readOsInfo } from './resource-utils'
+import { readManifest, readOsInfo, readOsInfoAbsolute } from './resource-utils'
 
 export const resourceRouter = createRouter({
   getDistributions: baseProcedure.input(z.string()).query(async ({ input }) => {
@@ -24,6 +23,6 @@ export const resourceRouter = createRouter({
     ).then((res) => res.filter((item) => item !== null))
   }),
   getOsInfo: baseProcedure.input(z.string()).query(async ({ input }) => {
-    return addAbsolutePaths(await readOsInfo(input), dirname(input), ['file', 'packagesDir'])
+    return await readOsInfoAbsolute(input)
   }),
 })

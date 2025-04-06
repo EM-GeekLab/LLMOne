@@ -3,6 +3,7 @@ import { dirname, join } from 'path'
 
 import { TRPCError } from '@trpc/server'
 
+import { addAbsolutePaths } from '@/lib/file/server-path'
 import { OsArchitecture } from '@/lib/os'
 import { resourceManifestSchema, resourceOsInfoSchema } from '@/app/select-os/rescource-schema'
 
@@ -30,6 +31,10 @@ export async function readOsInfo(path: string) {
       cause: err,
     })
   }
+}
+
+export async function readOsInfoAbsolute(path: string) {
+  return addAbsolutePaths(await readOsInfo(path), dirname(path), ['file', 'packagesDir'])
 }
 
 export async function getBootstrapPath(path: string, arch: OsArchitecture) {
