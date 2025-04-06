@@ -40,7 +40,7 @@ export type TaskResult =
 export type AddTaskResult =
   | {
       ok: true
-      taskId: number
+      task_id: number
     }
   | {
       ok: false
@@ -135,11 +135,18 @@ export class Mxc {
       },
       body: body && JSON.stringify(body),
     })
+    const resp = await response.text()
     try {
-      const json = (await response.json()) as R
+      const json = (await JSON.parse(resp)) as R
       return [json, response.status]
     } catch (err) {
-      console.error(err)
+      console.error({
+        url,
+        method,
+        body,
+        status: response.status,
+        text: resp,
+      })
       throw err
     }
   }

@@ -85,7 +85,7 @@ export class Deployer {
         reason: r.reason,
       }
     }
-    const taskId = r.taskId
+    const taskId = r.task_id
     const r2 = await this.mxc.blockUntilTaskComplete(this.hostId, taskId, 100)
     if (!r2.ok) {
       return {
@@ -123,7 +123,7 @@ export class Deployer {
         reason: r.reason,
       }
     }
-    const taskId = r.taskId
+    const taskId = r.task_id
     const r2 = await this.mxc.blockUntilTaskComplete(this.hostId, taskId, 100)
     if (!r2.ok) {
       return {
