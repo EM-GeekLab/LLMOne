@@ -6,7 +6,6 @@ import { omit } from 'radash'
 import { useForm } from 'react-hook-form'
 
 import { readableSize } from '@/lib/file/utils'
-import { debug } from '@/lib/utils'
 import {
   AppCardSection,
   AppCardSectionDescription,
@@ -155,7 +154,7 @@ function HostConfigForm({ id, bmcIp, disks }: { id: string; bmcIp: string; disks
                 </FormControl>
                 <SelectContent>
                   {/* eslint-disable camelcase */}
-                  {debug(disks).map(({ device_name, kind, total_space }) => (
+                  {disks.map(({ device_name, kind, total_space }) => (
                     <SelectItem key={device_name} value={device_name}>
                       <span>{device_name}</span>
                       <span className="text-muted-foreground">
