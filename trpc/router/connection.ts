@@ -8,6 +8,7 @@ import { mxc } from '@/lib/mxc'
 import { selectIpInSameSubnet } from '@/lib/network'
 import { z } from '@/lib/zod'
 import { BmcFinalConnectionInfo, bmcHostsListSchema, SshFinalConnectionInfo } from '@/app/connect-info/schemas'
+import { HostExtraInfo } from '@/sdk/mxlite'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
 import { getDefaultArchitecture } from './bmc-utils'
@@ -103,7 +104,7 @@ export const connectionRouter = createRouter({
 
         let count = 0
         const MAX_SCAN_COUNT = 1800
-        let matchedHost: { ip: string; id: string }[] = []
+        let matchedHost: { id: string; bmcIp: string; disks: NonNullable<HostExtraInfo['system_info']>['disks'] }[] = []
         while (true) {
           matchedHost = []
           if (signal?.aborted) break
@@ -121,13 +122,14 @@ export const connectionRouter = createRouter({
             return {
               id: host,
               mac: info?.system_info?.nics.map((nic) => nic.mac_address.toLowerCase()) ?? [],
+              disks: info?.system_info?.disks ?? [],
             }
           })
 
-          for (const { ip, mac } of networkInterface) {
-            for (const { id, mac: hostMac } of hostList) {
-              if (intersects(mac, hostMac)) {
-                matchedHost.push({ ip, id })
+          for (const { id, disks, mac } of hostList) {
+            for (const { ip: bmcIp, mac: bmcMac } of networkInterface) {
+              if (intersects(mac, bmcMac)) {
+                matchedHost.push({ id, bmcIp, disks })
                 break
               }
             }
