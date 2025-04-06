@@ -12,6 +12,7 @@ const installSteps = [
   'install',
   'postinstall',
   'configNetwork',
+  'configHostname',
   'configUser',
   'complete',
 ] as const
@@ -58,7 +59,10 @@ export class MxdManager {
   }
 
   static async create({ hosts, account, network, systemImagePath }: CreateMxdParams) {
-    await mxc.addFileMap(systemImagePath, 'image.tar.zst')
+    const [, status] = await mxc.addFileMap(systemImagePath, 'image.tar.zst')
+    if (status >= 400) {
+      throw new Error(`系统镜像文件服务失败，状态码 ${status}`)
+    }
     const deployerList = await Promise.all(
       hosts.map(async (host) => {
         const [resp] = await mxc.getHostInfo(host.id)
@@ -152,6 +156,12 @@ export class MxdManager {
       }
 
       if (fromStepIndex <= 5) {
+        started = 'configHostname'
+        yield { ok: true, host, progress: 90, completed: 'configNetwork', started }
+        await deployer.applyHostname(host.hostname)
+      }
+
+      if (fromStepIndex <= 6) {
         started = 'configUser'
         yield { ok: true, host, progress: 90, completed: 'configNetwork', started }
         await deployer.applyUserconfig(this.account.username, this.account.password || '')
