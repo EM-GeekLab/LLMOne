@@ -62,7 +62,7 @@ export type HostExtraInfo = {
       vendor_id: string
       brand: number
     }[]
-    disks: {
+    mnts: {
       kind: 'HDD' | 'SSD' | 'Unknown'
       device_name: string
       file_system: string
@@ -79,6 +79,19 @@ export type HostExtraInfo = {
         version: 4 | 6
         prefix: number
       }[]
+    }[]
+    blks: {
+      maj_min: string
+      disk_seq: number
+      name: string
+      kname: string
+      model: Option<string>
+      size: number
+      removable: boolean
+      uuid: Option<string>
+      wwid: Option<string>
+      readonly: boolean
+      path: Option<string>
     }[]
   }>
 }
