@@ -12,9 +12,6 @@ export function Footer() {
 
   return (
     <AppCardFooter>
-      <NavButton variant="outline" to="/connect-info">
-        上一步
-      </NavButton>
       {mode === 'online' ? (
         <NavButtonGuard message="需要选择操作系统" pass={!!selection.version}>
           <NavButton to="/host-info">下一步</NavButton>

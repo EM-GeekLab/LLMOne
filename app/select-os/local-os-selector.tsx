@@ -6,6 +6,7 @@ import { group } from 'radash'
 
 import { OsDistribution } from '@/lib/os'
 import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
+import { ErrorAlert } from '@/components/base/error-alert'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Spinner } from '@/components/ui/spinner'
@@ -49,9 +50,19 @@ function OsSelectorContainer() {
       </AppCardSection>
     )
 
-  if (distros.isError) return <AppCardSection>{distros.error?.message}</AppCardSection>
+  if (distros.isError)
+    return (
+      <AppCardSection>
+        <ErrorAlert>{distros.error?.message}</ErrorAlert>
+      </AppCardSection>
+    )
 
-  if (defaultArch.isError) return <AppCardSection>{defaultArch.error?.message}</AppCardSection>
+  if (defaultArch.isError)
+    return (
+      <AppCardSection>
+        <ErrorAlert>{defaultArch.error?.message}</ErrorAlert>
+      </AppCardSection>
+    )
 
   return <OsSelector data={distros.data.filter((distro) => distro.arch === defaultArch.data)} />
 }
