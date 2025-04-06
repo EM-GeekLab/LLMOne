@@ -152,9 +152,6 @@ export class Deployer {
   }
 
   public async preinstall() {
-    if (this.stage !== 'Pending') {
-      throw new Error(`StageError: ${this.stage}`)
-    }
     this.stage = 'Preinstalling'
     const script = `export DISK="${this.diskName}";
 ${PREINSTALL_SCRIPT}`
@@ -164,18 +161,12 @@ ${PREINSTALL_SCRIPT}`
   }
 
   public async downloadRootfs() {
-    if (this.stage !== 'Preinstalled') {
-      throw new Error(`StageError: ${this.stage}`)
-    }
     this.stage = 'Downloading'
     await this.downloadFile(this.rootfsUrl, '/installer_tmp/image.tar.zst')
     this.stage = 'Downloaded'
   }
 
   public async install() {
-    if (this.stage !== 'Downloaded') {
-      throw new Error(`StageError: ${this.stage}`)
-    }
     this.stage = 'Installing'
     const script = 'cd /installer_tmp && tar xf image.tar.zst -C /mnt --preserve-permissions --same-owner --zstd'
 
@@ -184,9 +175,6 @@ ${PREINSTALL_SCRIPT}`
   }
 
   public async postinstall() {
-    if (this.stage !== 'Installed') {
-      throw new Error(`StageError: ${this.stage}`)
-    }
     this.stage = 'Postinstalling'
     const script = `export DISK="${this.diskName}";
 ${POSTINSTALL_SCRIPT}
@@ -196,9 +184,6 @@ ${POSTINSTALL_SCRIPT}
   }
 
   public async applyNetplan(config: NetplanConfiguration, confName = '00-default.yaml') {
-    if (this.stage !== 'Postinstalled') {
-      throw new Error(`StageError: ${this.stage}`)
-    }
     const script = `mkdir -p /mnt/etc/netplan && cat <<EOFEOFEOF > /mnt/etc/netplan/${confName}
 ${configToYaml(config)}
 EOFEOFEOF`
@@ -206,9 +191,6 @@ EOFEOFEOF`
   }
 
   private async execScriptChroot(inner: string) {
-    if (this.stage !== 'Postinstalled') {
-      throw new Error(`StageError: ${this.stage}`)
-    }
     const script = `chroot /mnt bash << EOFEOFEOF
 ${inner}
 EOFEOFEOF`
