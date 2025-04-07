@@ -21,10 +21,10 @@ const installSteps = [
 export type InstallStep = (typeof installSteps)[number] | null
 
 const installStepProgressMap: Record<NonNullable<InstallStep>, [number, number]> = {
-  preinstall: [0, 25],
-  downloadRootfs: [25, 50],
-  install: [50, 75],
-  postinstall: [75, 85],
+  preinstall: [0, 50],
+  downloadRootfs: [50, 65],
+  install: [65, 80],
+  postinstall: [80, 85],
   configNetwork: [85, 90],
   configHostname: [90, 95],
   configUser: [95, 100],
