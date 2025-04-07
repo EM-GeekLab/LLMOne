@@ -6,7 +6,8 @@ import { group } from 'radash'
 
 import { OsDistribution } from '@/lib/os'
 import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
-import { ErrorAlert } from '@/components/base/error-alert'
+import { Callout } from '@/components/base/callout'
+import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Spinner } from '@/components/ui/spinner'
@@ -53,14 +54,32 @@ function OsSelectorContainer() {
   if (distros.isError)
     return (
       <AppCardSection>
-        <ErrorAlert>{distros.error.message}</ErrorAlert>
+        <Callout
+          size="card"
+          action={
+            <Button variant="outline" size="xs" onClick={() => distros.refetch()}>
+              重试
+            </Button>
+          }
+        >
+          {distros.error.message}
+        </Callout>
       </AppCardSection>
     )
 
   if (defaultArch.isError)
     return (
       <AppCardSection>
-        <ErrorAlert>{defaultArch.error.message}</ErrorAlert>
+        <Callout
+          size="card"
+          action={
+            <Button variant="outline" size="xs" onClick={() => defaultArch.refetch()}>
+              重试
+            </Button>
+          }
+        >
+          {defaultArch.error.message}
+        </Callout>
       </AppCardSection>
     )
 

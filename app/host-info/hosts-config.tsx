@@ -13,7 +13,8 @@ import {
   AppCardSectionHeader,
   AppCardSectionTitle,
 } from '@/components/app/app-card'
-import { ErrorAlert } from '@/components/base/error-alert'
+import { Callout } from '@/components/base/callout'
+import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -43,7 +44,7 @@ function HostsConfigContent() {
   const trpcClient = useTRPCClient()
   const trpc = useTRPC()
 
-  const { data, isPending, isError, error } = useQuery({
+  const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: trpc.connection.bmc.scanHosts.queryKey(bmcHosts),
     queryFn: async () => {
       const data = await trpcClient.connection.bmc.scanHosts.query(bmcHosts, { context: { stream: true } })
@@ -62,7 +63,18 @@ function HostsConfigContent() {
   }
 
   if (isError) {
-    return <ErrorAlert>{error.message}</ErrorAlert>
+    return (
+      <Callout
+        size="card"
+        action={
+          <Button variant="outline" size="xs" onClick={() => refetch()}>
+            重试
+          </Button>
+        }
+      >
+        {error.message}
+      </Callout>
+    )
   }
 
   return (

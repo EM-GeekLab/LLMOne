@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 
 import { cn } from '@/lib/utils'
 import { AppCardFooter } from '@/components/app/app-card'
-import { ErrorAlert } from '@/components/base/error-alert'
+import { Callout } from '@/components/base/callout'
 import { NavButton } from '@/components/base/nav-button'
 import { NavButtonGuard } from '@/components/base/nav-button-guard'
 import { Button } from '@/components/ui/button'
@@ -121,7 +121,7 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
         <p>继续后将进入装机流程，主机所有数据将会清空。</p>
         <p>此操作不可撤销，请谨慎处理。</p>
       </div>
-      {error && <ErrorAlert>{error.message}</ErrorAlert>}
+      {error && <Callout>{error.message}</Callout>}
       <DialogFooter>
         <DialogClose disabled={isPending} asChild>
           <Button variant="outline">取消</Button>
