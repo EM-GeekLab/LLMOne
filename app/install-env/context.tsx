@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, UseMutationResult } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { InstallStep } from '@/lib/metalx'
@@ -14,13 +14,11 @@ import { useTRPCClient } from '@/trpc/client'
 
 import { usePreventUnload } from './hooks'
 
-export type MutationStatus = 'idle' | 'error' | 'pending' | 'success'
-
 const BmcLocalInstallContext = createSafeContext<{
   start: () => void
-  status: MutationStatus
-  isPending: boolean
   retry: (hostId: string, step: InstallStep) => void
+  installMutation: UseMutationResult<void, Error, void>
+  retryMutation: UseMutationResult<void, Error, { hostId: string; step: InstallStep }>
 }>()
 
 export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
@@ -41,9 +39,6 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
     },
     onError: (error) => {
       console.error(error)
-      toast.error('安装过程中出现错误', {
-        description: error.message,
-      })
     },
     retry: false,
   })
@@ -74,9 +69,9 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
     <BmcLocalInstallContext.Provider
       value={{
         start: () => mutation.mutate(),
-        status: mutation.status,
-        isPending: mutation.isPending,
+        installMutation: mutation,
         retry: (hostId, step) => retryMutation.mutate({ hostId, step }),
+        retryMutation: retryMutation,
       }}
     >
       {children}
