@@ -45,14 +45,16 @@ export function InstallPage() {
 function HostTabsTrigger({ host }: { host: HostConfigType }) {
   const progress = useLocalStore((s) => s.installationProgress.get(host.id))
   const isError = progress && !progress.ok
+  const isSuccess = progress && progress.from === 100
 
   return (
     <TabsPrimitive.TabsTrigger
       value={host.id}
       data-error={isError ? '' : undefined}
+      data-success={isSuccess ? '' : undefined}
       className={cn(
         'data-[state=active]:border-primary group hover:bg-accent data-[state=active]:bg-primary/5 relative grid w-52 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 rounded-lg border px-3 py-2 text-left transition',
-        'data-error:!border-destructive data-[state=active]:data-error:bg-destructive/5',
+        'data-error:!border-destructive data-success:!border-success data-[state=active]:data-error:bg-destructive/5 data-[state=active]:data-success:bg-success/5',
       )}
     >
       <FakeRingProgressBar progress={progress} size={44} thickness={6} />
@@ -63,7 +65,7 @@ function HostTabsTrigger({ host }: { host: HostConfigType }) {
           <FormatProgress progress={progress} />
         </div>
       </div>
-      <div className="group-data-[state=active]:border-t-primary group-data-error:group-data-[state=active]:border-t-destructive absolute -bottom-2.5 left-1/2 h-1.5 w-4.5 -translate-x-1/2 border-x-9 border-t-6 border-transparent" />
+      <div className="group-data-[state=active]:border-t-primary group-data-error:group-data-[state=active]:border-t-destructive group-data-success:group-data-[state=active]:border-t-success absolute -bottom-2.5 left-1/2 h-1.5 w-4.5 -translate-x-1/2 border-x-9 border-t-6 border-transparent" />
     </TabsPrimitive.TabsTrigger>
   )
 }

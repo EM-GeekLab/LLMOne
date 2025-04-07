@@ -1,4 +1,5 @@
 import { ComponentProps } from 'react'
+import { CheckIcon, XIcon } from 'lucide-react'
 
 import { InstallProgress } from '@/lib/metalx'
 import { useFakeProgress } from '@/lib/progress'
@@ -7,7 +8,7 @@ import { RingProgress } from '@/components/ui/ring-progress'
 
 function useInstallProgress(progress?: InstallProgress): {
   value: number
-  variant: 'primary' | 'destructive' | 'success'
+  variant: 'destructive' | 'success' | undefined
 } {
   const { from, to } = progress || { from: 0, to: 100 }
   const { value } = useFakeProgress({
@@ -20,7 +21,7 @@ function useInstallProgress(progress?: InstallProgress): {
 
   return {
     value,
-    variant: progress ? (progress.from === 100 ? 'success' : progress.ok ? 'primary' : 'destructive') : 'primary',
+    variant: progress ? (progress.from === 100 ? 'success' : progress.ok ? undefined : 'destructive') : undefined,
   }
 }
 
@@ -41,5 +42,15 @@ export function FakeRingProgressBar({
   progress?: InstallProgress
 } & ComponentProps<typeof RingProgress>) {
   const { value, variant } = useInstallProgress(progress)
-  return <RingProgress value={value} variant={variant} {...props} />
+
+  return (
+    <RingProgress value={value} variant={variant} {...props}>
+      <div
+        data-state={variant}
+        className="data-[state=success]:text-success data-[state=destructive]:text-destructive text-muted-foreground text-xs font-medium [&_svg]:size-4"
+      >
+        {variant === 'success' ? <CheckIcon /> : variant === 'destructive' ? <XIcon /> : null}
+      </div>
+    </RingProgress>
+  )
 }
