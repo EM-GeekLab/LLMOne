@@ -1,7 +1,10 @@
+import { enableMapSet } from 'immer'
 import { immer } from 'zustand/middleware/immer'
 import { createStore } from 'zustand/vanilla'
 
 import type { InstallProgress } from '@/lib/metalx'
+
+enableMapSet()
 
 export type LogItem = { type: 'info' | 'error'; time: Date; log: string }
 
