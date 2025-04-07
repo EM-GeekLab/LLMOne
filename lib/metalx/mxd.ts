@@ -7,7 +7,7 @@ import { NetplanConfiguration } from '@/sdk/mxlite/netplan'
 
 import { mxc } from './mxc'
 
-const installSteps = [
+export const installSteps = [
   'preinstall',
   'downloadRootfs',
   'install',
@@ -107,6 +107,9 @@ export class MxdManager {
     const index = this.list.findIndex((item) => item.host.id === hostId)
     if (index === -1) {
       throw new Error(`主机 ${hostId} 不在列表中`)
+    }
+    if (from == null) {
+      from = installSteps[0]
     }
     const stepIndex = installSteps.findIndex((step) => step === from)
     yield* this.installOne(index, stepIndex)
