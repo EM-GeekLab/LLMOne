@@ -7,6 +7,7 @@ import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react'
 
 import { readableSize } from '@/lib/file/utils'
 import { cn } from '@/lib/utils'
+import { Callout } from '@/components/base/callout'
 import { DistroLogo } from '@/components/base/distro-logo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,29 +26,35 @@ export function ConfirmCard() {
     trpc.resource.getOsInfo.queryOptions(osInfoPath || '', { enabled: !!osInfoPath, refetchOnMount: false }),
   )
 
-  const { start, isPending } = useBmcLocalInstallContext()
+  const {
+    start,
+    installMutation: { isPending, isError, error },
+  } = useBmcLocalInstallContext()
 
   return (
-    <Card className="relative">
-      <CardHeader>
-        <CardTitle className="text-base/none">确认信息</CardTitle>
-        <CardDescription>即将开始安装操作系统，该操作无法撤销或中止。请确认所有信息是否正确。</CardDescription>
-      </CardHeader>
-      <DistroLogo className="absolute top-6 right-6" distro={data?.distro} />
-      <CardContent>
-        <ConfirmCardContentInfo osInfo={data} />
-      </CardContent>
-      <CardFooter className="justify-center gap-4">
-        <Button disabled={isPending} variant="outline" onClick={() => push('/host-info')}>
-          <ArrowLeftIcon />
-          返回配置
-        </Button>
-        <Button disabled={isPending} onClick={start}>
-          开始安装
-          <ArrowRightIcon />
-        </Button>
-      </CardFooter>
-    </Card>
+    <>
+      <Card className="relative">
+        <CardHeader>
+          <CardTitle className="text-base/none">确认信息</CardTitle>
+          <CardDescription>即将开始安装操作系统，该操作无法撤销或中止。请确认所有信息是否正确。</CardDescription>
+        </CardHeader>
+        <DistroLogo className="absolute top-6 right-6" distro={data?.distro} />
+        <CardContent>
+          <ConfirmCardContentInfo osInfo={data} />
+        </CardContent>
+        <CardFooter className="justify-center gap-4">
+          <Button disabled={isPending} variant="outline" onClick={() => push('/host-info')}>
+            <ArrowLeftIcon />
+            返回配置
+          </Button>
+          <Button disabled={isPending} onClick={start}>
+            {isError ? '重试安装' : '开始安装'}
+            <ArrowRightIcon />
+          </Button>
+        </CardFooter>
+      </Card>
+      {isError && <Callout size="card">{error.message}</Callout>}
+    </>
   )
 }
 
