@@ -1,19 +1,33 @@
 import { InstallProgress } from '@/lib/metalx'
 import { useFakeProgress } from '@/lib/progress'
 import { Progress } from '@/components/ui/progress'
+import { RingProgress } from '@/components/ui/ring-progress'
 
-export function FakeProgressBar({ progress }: { progress?: InstallProgress }) {
+function useInstallProgress(progress?: InstallProgress): {
+  value: number
+  variant: 'primary' | 'destructive' | 'success'
+} {
+  const { from, to } = progress || { from: 0, to: 100 }
   const { value } = useFakeProgress({
-    min: progress?.from,
-    max: progress?.to,
-    timeConstant: 60,
+    min: from,
+    max: to,
+    timeConstant: to - from,
     stopped: progress ? progress.from === 100 || !progress.ok : false,
+    autoStart: !!progress,
   })
 
-  return (
-    <Progress
-      value={value}
-      variant={progress ? (progress.from === 100 ? 'success' : progress.ok ? 'primary' : 'destructive') : 'primary'}
-    />
-  )
+  return {
+    value,
+    variant: progress ? (progress.from === 100 ? 'success' : progress.ok ? 'primary' : 'destructive') : 'primary',
+  }
+}
+
+export function FakeProgressBar({ progress }: { progress?: InstallProgress }) {
+  const { value, variant } = useInstallProgress(progress)
+  return <Progress value={value} variant={variant} />
+}
+
+export function FakeRingProgressBar({ progress }: { progress?: InstallProgress }) {
+  const { value, variant } = useInstallProgress(progress)
+  return <RingProgress value={value} variant={variant} />
 }
