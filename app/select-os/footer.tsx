@@ -17,7 +17,7 @@ export function Footer() {
           <NavButton to="/host-info">下一步</NavButton>
         </NavButtonGuard>
       ) : (
-        <NavButtonGuard message="需要选择离线安装包" pass={!!osPath}>
+        <NavButtonGuard message="需要选择操作系统" pass={!!osPath}>
           <NavButton to="/host-info">下一步</NavButton>
         </NavButtonGuard>
       )}
