@@ -30,12 +30,13 @@ export function Callout({
   className,
   children,
   size,
+  variant,
   icon = <AlertCircleIcon />,
   action,
   ...props
 }: ComponentProps<'div'> & VariantProps<typeof errorAlertVariants> & { icon?: ReactNode; action?: ReactNode }) {
   return (
-    <div className={cn(errorAlertVariants({ size }), className)} {...props}>
+    <div className={cn(errorAlertVariants({ size, variant }), className)} {...props}>
       {icon}
       <div>{children}</div>
       {action && <div className="col-start-2 row-start-2">{action}</div>}
