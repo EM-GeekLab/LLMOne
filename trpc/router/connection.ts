@@ -1,3 +1,5 @@
+import { basename } from 'path'
+
 import { TRPCError } from '@trpc/server'
 import { Config, NodeSSH } from 'node-ssh'
 import { intersects } from 'radash'
@@ -40,7 +42,8 @@ export const connectionRouter = createRouter({
         const bmcClients = await BmcClients.create(bmcHosts)
         try {
           const architecture = await getDefaultArchitecture(bmcClients, true)
-          const bootstrapPath = await getBootstrapPath(manifestPath, architecture) // eslint-disable-line @typescript-eslint/no-unused-vars
+          const bootstrapPath = await getBootstrapPath(manifestPath, architecture)
+          const bootstrapFile = basename(bootstrapPath)
 
           const bootUrl = new URL(mxc.endpoint)
 
@@ -53,8 +56,8 @@ export const connectionRouter = createRouter({
               })
             }
 
-            bootUrl.host = localIp.address
-            bootUrl.pathname = '/static/alpine-custom-latest-stable-x86_64.iso'
+            bootUrl.hostname = localIp.address
+            bootUrl.pathname = `/static/${bootstrapFile}`
 
             try {
               const { status } = await client.bootVirtualMedia(bootUrl.toString(), defaultId)
