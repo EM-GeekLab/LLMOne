@@ -2,7 +2,11 @@ import { ComponentProps } from 'react'
 
 import { cn } from '@/lib/utils'
 
-export interface RingProgressProps extends ComponentProps<'div'> {
+interface VariantProps {
+  variant?: 'primary' | 'destructive' | 'success'
+}
+
+export interface RingProgressProps extends ComponentProps<'div'>, VariantProps {
   value?: number
   max?: number
   thickness?: number
@@ -20,6 +24,7 @@ const RingProgress = ({
   className,
   rangeClassname,
   children,
+  variant = 'primary',
   ...props
 }: RingProgressProps) => {
   const curveProps: CurveProps = {
@@ -42,8 +47,8 @@ const RingProgress = ({
       {...props}
     >
       <svg className="-rotate-90" width={size} height={size}>
-        <Curve root {...curveProps} />
-        <Curve rounded={rounded} value={value} {...curveProps} />
+        <Curve root variant={variant} {...curveProps} />
+        <Curve variant={variant} rounded={rounded} value={value} {...curveProps} />
       </svg>
       {children && (
         <div
@@ -57,7 +62,7 @@ const RingProgress = ({
   )
 }
 
-interface CurveProps extends ComponentProps<'circle'> {
+interface CurveProps extends ComponentProps<'circle'>, VariantProps {
   rounded?: boolean
   value?: number
   max?: number
@@ -66,7 +71,17 @@ interface CurveProps extends ComponentProps<'circle'> {
   root?: boolean
 }
 
-const Curve = ({ rounded = true, size, value = 0, max = 100, thickness, root, className, ...props }: CurveProps) => {
+const Curve = ({
+  rounded = true,
+  size,
+  value = 0,
+  max = 100,
+  thickness,
+  root,
+  className,
+  variant,
+  ...props
+}: CurveProps) => {
   const radius = (size - thickness) / 2
   const perimeter = Math.PI * radius * 2
 
@@ -74,7 +89,13 @@ const Curve = ({ rounded = true, size, value = 0, max = 100, thickness, root, cl
     <circle
       fill="none"
       data-root={root ? '' : undefined}
-      className={cn('stroke-primary data-root:stroke-muted transition-[stroke-dashoffset] duration-200', className)}
+      className={cn(
+        'transition-[stroke-dashoffset] duration-200',
+        variant === 'primary' && 'stroke-primary data-root:stroke-primary/20',
+        variant === 'destructive' && 'stroke-destructive data-root:stroke-destructive/20',
+        variant === 'success' && 'stroke-success data-root:stroke-success/20',
+        className,
+      )}
       cx={size / 2}
       cy={size / 2}
       r={radius}
