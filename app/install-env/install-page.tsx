@@ -54,7 +54,11 @@ function HostTabsTrigger({ host }: { host: HostConfigType }) {
       data-success={isSuccess ? '' : undefined}
       className={cn(
         'data-[state=active]:border-primary group hover:bg-accent data-[state=active]:bg-primary/5 relative grid w-52 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 rounded-lg border px-3 py-2 text-left transition',
-        'data-error:!border-destructive data-success:!border-success data-[state=active]:data-error:bg-destructive/5 data-[state=active]:data-success:bg-success/5',
+        'data-error:border-destructive/25 data-success:border-success/25 data-[state=active]:data-error:border-destructive data-[state=active]:data-success:border-success',
+        'data-[state=active]:data-error:bg-destructive/5 data-[state=active]:data-success:bg-success/5',
+        'focus-visible:border-ring focus-visible:ring-ring/50 outline-none focus-visible:ring-[3px]',
+        'data-success:focus-visible:border-success data-success:focus-visible:ring-success/50',
+        'data-error:focus-visible:border-destructive data-error:focus-visible:ring-destructive/50',
       )}
     >
       <FakeRingProgressBar progress={progress} size={44} thickness={6} />
