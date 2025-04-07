@@ -166,7 +166,7 @@ function HostConfigForm({ id, bmcIp, disks }: { id: string; bmcIp: string; disks
                     <SelectValue placeholder="选择安装磁盘" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent position="item-aligned">
+                <SelectContent>
                   {disks.map(({ path, model, size }) => (
                     <SelectItem key={path} value={path}>
                       <div className="flex items-baseline gap-2">
