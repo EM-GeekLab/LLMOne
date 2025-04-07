@@ -1,3 +1,5 @@
+import { ComponentProps } from 'react'
+
 import { InstallProgress } from '@/lib/metalx'
 import { useFakeProgress } from '@/lib/progress'
 import { Progress } from '@/components/ui/progress'
@@ -22,12 +24,22 @@ function useInstallProgress(progress?: InstallProgress): {
   }
 }
 
-export function FakeProgressBar({ progress }: { progress?: InstallProgress }) {
+export function FakeProgressBar({
+  progress,
+  ...props
+}: {
+  progress?: InstallProgress & ComponentProps<typeof Progress>
+}) {
   const { value, variant } = useInstallProgress(progress)
-  return <Progress value={value} variant={variant} />
+  return <Progress value={value} variant={variant} {...props} />
 }
 
-export function FakeRingProgressBar({ progress }: { progress?: InstallProgress }) {
+export function FakeRingProgressBar({
+  progress,
+  ...props
+}: {
+  progress?: InstallProgress
+} & ComponentProps<typeof RingProgress>) {
   const { value, variant } = useInstallProgress(progress)
-  return <RingProgress value={value} variant={variant} />
+  return <RingProgress value={value} variant={variant} {...props} />
 }

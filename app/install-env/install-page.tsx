@@ -1,5 +1,6 @@
 'use client'
 
+import * as TabsPrimitive from '@radix-ui/react-tabs'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { match } from 'ts-pattern'
@@ -8,11 +9,12 @@ import { InstallProgress } from '@/lib/metalx'
 import { createSafeContext } from '@/lib/react/create-safe-context'
 import { cn } from '@/lib/utils'
 import { AppCardSection, AppCardTitle } from '@/components/app/app-card'
-import { FakeProgressBar } from '@/app/install-env/fake-progress-bar'
+import type { HostConfigType } from '@/app/host-info/schemas'
 import { useGlobalStore } from '@/stores'
 import { useLocalStore } from '@/stores/local-store-provider'
 import { useTRPC } from '@/trpc/client'
 
+import { FakeProgressBar, FakeRingProgressBar } from './fake-progress-bar'
 import { ProgressCard, ProgressCardDescription, ProgressCardTitle } from './progress-card'
 import { formatProgress } from './utils'
 
@@ -20,13 +22,49 @@ const InstallPageContext = createSafeContext<{ hostId: string }>()
 
 export function InstallPage() {
   const hosts = useGlobalStore((s) => s.hostConfig.hosts)
+  const hostsList = Array.from(hosts.values())
 
   return (
-    <div className="grid gap-4">
-      {Array.from(hosts.values()).map((host) => (
-        <HostInstallPage key={host.id} hostId={host.id} />
+    <TabsPrimitive.Tabs className="grid gap-6" defaultValue={hostsList[0].id}>
+      <AppCardSection>
+        <TabsPrimitive.TabsList className="flex flex-wrap gap-4">
+          {hostsList.map((host) => (
+            <HostTabsTrigger key={host.id} host={host as HostConfigType} />
+          ))}
+        </TabsPrimitive.TabsList>
+      </AppCardSection>
+      {hostsList.map((host) => (
+        <TabsPrimitive.TabsContent key={host.id} value={host.id} className="grid gap-4">
+          <HostInstallPage hostId={host.id} />
+        </TabsPrimitive.TabsContent>
       ))}
-    </div>
+    </TabsPrimitive.Tabs>
+  )
+}
+
+function HostTabsTrigger({ host }: { host: HostConfigType }) {
+  const progress = useLocalStore((s) => s.installationProgress.get(host.id))
+  const isError = progress && !progress.ok
+
+  return (
+    <TabsPrimitive.TabsTrigger
+      value={host.id}
+      data-error={isError ? '' : undefined}
+      className={cn(
+        'data-[state=active]:border-primary group hover:bg-accent data-[state=active]:bg-primary/5 relative grid w-52 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 rounded-lg border px-3 py-2 text-left transition',
+        'data-error:!border-destructive data-[state=active]:data-error:bg-destructive/5',
+      )}
+    >
+      <FakeRingProgressBar progress={progress} size={44} thickness={6} />
+      <div>
+        <h4 className="group-[state=active]:text-primary text-sm font-semibold">{host.hostname}</h4>
+        <div>{host.bmcIp}</div>
+        <div className="text-muted-foreground text-xs *:truncate">
+          <FormatProgress progress={progress} />
+        </div>
+      </div>
+      <div className="group-data-[state=active]:border-t-primary group-data-error:group-data-[state=active]:border-t-destructive absolute -bottom-2.5 left-1/2 h-1.5 w-4.5 -translate-x-1/2 border-x-9 border-t-6 border-transparent" />
+    </TabsPrimitive.TabsTrigger>
   )
 }
 
@@ -60,13 +98,16 @@ function SystemInstallCard() {
       <ProgressCardTitle>{data?.displayName}</ProgressCardTitle>
       <FakeProgressBar progress={progress} />
       <ProgressCardDescription>
-        {!progress ? '准备安装...' : <FormatProgress progress={progress} />}
+        <FormatProgress progress={progress} />
       </ProgressCardDescription>
     </ProgressCard>
   )
 }
 
-function FormatProgress({ progress }: { progress: InstallProgress }) {
+function FormatProgress({ progress }: { progress?: InstallProgress }) {
+  if (!progress) {
+    return <p>准备安装...</p>
+  }
   return match(formatProgress(progress))
     .with({ type: 'info' }, (log) => <p>{log.log}</p>)
     .with({ type: 'error' }, (log) => <p className="text-destructive">{log.log}</p>)
@@ -78,7 +119,7 @@ function LogDisplay() {
   const logs = useLocalStore((s) => s.installationLog.get(hostId))
 
   return (
-    <div className="bg-muted/50 rounded-lg px-3.5 py-2.5 font-mono text-sm">
+    <div className="bg-muted/50 h-56 overflow-auto rounded-lg px-3.5 py-2.5 font-mono text-sm">
       {logs?.map((log) => (
         <div key={log.time.getTime()}>
           <p className={cn('flex gap-2', log.type === 'error' && 'text-destructive')}>
