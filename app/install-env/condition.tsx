@@ -1,23 +1,32 @@
 'use client'
 
 import { ReactNode } from 'react'
+import type { MutationStatus } from '@tanstack/react-query'
 
-import { MutationStatus, useBmcLocalInstallContext } from '@/app/install-env/context'
+import { useBmcLocalInstallContext } from '@/app/install-env/context'
 
 export function BmcLocalInstallStatusIf({
   status,
+  or = [],
+  and = [],
   not,
   children,
 }: {
   status: MutationStatus
+  or?: MutationStatus[]
+  and?: MutationStatus[]
   not?: boolean
   children: ReactNode
 }) {
-  const { status: realStatus } = useBmcLocalInstallContext()
+  const {
+    installMutation: { status: realStatus },
+  } = useBmcLocalInstallContext()
+
+  const condition = [status, ...or].includes(realStatus) && (and.length === 0 || and.includes(realStatus))
 
   if (not) {
-    return realStatus !== status ? <>{children}</> : null
+    return condition ? null : <>{children}</>
   }
 
-  return realStatus === status ? <>{children}</> : null
+  return condition ? <>{children}</> : null
 }

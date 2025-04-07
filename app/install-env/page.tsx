@@ -17,12 +17,12 @@ export default function Page() {
       <ConnectModeIf mode="bmc">
         <DeployModeIf mode="local">
           <BmcLocalInstallProvider>
-            <BmcLocalInstallStatusIf status="idle">
+            <BmcLocalInstallStatusIf status="idle" or={['error']}>
               <AppCardSection>
                 <ConfirmCard />
               </AppCardSection>
             </BmcLocalInstallStatusIf>
-            <BmcLocalInstallStatusIf not status="idle">
+            <BmcLocalInstallStatusIf status="pending" or={['success']}>
               <InstallPage />
             </BmcLocalInstallStatusIf>
           </BmcLocalInstallProvider>
