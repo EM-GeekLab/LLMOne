@@ -27,7 +27,7 @@ export const networkDnsConfigSchema = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('static'),
-    list: z.array(z.string().ip('DNS 地址格式错误')).min(1, '至少需要 1 个 DNS 地址').max(4, '最多支持 4 个 DNS 地址'),
+    list: z.array(z.string().ip('DNS 地址格式错误')).min(1, '至少需要 1 个 DNS 地址').max(3, '最多支持 3 个 DNS 地址'),
   }),
 ])
 

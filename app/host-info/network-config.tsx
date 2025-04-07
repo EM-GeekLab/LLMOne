@@ -219,7 +219,7 @@ function DnsFormSection() {
               )}
             />
           ))}
-          {dnsList.length < 10 && (
+          {dnsList.length < 3 && (
             <Button
               className="border-dashed"
               variant="outline"
