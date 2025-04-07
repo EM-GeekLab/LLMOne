@@ -76,7 +76,7 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
   const trpcClient = useTRPCClient()
   const trpc = useTRPC()
-  const { mutate, isPending, error } = useMutation({
+  const { mutate, isPending, error, isError } = useMutation({
     mutationFn: async () => {
       const { bmcHosts, defaultCredentials } = storeApi.getState()
       const result = validateBmcHosts(bmcHosts, defaultCredentials)
@@ -132,7 +132,7 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
           onClick={() => mutate()}
         >
           {isPending && <Spinner className="size-4" />}
-          继续
+          {isError ? '重试' : '继续'}
         </Button>
       </DialogFooter>
     </DialogContent>
