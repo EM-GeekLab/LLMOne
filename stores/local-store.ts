@@ -3,11 +3,14 @@ import { createStore } from 'zustand/vanilla'
 
 import type { InstallProgress } from '@/lib/metalx'
 
+export type LogItem = { type: 'info' | 'error'; time: Date; log: string }
+
 type LocalStoreState = {
   syncError?: Error
   lastSyncTime?: Date
 
   installationProgress: Map<string, InstallProgress>
+  installationLog: Map<string, LogItem[]>
 }
 
 type LocalStoreActions = {
@@ -17,12 +20,16 @@ type LocalStoreActions = {
 
   setInstallationProgress: (hostId: string, progress: InstallProgress) => void
   clearInstallationProgress: (hostId: string) => void
+
+  addInstallationLog: (hostId: string, log: LogItem) => void
+  clearInstallationLog: (hostId: string) => void
 }
 
 export type LocalStore = LocalStoreState & LocalStoreActions
 
 export const defaultLocalStoreState: LocalStoreState = {
   installationProgress: new Map(),
+  installationLog: new Map(),
 }
 
 export const createLocalStore = (initState = defaultLocalStoreState) => {
@@ -48,6 +55,16 @@ export const createLocalStore = (initState = defaultLocalStoreState) => {
       clearInstallationProgress: (hostId) =>
         set((state) => {
           state.installationProgress.delete(hostId)
+        }),
+      addInstallationLog: (hostId, log) =>
+        set((state) => {
+          const logs = state.installationLog.get(hostId) || []
+          logs.push(log)
+          state.installationLog.set(hostId, logs)
+        }),
+      clearInstallationLog: (hostId) =>
+        set((state) => {
+          state.installationLog.delete(hostId)
         }),
     })),
   )
