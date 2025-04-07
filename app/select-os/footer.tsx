@@ -7,7 +7,7 @@ import { useGlobalStore } from '@/stores'
 
 export function Footer() {
   const mode = useGlobalStore((s) => s.deployMode)
-  const manifestPath = useGlobalStore((s) => s.osManifestPath)
+  const osPath = useGlobalStore((s) => s.osInfoPath)
   const selection = useGlobalStore((s) => s.osSelection)
 
   return (
@@ -17,7 +17,7 @@ export function Footer() {
           <NavButton to="/host-info">下一步</NavButton>
         </NavButtonGuard>
       ) : (
-        <NavButtonGuard message="需要选择离线安装包" pass={!!manifestPath}>
+        <NavButtonGuard message="需要选择离线安装包" pass={!!osPath}>
           <NavButton to="/host-info">下一步</NavButton>
         </NavButtonGuard>
       )}
