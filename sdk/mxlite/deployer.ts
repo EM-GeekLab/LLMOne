@@ -80,12 +80,16 @@ export class Deployer {
   private readonly diskName: string
   private readonly rootfsUrl: string
 
-  constructor(mxc: Mxc, hostId: string, diskName: string, rootfsUrl: string) {
+  constructor(mxc: Mxc, hostId: string, diskName: string, rootfsUrl: string, unsafeSetStage?: DeployStage) {
     this.mxc = mxc
     this.stage = 'Pending'
     this.hostId = hostId
     this.diskName = diskName
     this.rootfsUrl = rootfsUrl
+
+    if (unsafeSetStage) {
+      this.stage = unsafeSetStage
+    }
   }
 
   private async execScript(script: string) {
@@ -110,6 +114,7 @@ export class Deployer {
       })
     }
     if (r2.payload.payload.code !== 0) {
+      console.error(r2.payload.payload)
       throw new DeployError({
         error: 'ExecError',
       })
@@ -201,9 +206,9 @@ EOFEOFEOF`
     let script = `echo "root:${password}" | chpasswd`
     if (username !== 'root') {
       script += `
-useradd -m -G sudo -s /bin/bash ${username}
+useradd -m -G sudo -s /bin/bash ${username} || true
 echo "${username}:${password}" | chpasswd
-}`
+`
     }
     await this.execScriptChroot(script)
   }

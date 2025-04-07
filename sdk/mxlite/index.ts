@@ -120,10 +120,12 @@ export type ApiResult<T> = Promise<[T, number]>
 export class Mxc {
   readonly endpoint: string
   private readonly token?: string
+  private readonly verbose: boolean
 
-  constructor(endpoint: string, token?: string) {
+  constructor(endpoint: string, token?: string, verbose = false) {
     this.endpoint = endpoint
     this.token = token
+    this.verbose = verbose
   }
 
   private async request<T, R>(url: string, method: string, body?: T): ApiResult<R> {
@@ -136,7 +138,7 @@ export class Mxc {
       body: body && JSON.stringify(body),
     })
     const resp = await response.text()
-    if (response.status >= 400) {
+    if (response.status >= 400 && this.verbose) {
       console.error({
         url,
         method,
