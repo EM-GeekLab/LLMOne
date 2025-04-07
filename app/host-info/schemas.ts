@@ -51,12 +51,3 @@ export const hostConfigSchema = z.object({
 })
 
 export type HostConfigType = z.infer<typeof hostConfigSchema>
-
-export const installConfigSchema = z.object({
-  hosts: z.array(hostConfigSchema),
-  account: accountConfigSchema,
-  network: networkConfigSchema,
-  osInfoPath: z.string(),
-})
-
-export type InstallConfigType = z.infer<typeof installConfigSchema>

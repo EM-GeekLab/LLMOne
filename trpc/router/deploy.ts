@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 
 import { installSteps, MxdManager } from '@/lib/metalx'
-import { installConfigSchema, installOneConfigSchema } from '@/app/host-info/schemas'
+import { installConfigSchema, installOneConfigSchema } from '@/app/install-env/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
 import { readOsInfoAbsolute } from '@/trpc/router/resource-utils'
 
