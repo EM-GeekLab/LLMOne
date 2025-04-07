@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 
 import { createSafeContext } from '@/lib/react/create-safe-context'
 import { installConfigSchema } from '@/app/host-info/schemas'
+import { formatProgress } from '@/app/install-env/utils'
 import { useGlobalStoreApi } from '@/stores'
 import { useLocalStore } from '@/stores/local-store-provider'
 import { useTRPCClient } from '@/trpc/client'
@@ -23,6 +24,7 @@ const BmcLocalInstallContext = createSafeContext<{
 export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
   const storeApi = useGlobalStoreApi()
   const setProgress = useLocalStore((s) => s.setInstallationProgress)
+  const addLog = useLocalStore((s) => s.addInstallationLog)
   const trpc = useTRPCClient()
 
   const mutation = useMutation({
@@ -32,6 +34,7 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
       const input = installConfigSchema.parse({ hosts: Array.from(hosts.values()), account, network, osInfoPath })
       for await (const result of await trpc.deploy.os.installAll.mutate(input, { context: { stream: true } })) {
         setProgress(result.host.id, result)
+        addLog(result.host.id, formatProgress(result))
       }
     },
     onError: (error) => {
