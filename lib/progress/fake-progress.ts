@@ -14,7 +14,6 @@ export class FakeProgress {
   private time = 0
   private readonly timeConstant
   private intervalId: ReturnType<typeof setInterval> | null = null
-  private readonly autoStart
   private listeners = new Set<(value: number) => void>()
 
   constructor({ min = 0, max = 100, interval = 100, timeConstant = 1, autoStart = true }: FakeProgressOptions = {}) {
@@ -23,7 +22,6 @@ export class FakeProgress {
     this.max = max
     this.interval = interval
     this.timeConstant = timeConstant
-    this.autoStart = autoStart
     this.onInterval = this.onInterval.bind(this)
     if (autoStart) {
       this.start()
