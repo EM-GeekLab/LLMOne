@@ -4,7 +4,7 @@ import { FakeProgress, FakeProgressOptions } from './fake-progress'
 
 export function useFakeProgress({
   min = 0,
-  max,
+  max = 100,
   interval,
   timeConstant,
   autoStart,
@@ -32,6 +32,12 @@ export function useFakeProgress({
       fakeProgress.stop()
     }
   }, [fakeProgress, stopped])
+
+  useEffect(() => {
+    if (min >= max) {
+      fakeProgress.finish()
+    }
+  }, [fakeProgress, max, min])
 
   return { value: fakeValue, instance: fakeProgress }
 }
