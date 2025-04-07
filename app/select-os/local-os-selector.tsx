@@ -53,14 +53,14 @@ function OsSelectorContainer() {
   if (distros.isError)
     return (
       <AppCardSection>
-        <ErrorAlert>{distros.error?.message}</ErrorAlert>
+        <ErrorAlert>{distros.error.message}</ErrorAlert>
       </AppCardSection>
     )
 
   if (defaultArch.isError)
     return (
       <AppCardSection>
-        <ErrorAlert>{defaultArch.error?.message}</ErrorAlert>
+        <ErrorAlert>{defaultArch.error.message}</ErrorAlert>
       </AppCardSection>
     )
 

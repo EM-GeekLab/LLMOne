@@ -62,7 +62,7 @@ function HostsConfigContent() {
   }
 
   if (isError) {
-    return <ErrorAlert>{error?.message}</ErrorAlert>
+    return <ErrorAlert>{error.message}</ErrorAlert>
   }
 
   return (
