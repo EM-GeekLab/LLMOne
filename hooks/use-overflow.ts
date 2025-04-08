@@ -1,5 +1,12 @@
 import { RefObject, useEffect, useState } from 'react'
 
+/**
+ * A hook to detect if an element is overflowing its container.
+ * @returns
+ * 1. isRightOverflow - Whether the child element is overflowing to the right.
+ * 2. isStart - Whether the scroll position is at the start (left).
+ * 3. isEnd - Whether the scroll position is at the end (right).
+ */
 export function useOverflow({
   containerRef,
   childRef,
