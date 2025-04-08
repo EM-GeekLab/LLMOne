@@ -84,8 +84,8 @@ function HostConfirmInfo({ id, bmcIp, disk }: { id: string; bmcIp: string; disk?
   const host = useGlobalStore((s) => s.hostConfig.hosts.get(id))
 
   const trpc = useTRPC()
-  const { data } = useQuery(trpc.connection.bmc.getHostInfo.queryOptions(id))
-  const diskInfo = data?.[0].info?.system_info?.blks.find((d) => d.path === disk)
+  const { data } = useQuery(trpc.connection.bmc.getHostDiskInfo.queryOptions(id))
+  const diskInfo = data?.find((d) => d.path === disk)
 
   return (
     <div

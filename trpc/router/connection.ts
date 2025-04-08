@@ -164,8 +164,17 @@ export const connectionRouter = createRouter({
         await bmcClients.dispose()
       }
     }),
-    getHostInfo: baseProcedure.input(inputType<string>).query(async ({ input }) => {
-      return await mxc.getHostInfo(input)
+    getHostDiskInfo: baseProcedure.input(inputType<string>).query(async ({ input }) => {
+      const [res, status] = await mxc.getHostInfo(input)
+      if (status >= 400) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `无法获取主机信息，状态码 ${status}`,
+        })
+      }
+      return (
+        res.info?.system_info?.blks.map((disk) => ({ ...disk, size: disk.size / 8 /* FIXME: fix agent API */ })) ?? []
+      )
     }),
   },
   ssh: {
