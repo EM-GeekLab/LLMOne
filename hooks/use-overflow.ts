@@ -30,16 +30,24 @@ export function useOverflow({
 
   useEffect(() => {
     if (!containerRef.current || !childRef.current) return
-    const handleScroll = (e: Event) => {
-      const { scrollLeft, scrollWidth, clientWidth } = e.target as HTMLDivElement
+    const el = containerRef.current
+
+    const handleScroll = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = el
       setIsStart(scrollLeft === 0)
       setIsEnd(scrollLeft + clientWidth >= scrollWidth)
     }
-    const el = containerRef.current
+
     setIsStart(el.scrollLeft === 0)
     setIsEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth)
+
     el.addEventListener('scroll', handleScroll)
-    return () => el.removeEventListener('scroll', handleScroll)
+    window.addEventListener('resize', handleScroll)
+
+    return () => {
+      el.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+    }
   }, [childRef, containerRef])
 
   return {
