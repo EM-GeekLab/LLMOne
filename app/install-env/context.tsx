@@ -8,11 +8,10 @@ import { InstallStep } from '@/lib/metalx'
 import { createSafeContext } from '@/lib/react/create-safe-context'
 import { installConfigSchema } from '@/app/install-env/schemas'
 import { formatProgress, progressText } from '@/app/install-env/utils'
+import { usePreventUnload } from '@/hooks/use-prevent-unload'
 import { useGlobalStoreApi } from '@/stores'
 import { useLocalStore } from '@/stores/local-store-provider'
 import { useTRPCClient } from '@/trpc/client'
-
-import { usePreventUnload } from './hooks'
 
 const BmcLocalInstallContext = createSafeContext<{
   start: () => void
