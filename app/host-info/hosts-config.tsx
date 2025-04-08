@@ -2,7 +2,7 @@
 
 import { useImperativeHandle } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { omit } from 'radash'
 import { useForm } from 'react-hook-form'
 
@@ -43,12 +43,14 @@ function HostsConfigContent() {
   const setHostsConfig = useGlobalStore((s) => s.hostConfigActions.hosts.setAll)
   const trpcClient = useTRPCClient()
   const trpc = useTRPC()
+  const queryClient = useQueryClient()
 
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: trpc.connection.bmc.scanHosts.queryKey(bmcHosts),
     queryFn: async () => {
       const data = await trpcClient.connection.bmc.scanHosts.query(bmcHosts, { context: { stream: true } })
       setHostsConfig(data.map((d) => omit(d, ['disks'])))
+      data.map((host) => queryClient.setQueryData(trpc.connection.bmc.getHostDiskInfo.queryKey(host.id), host.disks))
       return data
     },
   })
