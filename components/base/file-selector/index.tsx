@@ -43,7 +43,7 @@ import { getDirectoryName, getFileDirectory, getPathParts, joinPathParts, normal
 
 interface FileSelectorProps {
   path?: string
-  onSelected?: (path: string) => void
+  onSelected?: (path?: string) => void
   // Filter function for file items
   filter?: (item: FileItem) => boolean
   // Whether to filter the directory, default is false

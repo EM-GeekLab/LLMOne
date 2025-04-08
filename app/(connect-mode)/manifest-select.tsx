@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
+import { toast } from 'sonner'
 
 import type { FileItem } from '@/lib/file/server-file'
 import { AppCardSection, AppCardSectionHeader, AppCardSectionTitle } from '@/components/app/app-card'
@@ -11,6 +12,7 @@ import {
   FileSelectorValue,
 } from '@/components/base/file-selector'
 import { useGlobalStore } from '@/stores'
+import { useTRPCClient } from '@/trpc/client'
 
 export function ManifestSelect() {
   const mode = useGlobalStore((s) => s.deployMode)
@@ -32,9 +34,25 @@ function ManifestSelectContent() {
   const setPath = useGlobalStore((s) => s.setOsManifestPath)
 
   const filter = useCallback((item: FileItem) => item.name === 'manifest.json', [])
+  const trpc = useTRPCClient()
 
   return (
-    <FileSelector path={path} onSelected={setPath} filter={filter}>
+    <FileSelector
+      path={path}
+      onSelected={async (path) => {
+        if (!path) {
+          setPath(undefined)
+          return
+        }
+        const [ok, err] = await trpc.resource.checkManifest.query(path)
+        if (!ok) {
+          toast.error(null, { description: err.message })
+          return
+        }
+        setPath(path)
+      }}
+      filter={filter}
+    >
       <div className="flex items-center gap-3">
         <FileSelectorTrigger>选择文件</FileSelectorTrigger>
         <FileSelectorValue placeholder="选择 manifest.json" />

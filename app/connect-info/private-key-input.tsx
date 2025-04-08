@@ -123,6 +123,7 @@ function RemoteFileReader({ maxSize = 100 * 1024, onRead }: { maxSize?: number; 
       defaultDirectory={sshPath}
       filter={(item) => (item.size ? item.size <= 100 * 1024 : true)}
       onSelected={async (path) => {
+        if (!path) return
         const text = await trpc.file.readFileText.query({ path, maxSize }).catch((err) => {
           toast.error('读取文件失败', { description: err.message })
         })

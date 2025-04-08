@@ -1,12 +1,21 @@
 import { readdir, stat } from 'node:fs/promises'
 import { dirname, join } from 'path'
 
+import type { TRPCError } from '@trpc/server'
+
 import { z } from '@/lib/zod'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
 import { readManifest, readOsInfo, readOsInfoAbsolute } from './resource-utils'
 
 export const resourceRouter = createRouter({
+  checkManifest: baseProcedure
+    .input(z.string())
+    .query(async ({ input }): Promise<[true, null] | [false, TRPCError]> => {
+      return await readManifest(input)
+        .then(() => [true, null] as [true, null])
+        .catch((err) => [false, err] as [false, TRPCError])
+    }),
   getDistributions: baseProcedure.input(z.string()).query(async ({ input }) => {
     const systemsPath = await readManifest(input).then(({ systemDir }) => join(dirname(input), systemDir))
     return await Promise.all(
