@@ -195,6 +195,10 @@ EOFEOFEOF`
     await this.execScript(script)
   }
 
+  public async reboot() {
+    await this.execScript('reboot')
+  }
+
   private async execScriptChroot(inner: string) {
     const script = `chroot /mnt bash << EOFEOFEOF
 ${inner}

@@ -73,7 +73,7 @@ export class MxdManager {
   }
 
   static async create({ hosts, account, network, systemImagePath }: CreateMxdParams) {
-    const [, status] = await mxc.addFileMap('/srv/mkosi.output/image_ubuntu_noble_x86-64.tar.zst', 'image.tar.zst')
+    const [, status] = await mxc.addFileMap(systemImagePath, 'image.tar.zst')
     if (status >= 400) {
       throw new Error(`系统镜像文件服务失败，状态码 ${status}`)
     }
@@ -191,6 +191,8 @@ export class MxdManager {
         yield { ok: true, host, from, to, completed: 'configNetwork', started }
         await deployer.applyUserconfig(this.account.username, this.account.password || '')
       }
+
+      await deployer.reboot()
 
       started = 'complete'
       ;[from, to] = installStepProgressMap.complete
