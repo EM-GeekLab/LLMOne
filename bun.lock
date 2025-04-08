@@ -67,6 +67,7 @@
         "tailwind-merge": "^3.1.0",
         "ts-pattern": "^5.7.0",
         "tw-animate-css": "^1.2.5",
+        "use-stick-to-bottom": "^1.1.0",
         "vaul": "^1.1.2",
         "yaml": "^2.7.1",
         "zod": "^3.24.2",
@@ -1538,6 +1539,8 @@
     "use-callback-ref": ["use-callback-ref@1.3.3", "https://registry.npmmirror.com/use-callback-ref/-/use-callback-ref-1.3.3.tgz", { "dependencies": { "tslib": "^2.0.0" }, "peerDependencies": { "@types/react": "*", "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc" }, "optionalPeers": ["@types/react"] }, "sha512-jQL3lRnocaFtu3V00JToYz/4QkNWswxijDaCVNZRiRTO3HQDLsdu1ZtmIUvV4yPp+rvWm5j0y0TG/S61cuijTg=="],
 
     "use-sidecar": ["use-sidecar@1.1.3", "https://registry.npmmirror.com/use-sidecar/-/use-sidecar-1.1.3.tgz", { "dependencies": { "detect-node-es": "^1.1.0", "tslib": "^2.0.0" }, "peerDependencies": { "@types/react": "*", "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc" }, "optionalPeers": ["@types/react"] }, "sha512-Fedw0aZvkhynoPYlA5WXrMCAMm+nSWdZt6lzJQ7Ok8S6Q+VsHmHpRWndVRJ8Be0ZbkfPc5LRYH+5XrzXcEeLRQ=="],
+
+    "use-stick-to-bottom": ["use-stick-to-bottom@1.1.0", "https://registry.npmmirror.com/use-stick-to-bottom/-/use-stick-to-bottom-1.1.0.tgz", { "peerDependencies": { "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-cmSs/RzVXoJRsI6V5nLeRxPab8mDcHmqWwvEACbyft1jAKLPvI6/PGp46Z6GvXxQ9SPzIGTEQXKexNQLAW8pcg=="],
 
     "vaul": ["vaul@1.1.2", "https://registry.npmmirror.com/vaul/-/vaul-1.1.2.tgz", { "dependencies": { "@radix-ui/react-dialog": "^1.1.1" }, "peerDependencies": { "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc", "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc" } }, "sha512-ZFkClGpWyI2WUQjdLJ/BaGuV6AVQiJ3uELGk3OYtP+B6yCO7Cmn9vPFXVJkRaGkOJu3m8bQMgtyzNHixULceQA=="],
 

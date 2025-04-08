@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { match } from 'ts-pattern'
+import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { InstallProgress } from '@/lib/metalx'
 import { createSafeContext } from '@/lib/react/create-safe-context'
@@ -180,16 +181,20 @@ function LogDisplay() {
   const { hostId } = InstallPageContext.useContext()
   const logs = useLocalStore((s) => s.installationLog.get(hostId))
 
+  const { scrollRef, contentRef } = useStickToBottom()
+
   return (
-    <div className="bg-muted/50 h-56 overflow-auto rounded-lg px-3.5 py-2.5 font-mono text-sm">
-      {logs?.map((log) => (
-        <div key={log.time.getTime()}>
-          <p className={cn('flex gap-2', log.type === 'error' && 'text-destructive')}>
-            <span>[{format(log.time, 'yyyy-MM-dd HH:mm:ss')}]</span>
-            <span>{log.log}</span>
-          </p>
-        </div>
-      ))}
+    <div ref={scrollRef} className="bg-muted/50 h-56 overflow-auto rounded-lg px-3.5 py-2.5 font-mono text-sm">
+      <div ref={contentRef}>
+        {logs?.map((item) => (
+          <div key={item.time.getTime()}>
+            <p className={cn('flex gap-2', item.type === 'error' && 'text-destructive')}>
+              <span>[{format(item.time, 'yyyy-MM-dd HH:mm:ss')}]</span>
+              <span>{item.log}</span>
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

@@ -72,6 +72,7 @@
     "tailwind-merge": "^3.1.0",
     "ts-pattern": "^5.7.0",
     "tw-animate-css": "^1.2.5",
+    "use-stick-to-bottom": "^1.1.0",
     "vaul": "^1.1.2",
     "yaml": "^2.7.1",
     "zod": "^3.24.2",
