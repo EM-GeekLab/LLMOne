@@ -1,10 +1,13 @@
 import { execFile } from 'node:child_process'
 import { join } from 'path'
 
+import getPort from 'get-port'
+import { nanoid } from 'nanoid'
+
 import { Mxc } from '@/sdk/mxlite'
 
-const endpoint = process.env.MXC_ENDPOINT || 'http://localhost:8080/api'
-const token = process.env.MXC_APIKEY
+const endpoint = process.env.MXC_ENDPOINT || `http://localhost:${await getPort()}/api`
+const token = process.env.MXC_APIKEY || nanoid()
 const executable = process.env.MXC_EXECUTABLE || 'mxd'
 
 export const mxc = new Mxc(endpoint, token)
