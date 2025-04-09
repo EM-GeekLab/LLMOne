@@ -1,4 +1,4 @@
-import { basename } from 'path'
+import { basename, dirname } from 'path'
 
 import { TRPCError } from '@trpc/server'
 import { Config, NodeSSH } from 'node-ssh'
@@ -7,6 +7,7 @@ import { autoDetect, iBMCRedfishClient, iDRACRedfishClient } from 'redfish-clien
 
 import { BmcClients } from '@/lib/bmc-clients'
 import { mxc } from '@/lib/metalx'
+import { runMxc } from '@/lib/metalx/mxc'
 import { selectIpInSameSubnet } from '@/lib/network'
 import { z } from '@/lib/zod'
 import { BmcFinalConnectionInfo, bmcHostsListSchema, SshFinalConnectionInfo } from '@/app/connect-info/schemas'
@@ -44,8 +45,11 @@ export const connectionRouter = createRouter({
           const architecture = await getDefaultArchitecture(bmcClients, true)
           const bootstrapPath = await getBootstrapPath(manifestPath, architecture)
           const bootstrapFile = basename(bootstrapPath)
+          const bootstrapDir = dirname(bootstrapPath)
+          await runMxc(bootstrapDir)
 
           const bootUrl = new URL(mxc.endpoint)
+          bootUrl.pathname = `/static/${bootstrapFile}`
 
           const errors = await bmcClients.map(async ({ defaultId, ip, client }) => {
             const localIp = selectIpInSameSubnet(ip)
@@ -57,7 +61,6 @@ export const connectionRouter = createRouter({
             }
 
             bootUrl.hostname = localIp.address
-            bootUrl.pathname = `/static/${bootstrapFile}`
 
             try {
               const { status } = await client.bootVirtualMedia(bootUrl.toString(), defaultId)
@@ -128,14 +131,10 @@ export const connectionRouter = createRouter({
               id: host,
               mac: info?.system_info?.nics.map((nic) => nic.mac_address.toLowerCase()) ?? [],
               disks:
-                (info?.system_info?.blks
-                  .map((disk) => ({ ...disk, size: disk.size / 8 /* FIXME: fix agent API */ }))
-                  .filter(
-                    (disk) =>
-                      disk.path !== null &&
-                      !disk.path.match(/^\/dev\/(loop|ram|sr)/) &&
-                      disk.size >= 1024 * 1024 * 1024,
-                  ) as DiskInfo) ?? [],
+                (info?.system_info?.blks.filter(
+                  (disk) =>
+                    disk.path !== null && !disk.path.match(/^\/dev\/(loop|ram|sr)/) && disk.size >= 1024 * 1024 * 1024,
+                ) as DiskInfo) ?? [],
             }
           })
 
@@ -172,9 +171,7 @@ export const connectionRouter = createRouter({
           message: `无法获取主机信息，状态码 ${status}`,
         })
       }
-      return (
-        res.info?.system_info?.blks.map((disk) => ({ ...disk, size: disk.size / 8 /* FIXME: fix agent API */ })) ?? []
-      )
+      return res.info?.system_info?.blks ?? []
     }),
   },
   ssh: {
