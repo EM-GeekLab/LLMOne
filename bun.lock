@@ -47,7 +47,7 @@
         "immer": "^10.1.1",
         "input-otp": "^1.4.2",
         "jotai": "^2.12.2",
-        "lucide-react": "*",
+        "lucide-react": "^0.487.0",
         "nanoid": "^5.1.5",
         "next": "15.2.4",
         "next-themes": "^0.4.6",
@@ -60,7 +60,7 @@
         "react-hook-form": "^7.55.0",
         "react-resizable-panels": "^2.1.7",
         "recharts": "^2.15.2",
-        "redfish-client": "^0.3.6",
+        "redfish-client": "^0.3.7",
         "server-only": "^0.0.1",
         "sonner": "^2.0.3",
         "superjson": "^2.2.2",
@@ -1352,7 +1352,7 @@
 
     "recharts-scale": ["recharts-scale@0.4.5", "https://registry.npmmirror.com/recharts-scale/-/recharts-scale-0.4.5.tgz", { "dependencies": { "decimal.js-light": "^2.4.1" } }, "sha512-kivNFO+0OcUNu7jQquLXAxz1FIwZj8nrj+YkOKc5694NbjCvcT6aSZiIzNzd2Kul4o4rTto8QVR9lMNtxD4G1w=="],
 
-    "redfish-client": ["redfish-client@0.3.6", "", { "peerDependencies": { "typescript": "^5" } }, "sha512-D4mrq2oPXUpr+wpPb+TU2tcVJ4/H46MJZHnZJi/D18l/Dr7OnroPIWG9VPo+usoCOf9UugcnGSCfzlErtFWzow=="],
+    "redfish-client": ["redfish-client@0.3.7", "", { "peerDependencies": { "typescript": "^5" } }, "sha512-nni09lu7fGW8CV3VaIOlW32ODZLvKaAidgg89iSFZPohYYvFUmTEjxmD8r31y7Mo7/2dy1h12O/vORi4ndeugw=="],
 
     "reflect.getprototypeof": ["reflect.getprototypeof@1.0.10", "https://registry.npmmirror.com/reflect.getprototypeof/-/reflect.getprototypeof-1.0.10.tgz", { "dependencies": { "call-bind": "^1.0.8", "define-properties": "^1.2.1", "es-abstract": "^1.23.9", "es-errors": "^1.3.0", "es-object-atoms": "^1.0.0", "get-intrinsic": "^1.2.7", "get-proto": "^1.0.1", "which-builtin-type": "^1.2.1" } }, "sha512-00o4I+DVrefhv+nX0ulyi3biSHCPDe+yLv5o/p6d/UVlirijB8E16FtfwSAi4g3tcqrQ4lRAqQSoFEZJehYEcw=="],
 
