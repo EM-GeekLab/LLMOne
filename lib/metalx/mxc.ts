@@ -46,7 +46,7 @@ export async function runMxc(staticPath: string) {
       .map((v: string) => console.log('mxc |', v))
   })
   process.on('spawn', () => {
-    console.log(`mxc | Starting mxc with static path: ${staticPath}`)
+    console.log(`mxc | Starting mxc with static path ${staticPath}, port ${port}`)
   })
   process.on('exit', (code) => {
     console.log(`mxc | Process exited with code: ${code}`)
