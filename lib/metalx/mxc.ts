@@ -18,23 +18,37 @@ export async function runMxc(staticPath: string) {
   const url = new URL(endpoint)
   const port = url.port || (url.protocol === 'http:' ? '80' : '443')
 
-  console.log(`mxc | Starting mxc with staticPath: ${staticPath}`)
-  return execFile(
+  const process = execFile(
     join('bin', executable),
     [...(token ? ['-a', token] : []), '-s', staticPath, '-p', port],
     { signal: abortController.signal },
-    (error, stdout, stderr) => {
+    (error) => {
       if (error) {
         console.error(`Error executing mxc: ${error.message}`)
-        return
       }
-      if (stderr) {
-        console.log(`mxc | ${stderr}`)
-        return
-      }
-      console.log(`mxc | ${stdout}`)
     },
   )
+  process.stdout?.on('data', (data) => {
+    data
+      .toString()
+      .split('\n')
+      .filter(Boolean)
+      .map((v: string) => console.log('mxc |', v))
+  })
+  process.stderr?.on('data', (data) => {
+    data
+      .toString()
+      .split('\n')
+      .filter(Boolean)
+      .map((v: string) => console.log('mxc |', v))
+  })
+  process.on('spawn', () => {
+    console.log(`mxc | Starting mxc with static path: ${staticPath}`)
+  })
+  process.on('exit', (code) => {
+    console.log(`mxc | Process exited with code: ${code}`)
+    abortController = null
+  })
 }
 
 export function killMxc() {
