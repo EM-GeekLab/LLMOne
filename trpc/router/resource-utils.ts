@@ -1,14 +1,14 @@
-import { readFile } from 'node:fs/promises'
 import { dirname, join } from 'path'
 
 import { TRPCError } from '@trpc/server'
 
+import { readFileToString } from '@/lib/file/server-file'
 import { addAbsolutePaths } from '@/lib/file/server-path'
 import { OsArchitecture } from '@/lib/os'
 import { resourceManifestSchema, resourceOsInfoSchema } from '@/app/select-os/rescource-schema'
 
 export async function readManifest(path: string) {
-  const fileContent = await readFile(path, 'utf-8')
+  const fileContent = (await readFileToString({ path })) || '{}'
   try {
     return resourceManifestSchema.parse(JSON.parse(fileContent))
   } catch (err) {
@@ -21,7 +21,7 @@ export async function readManifest(path: string) {
 }
 
 export async function readOsInfo(path: string) {
-  const fileContent = await readFile(path, 'utf-8')
+  const fileContent = (await readFileToString({ path })) || '{}'
   try {
     return resourceOsInfoSchema.parse(JSON.parse(fileContent))
   } catch (err) {

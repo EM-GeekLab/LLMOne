@@ -9,8 +9,6 @@ export interface ReadFileToStringOptions {
   path: string
   // The maximum size of the file to read, in bytes. Default is 1MB.
   maxSize?: number
-  // The encoding to use when reading the file. Default is 'utf-8'.
-  // encoding?: BufferEncoding
 }
 
 export async function readFileToString({ path, maxSize = 1024 * 1024 }: ReadFileToStringOptions) {
@@ -52,7 +50,7 @@ export type FileItem = {
 //   type: 'file' | 'directory' | 'unknown'
 // }
 
-export async function readDirectory(directoryPath: string): Promise<FileItem[]> {
+export async function readDir(directoryPath: string): Promise<FileItem[]> {
   // try {
   //   const actualPath = directoryPath || process.cwd()
   //   const files = await readdir(actualPath)
@@ -129,8 +127,15 @@ export async function readDirectory(directoryPath: string): Promise<FileItem[]> 
   return []
 }
 
-export async function getParentDirectoryPath(currentPath: string) {
-  return dirname(currentPath)
+export async function getSubDirs(path: string): Promise<string[]> {
+  const [r, s] = await mxc.lsdir(path)
+  if (s >= 400) {
+    throw new Error('无法读取目录或文件，可能是权限问题')
+  }
+  if (r.ok) {
+    return r.result.subdirs
+  }
+  return []
 }
 
 export type CheckPathResult =

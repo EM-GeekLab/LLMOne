@@ -1,8 +1,8 @@
-import { readdir, stat } from 'node:fs/promises'
 import { dirname, join } from 'path'
 
 import type { TRPCError } from '@trpc/server'
 
+import { getSubDirs } from '@/lib/file/server-file'
 import { z } from '@/lib/zod'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
@@ -19,12 +19,9 @@ export const resourceRouter = createRouter({
   getDistributions: baseProcedure.input(z.string()).query(async ({ input }) => {
     const systemsPath = await readManifest(input).then(({ systemDir }) => join(dirname(input), systemDir))
     return await Promise.all(
-      await readdir(systemsPath).then((systems) =>
+      await getSubDirs(systemsPath).then((systems) =>
         systems.map(async (relativePath) => {
-          const basePath = join(systemsPath, relativePath)
-          const isDir = await stat(basePath).then((s) => s.isDirectory())
-          if (!isDir) return null
-          const osInfoPath = join(basePath, 'osInfo.json')
+          const osInfoPath = join(systemsPath, relativePath, 'osInfo.json')
           const info = await readOsInfo(osInfoPath)
           return { osInfoPath, ...info }
         }),
