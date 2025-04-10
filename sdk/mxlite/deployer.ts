@@ -213,10 +213,9 @@ echo "${username}:${password}" | chpasswd
     await this.execScriptChroot(`echo "${hostname}" > /etc/hostname`)
   }
 
-  public async applyAptSources(sources?: string) {
-    const sources_ =
-      sources ??
-      `Types: deb
+  public async applyAptSources(sources?: Record<string, string>) {
+    const sources_ = sources ?? {
+      'ubuntu.sources': `Types: deb
 URIs: http://cn.archive.ubuntu.com/ubuntu/
 Suites: noble noble-updates noble-backports
 Components: main restricted universe multiverse
@@ -227,14 +226,23 @@ URIs: http://security.ubuntu.com/ubuntu/
 Suites: noble-security
 Components: main restricted universe multiverse
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
-`
-    await this.execScriptChroot(`
+`,
+    }
+    let script = `
 rm /etc/apt/sources.list.d/*
 cat <<EOF > /etc/apt/sources.list
 # Moved to sources.list.d
 EOF
-cat <<EOF > /etc/apt/sources.list.d/ubuntu.list
-${sources_}
-EOF`)
+`
+    for (const filename in sources_) {
+      const content = sources_[filename]
+      script += `
+cat <<EOF > /etc/apt/sources.list.d/${filename}
+${content}
+EOF
+`
+    }
+    console.log(script)
+    await this.execScriptChroot(script)
   }
 }
