@@ -10,7 +10,7 @@ const errorAlertVariants = cva(
     variants: {
       size: {
         default: 'px-3 py-2 rounded-md',
-        card: 'p-4 rounded-xl',
+        card: 'pl-4 pr-3 py-3 rounded-xl',
       },
       variant: {
         error: 'bg-destructive/5 border-destructive/25 [&>svg]:text-destructive',
