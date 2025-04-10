@@ -1,5 +1,6 @@
-import type { Mxc, OperationError } from '.'
+import type { Mxc } from '.'
 import { configToYaml, type NetplanConfiguration } from './netplan'
+import type { OperationError } from './types'
 
 export type DeployStage =
   | 'Pending'

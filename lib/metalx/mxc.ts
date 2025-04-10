@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid'
 
 import { Mxc } from '@/sdk/mxlite'
 
-const endpoint = process.env.MXC_ENDPOINT || `http://localhost:${await getPort()}/api`
+const endpoint = process.env.MXC_ENDPOINT || `http://localhost:${await getPort()}`
 const token = process.env.MXC_APIKEY || nanoid()
 const executable = process.env.MXC_EXECUTABLE || 'mxd'
 

@@ -1,121 +1,13 @@
-export const ERR_REASON_SESSION_NOT_FOUND = 'SESSION_NOT_FOUND'
-export const ERR_REASON_TASK_NOT_FOUND = 'TASK_NOT_FOUND'
-export const ERR_REASON_TASK_NOT_COMPLETED = 'TASK_NOT_COMPLETED'
-export const ERR_REASON_INTERNAL_ERROR = 'INTERNAL_ERROR'
-
-export type Option<T> = T | null
-
-export type OperationError =
-  | typeof ERR_REASON_SESSION_NOT_FOUND
-  | typeof ERR_REASON_TASK_NOT_FOUND
-  | typeof ERR_REASON_TASK_NOT_COMPLETED
-  | typeof ERR_REASON_INTERNAL_ERROR
-
-export type TaskResult =
-  | {
-      ok: true
-      payload: {
-        payload:
-          | {
-              type: 'None'
-            }
-          | {
-              type: 'CommandExecutionResponse'
-              stdout: string
-              stderr: string
-              code: number
-            }
-          | {
-              type: 'FileOperationResponse'
-              hash: Option<string>
-              success: boolean
-            }
-      }
-    }
-  | {
-      ok: false
-      reason: OperationError
-    }
-
-export type AddTaskResult =
-  | {
-      ok: true
-      task_id: number
-    }
-  | {
-      ok: false
-      reason: OperationError
-    }
-
-export type HostExtraInfo = {
-  socket_info: Option<{
-    local_addr: Option<string>
-    remote_addr: Option<string>
-  }>
-  controller_url: Option<string>
-  system_info: Option<{
-    total_memory: number
-    name: Option<string>
-    kernel_version: Option<string>
-    cpu: {
-      names: string[]
-      vendor_id: string
-      brand: number
-    }[]
-    mnts: {
-      kind: 'HDD' | 'SSD' | 'Unknown'
-      device_name: string
-      file_system: string
-      mount_point: string
-      total_space: number
-      is_removeable: boolean
-      is_read_only: boolean
-    }[]
-    nics: {
-      mac_address: string
-      mtu: number
-      ip: {
-        addr: string
-        version: 4 | 6
-        prefix: number
-      }[]
-    }[]
-    blks: {
-      maj_min: string
-      disk_seq: number
-      name: string
-      kname: string
-      model: Option<string>
-      size: number
-      removable: boolean
-      uuid: Option<string>
-      wwid: Option<string>
-      readonly: boolean
-      path: Option<string>
-    }[]
-  }>
-}
-
-export type HostListResponse = {
-  ok: true
-  sessions: string[]
-}
-
-export type HostInfoResponse = {
-  host: string
-  ok: boolean
-  info: Option<HostExtraInfo>
-}
-
-export type HostListInfoResponse = {
-  ok: true
-  hosts: Array<{
-    host: string
-    info: Option<HostExtraInfo>
-  }>
-}
-
-export type ApiResult<T> = Promise<[T, number]>
+import type {
+  AddTaskResult,
+  ApiResult,
+  GetUrlSubResponse,
+  HostExtraInfo,
+  LsdirResponse,
+  Option,
+  TaskResult,
+} from './types'
+import { ERR_REASON_TASK_NOT_COMPLETED } from './types'
 
 export class Mxc {
   readonly endpoint: string
@@ -162,20 +54,29 @@ export class Mxc {
     }
   }
 
-  public async getHostList(): ApiResult<HostListResponse> {
-    return await this.request(`${this.endpoint}/list`, 'GET')
+  public async getHostList(): ApiResult<{
+    ok: true
+    sessions: string[]
+  }> {
+    return await this.request(`${this.endpoint}/api/list`, 'GET')
   }
 
-  public async getHostInfo(hostId: string): ApiResult<HostInfoResponse> {
-    return await this.request(`${this.endpoint}/info?host=${hostId}`, 'GET')
+  public async getHostInfo(hostId: string): ApiResult<{ host: string; ok: boolean; info: Option<HostExtraInfo> }> {
+    return await this.request(`${this.endpoint}/api/info?host=${hostId}`, 'GET')
   }
 
-  public async getHostListInfo(): ApiResult<HostListInfoResponse> {
-    return await this.request(`${this.endpoint}/list-info`, 'GET')
+  public async getHostListInfo(): ApiResult<{
+    ok: true
+    hosts: Array<{
+      host: string
+      info: Option<HostExtraInfo>
+    }>
+  }> {
+    return await this.request(`${this.endpoint}/api/list-info`, 'GET')
   }
 
-  public async getResult(hostId: string, taskId: number): ApiResult<TaskResult> {
-    return await this.request(`${this.endpoint}/result?host=${hostId}&task_id=${taskId}`, 'GET')
+  public async getTaskResult(hostId: string, taskId: number): ApiResult<TaskResult> {
+    return await this.request(`${this.endpoint}/api/result?host=${hostId}&task_id=${taskId}`, 'GET')
   }
 
   public async blockUntilTaskComplete(
@@ -186,7 +87,7 @@ export class Mxc {
   ): Promise<TaskResult> {
     let timeout_ = timeout
     while (true) {
-      const [result] = await this.getResult(hostId, taskId)
+      const [result] = await this.getTaskResult(hostId, taskId)
       if (result.ok) {
         return result
       }
@@ -202,14 +103,14 @@ export class Mxc {
   }
 
   public async commandExec(hostId: string, command: string): ApiResult<AddTaskResult> {
-    return await this.request(`${this.endpoint}/exec`, 'POST', {
+    return await this.request(`${this.endpoint}/api/exec`, 'POST', {
       host: hostId,
       cmd: command,
     })
   }
 
   public async uploadFile(hostId: string, srcPath: string, targetUrl: string): ApiResult<AddTaskResult> {
-    return await this.request(`${this.endpoint}/file`, 'POST', {
+    return await this.request(`${this.endpoint}/api/file`, 'POST', {
       url: targetUrl,
       host: hostId,
       path: srcPath,
@@ -218,7 +119,7 @@ export class Mxc {
   }
 
   public async downloadFile(hostId: string, srcUrl: string, targetPath: string): ApiResult<AddTaskResult> {
-    return await this.request(`${this.endpoint}/file`, 'POST', {
+    return await this.request(`${this.endpoint}/api/file`, 'POST', {
       url: srcUrl,
       host: hostId,
       path: targetPath,
@@ -227,19 +128,50 @@ export class Mxc {
   }
 
   public async addFileMap(file: string, publishName: string): ApiResult<string> {
-    return await this.request(`${this.endpoint}/file-map`, 'POST', {
+    return await this.request(`${this.endpoint}/api/file-map`, 'POST', {
       path: file,
       publish_name: publishName, // eslint-disable-line camelcase
     })
   }
 
   public async removeFileMap(file: string): ApiResult<string> {
-    return await this.request(`${this.endpoint}/file-map`, 'DELETE', {
+    return await this.request(`${this.endpoint}/api/file-map`, 'DELETE', {
       publish_name: file, // eslint-disable-line camelcase
     })
   }
 
   public async getFileMap(): ApiResult<string[]> {
-    return await this.request(`${this.endpoint}/file-map`, 'GET')
+    return await this.request(`${this.endpoint}/api/file-map`, 'GET')
+  }
+
+  public async urlSubByIp(path: string, ip: string): ApiResult<GetUrlSubResponse> {
+    return await this.request(`${this.endpoint}/srv/url-sub/by-ip?ip=${ip}&path=${path}`, 'GET')
+  }
+
+  public async urlSubByHost(path: string, hostId: string): ApiResult<GetUrlSubResponse> {
+    return await this.request(`${this.endpoint}/srv/url-sub/by-host?host=${hostId}&path=${path}`, 'GET')
+  }
+
+  public async lsdir(path: string): ApiResult<LsdirResponse> {
+    return await this.request(`${this.endpoint}/srv/fs/lsdir?path=${path}`, 'GET')
+  }
+
+  public async readFile(path: string, maxSize: number): ApiResult<string | undefined> {
+    const resp = await fetch(`${this.endpoint}/srv/fs/read?path=${path}&max_size=${maxSize}`, {
+      headers: {
+        Authorization: this.token ? `Bearer ${this.token}` : '',
+      },
+    })
+    if (resp.status >= 400 && this.verbose) {
+      console.error({
+        path,
+        status: resp.status,
+      })
+    }
+    if (resp.status >= 400) {
+      return [undefined, resp.status]
+    }
+    const respText = await resp.text()
+    return [respText, resp.status]
   }
 }

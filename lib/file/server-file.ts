@@ -1,9 +1,8 @@
-import { existsSync } from 'node:fs'
-import { readdir, readFile, stat } from 'node:fs/promises'
-import { platform } from 'node:os'
-import { dirname, join } from 'path'
+import { dirname, join } from 'node:path'
 
-import { readableSize } from './utils'
+import { mxc } from '../metalx'
+
+// import { readableSize } from './utils'
 
 export interface ReadFileToStringOptions {
   // The path to the file to read.
@@ -11,25 +10,34 @@ export interface ReadFileToStringOptions {
   // The maximum size of the file to read, in bytes. Default is 1MB.
   maxSize?: number
   // The encoding to use when reading the file. Default is 'utf-8'.
-  encoding?: BufferEncoding
+  // encoding?: BufferEncoding
 }
 
-export async function readFileToString({ path, maxSize = 1024 * 1024, encoding = 'utf-8' }: ReadFileToStringOptions) {
-  if (!existsSync(path)) {
-    throw new Error('文件路径不存在')
+export async function readFileToString({ path, maxSize = 1024 * 1024 }: ReadFileToStringOptions) {
+  // if (!existsSync(path)) {
+  //   throw new Error('文件路径不存在')
+  // }
+  // const stats = await stat(path)
+  // if (!stats.isFile()) {
+  //   throw new Error('路径不是文件')
+  // }
+  // if (stats.size > maxSize) {
+  //   throw new Error(`文件大小超出限制 ${readableSize(maxSize)}（选择文件为 ${readableSize(stats.size)}）`)
+  // }
+  // const file = await readFile(path)
+  // return file.toString(encoding)
+  const [r, s] = await mxc.readFile(path, maxSize)
+  if (s === 404) {
+    throw new Error('文件不存在，或者路径不是一个文件')
   }
-  const stats = await stat(path)
-  if (!stats.isFile()) {
-    throw new Error('路径不是文件')
+  if (s === 418) {
+    throw new Error('文件大小超出限制')
   }
-  if (stats.size > maxSize) {
-    throw new Error(`文件大小超出限制 ${readableSize(maxSize)}（选择文件为 ${readableSize(stats.size)}）`)
+  if (s >= 400) {
+    throw new Error('无法读取文件')
   }
-  const file = await readFile(path)
-  return file.toString(encoding)
+  return r
 }
-
-const PATH_SEPARATOR = platform() === 'win32' ? '\\' : '/'
 
 export type FileItem = {
   name: string
@@ -38,49 +46,87 @@ export type FileItem = {
   type: 'file' | 'directory'
 }
 
-type FileInternalItem = {
-  name: string
-  path: string
-  type: 'file' | 'directory' | 'unknown'
-}
+// type FileInternalItem = {
+//   name: string
+//   path: string
+//   type: 'file' | 'directory' | 'unknown'
+// }
 
 export async function readDirectory(directoryPath: string): Promise<FileItem[]> {
+  // try {
+  //   const actualPath = directoryPath || process.cwd()
+  //   const files = await readdir(actualPath)
+  //   const items = await Promise.all(
+  //     files.map(async (file) => {
+  //       const filePath = join(actualPath, file)
+  //       try {
+  //         const stats = await stat(filePath)
+  //         return {
+  //           name: file,
+  //           path: filePath,
+  //           size: stats.isFile() ? stats.size : undefined,
+  //           type: stats.isDirectory() ? 'directory' : 'file',
+  //         } as FileItem
+  //       } catch {
+  //         return {
+  //           name: file,
+  //           path: filePath,
+  //           type: 'unknown',
+  //         } as FileInternalItem
+  //       }
+  //     }),
+  //   )
+  //   return (items.filter((item) => item.type !== 'unknown') as FileItem[]).sort((a, b) => {
+  //     if (a.type === b.type) {
+  //       return a.name.localeCompare(b.name)
+  //     }
+  //     return a.type === 'directory' ? -1 : 1
+  //   })
+  // } catch (error) {
+  //   console.error('Error reading directory:', error)
+  //   return []
+  // }
+  console.log('fetch directory', directoryPath)
   try {
-    const actualPath = directoryPath || process.cwd()
+    const [r, s] = await mxc.lsdir(directoryPath)
 
-    const files = await readdir(actualPath)
-
-    const items = await Promise.all(
-      files.map(async (file) => {
-        const filePath = join(actualPath, file)
-        try {
-          const stats = await stat(filePath)
+    if (s >= 400) {
+      throw new Error('无法读取目录或文件，可能是权限问题')
+    }
+    if (r.ok) {
+      return r.result.subdirs
+        .map((item) => {
           return {
-            name: file,
-            path: filePath,
-            size: stats.isFile() ? stats.size : undefined,
-            type: stats.isDirectory() ? 'directory' : 'file',
+            name: item,
+            path: join(directoryPath, item),
+            type: 'directory',
           } as FileItem
-        } catch {
-          return {
-            name: file,
-            path: filePath,
-            type: 'unknown',
-          } as FileInternalItem
-        }
-      }),
-    )
-
-    return (items.filter((item) => item.type !== 'unknown') as FileItem[]).sort((a, b) => {
-      if (a.type === b.type) {
-        return a.name.localeCompare(b.name)
-      }
-      return a.type === 'directory' ? -1 : 1
-    })
+        })
+        .sort((a, b) => {
+          return a.name.localeCompare(b.name)
+        })
+        .concat(
+          (
+            await Promise.all(
+              r.result.files.map(async (item) => {
+                const filePath = join(directoryPath, item)
+                return {
+                  name: item,
+                  path: filePath,
+                  type: 'file',
+                  size: await mxc.lsdir(filePath).then(([r, s]) => (s === 200 && r.ok && r.result.size) ?? undefined),
+                } as FileItem
+              }),
+            )
+          ).sort((a, b) => {
+            return a.name.localeCompare(b.name)
+          }),
+        )
+    }
   } catch (error) {
     console.error('Error reading directory:', error)
-    return []
   }
+  return []
 }
 
 export async function getParentDirectoryPath(currentPath: string) {
@@ -102,33 +148,26 @@ export type CheckPathResult =
     }
 
 export async function checkPath(checkPath: string): Promise<CheckPathResult> {
-  try {
-    // 路径存在
-    const stats = await stat(checkPath)
-    const isDirectory = checkPath.endsWith(PATH_SEPARATOR) && stats.isDirectory()
+  const [r, s] = await mxc.lsdir(checkPath)
+  if (s >= 400) {
+    throw new Error('无法读取目录或文件，可能是权限问题')
+  }
+  if (r.ok) {
+    const isDirectory = checkPath.match(/(\\|\/)$/) && !r.result.is_file
     const directory = isDirectory ? checkPath : dirname(checkPath)
     return {
       exists: true,
       dirExists: true,
       isDirectory,
       directory,
-    }
-  } catch {
-    // 路径不存在
-    const directory = dirname(checkPath)
-    const dirExists = existsSync(directory)
-    return dirExists
-      ? {
-          exists: false,
-          dirExists: true,
-          isDirectory: false,
-          directory,
-        }
-      : {
-          exists: false,
-          dirExists: false,
-          isDirectory: false,
-          directory: null,
-        }
+    } as CheckPathResult
   }
+  const directory = dirname(checkPath)
+  const dirExists = await mxc.lsdir(directory).then(([r, s]) => s === 200 && r.existed)
+  return {
+    exists: false,
+    dirExists,
+    isDirectory: false,
+    directory: dirExists ? directory : null,
+  } as CheckPathResult
 }
