@@ -48,20 +48,22 @@ export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstal
           renderer: 'networkd',
           /* eslint-disable camelcase */
           ethernets: Object.fromEntries(
-            info.system_info?.nics.map(({ mac_address }, index) => {
-              const record: NetplanConfiguration['network']['ethernets'][string] = {
-                match: { macaddress: mac_address },
-                dhcp4: network.ipv4.type === 'dhcp' || network.dns.type === 'dhcp',
-                routes: network.ipv4.type === 'static' ? [{ to: 'default', via: network.ipv4.gateway }] : undefined,
-                'dhcp4-overrides': match(network)
-                  .with({ ipv4: { type: 'dhcp' }, dns: { type: 'static' } }, () => ({ 'use-dns': false }))
-                  .with({ ipv4: { type: 'static' }, dns: { type: 'dhcp' } }, () => ({ 'use-routes': false }))
-                  .otherwise(() => undefined),
-                addresses: host.ip ? { [host.ip]: { lifetime: 'forever' } } : undefined,
-                nameservers: network.dns.type === 'static' ? { addresses: network.dns.list, search: [] } : undefined,
-              }
-              return [`eth${index}`, record]
-            }) || [],
+            info.system_info?.nics
+              .filter(({ mac_address }) => mac_address !== '00:00:00:00:00:00')
+              .map(({ mac_address }, index) => {
+                const record: NetplanConfiguration['network']['ethernets'][string] = {
+                  match: { macaddress: mac_address },
+                  dhcp4: network.ipv4.type === 'dhcp' || network.dns.type === 'dhcp',
+                  routes: network.ipv4.type === 'static' ? [{ to: 'default', via: network.ipv4.gateway }] : undefined,
+                  'dhcp4-overrides': match(network)
+                    .with({ ipv4: { type: 'dhcp' }, dns: { type: 'static' } }, () => ({ 'use-dns': false }))
+                    .with({ ipv4: { type: 'static' }, dns: { type: 'dhcp' } }, () => ({ 'use-routes': false }))
+                    .otherwise(() => undefined),
+                  addresses: host.ip ? { [host.ip]: { lifetime: 'forever' } } : undefined,
+                  nameservers: network.dns.type === 'static' ? { addresses: network.dns.list, search: [] } : undefined,
+                }
+                return [`eth${index}`, record]
+              }) || [],
           ),
         },
       }),
