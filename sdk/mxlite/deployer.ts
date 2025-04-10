@@ -182,7 +182,8 @@ ${POSTINSTALL_SCRIPT}
   public async applyNetplan(config: NetplanConfiguration, confName = '00-default.yaml') {
     const script = `mkdir -p /mnt/etc/netplan && cat <<EOFEOFEOF > /mnt/etc/netplan/${confName}
 ${configToYaml(config)}
-EOFEOFEOF`
+EOFEOFEOF
+chmod 400 /mnt/etc/netplan/${confName}`
     await this.execScript(script)
   }
 

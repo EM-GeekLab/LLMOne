@@ -52,6 +52,7 @@ next-env.d.ts
 
 # scripts for internal testing purposes
 .local
+local-test
 
 # global store persistence
 .global-store.json
