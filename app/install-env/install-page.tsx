@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 import type { HostConfigType } from '@/app/host-info/schemas'
 import { useOverflow } from '@/hooks/use-overflow'
 import { useGlobalStore } from '@/stores'
-import { useLocalStore } from '@/stores/local-store-provider'
+import { useInstallStore } from '@/stores/install-store-provider'
 import { useTRPC } from '@/trpc/client'
 
 import { FakeProgressBar, FakeRingProgressBar } from './fake-progress-bar'
@@ -99,7 +99,7 @@ function ScrollController({ onClick, side }: { onClick: () => void; side: 'left'
 }
 
 function HostTabsTrigger({ host, className }: { host: HostConfigType; className?: string }) {
-  const progress = useLocalStore((s) => s.installationProgress.get(host.id))
+  const progress = useInstallStore((s) => s.installationProgress.get(host.id))
   const isError = progress && !progress.ok
   const isSuccess = progress && progress.from === 100
 
@@ -154,7 +154,7 @@ function SystemInstallCard() {
   )
 
   const { hostId } = InstallPageContext.useContext()
-  const progress = useLocalStore((s) => s.installationProgress.get(hostId))
+  const progress = useInstallStore((s) => s.installationProgress.get(hostId))
 
   return (
     <ProgressCard>
@@ -179,7 +179,7 @@ function FormatProgress({ progress }: { progress?: InstallProgress }) {
 
 function LogDisplay() {
   const { hostId } = InstallPageContext.useContext()
-  const logs = useLocalStore((s) => s.installationLog.get(hostId))
+  const logs = useInstallStore((s) => s.installationLog.get(hostId))
 
   const { scrollRef, contentRef } = useStickToBottom()
 

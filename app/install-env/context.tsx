@@ -10,7 +10,7 @@ import { installConfigSchema } from '@/app/install-env/schemas'
 import { formatProgress, progressText } from '@/app/install-env/utils'
 import { usePreventUnload } from '@/hooks/use-prevent-unload'
 import { useGlobalStoreApi } from '@/stores'
-import { useLocalStore } from '@/stores/local-store-provider'
+import { useInstallStore } from '@/stores/install-store-provider'
 import { useTRPCClient } from '@/trpc/client'
 
 const BmcLocalInstallContext = createSafeContext<{
@@ -22,8 +22,8 @@ const BmcLocalInstallContext = createSafeContext<{
 
 export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
   const storeApi = useGlobalStoreApi()
-  const setProgress = useLocalStore((s) => s.setInstallationProgress)
-  const addLog = useLocalStore((s) => s.addInstallationLog)
+  const setProgress = useInstallStore((s) => s.setInstallationProgress)
+  const addLog = useInstallStore((s) => s.addInstallationLog)
   const trpc = useTRPCClient()
 
   const mutation = useMutation({
