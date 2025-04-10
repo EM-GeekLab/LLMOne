@@ -58,7 +58,7 @@ PARTUUID=$EFI_PARTUUID /boot/efi vfat defaults 0 2
 EOF
 
 chroot /mnt sh -c 'update-initramfs -c -k all && grub-install --target=x86_64-efi --efi-directory=/boot/efi --recheck && update-grub'
-chroot /mnt sh -c 'ln -rs /usr/lib/systemd/systemd /sbin/init'`
+chroot /mnt sh -c 'ln -frs /usr/lib/systemd/systemd /sbin/init'`
 
 class DeployError extends Error {
   public reason?: OperationError
@@ -76,21 +76,15 @@ class DeployError extends Error {
 
 export class Deployer {
   private mxc: Mxc
-  private stage: DeployStage
   private readonly hostId: string
   private readonly diskName: string
   private readonly rootfsUrl: string
 
-  constructor(mxc: Mxc, hostId: string, diskName: string, rootfsUrl: string, unsafeSetStage?: DeployStage) {
+  constructor(mxc: Mxc, hostId: string, diskName: string, rootfsUrl: string) {
     this.mxc = mxc
-    this.stage = 'Pending'
     this.hostId = hostId
     this.diskName = diskName
     this.rootfsUrl = rootfsUrl
-
-    if (unsafeSetStage) {
-      this.stage = unsafeSetStage
-    }
   }
 
   private async execScript(script: string) {
@@ -119,6 +113,12 @@ export class Deployer {
       throw new DeployError({
         error: 'ExecError',
       })
+    }
+    if (r2.payload.payload.stdout.length > 0) {
+      console.log(r2.payload.payload.stdout)
+    }
+    if (r2.payload.payload.stderr.length > 0) {
+      console.error(r2.payload.payload.stderr)
     }
   }
 
@@ -158,35 +158,25 @@ export class Deployer {
   }
 
   public async preinstall() {
-    this.stage = 'Preinstalling'
     const script = `export DISK="${this.diskName}";
 ${PREINSTALL_SCRIPT}`
-
     await this.execScript(script)
-    this.stage = 'Preinstalled'
   }
 
   public async downloadRootfs() {
-    this.stage = 'Downloading'
     await this.downloadFile(this.rootfsUrl, '/installer_tmp/image.tar.zst')
-    this.stage = 'Downloaded'
   }
 
   public async install() {
-    this.stage = 'Installing'
     const script = 'cd /installer_tmp && tar xf image.tar.zst -C /mnt --preserve-permissions --same-owner --zstd'
-
     await this.execScript(script)
-    this.stage = 'Installed'
   }
 
   public async postinstall() {
-    this.stage = 'Postinstalling'
     const script = `export DISK="${this.diskName}";
 ${POSTINSTALL_SCRIPT}
 `
     await this.execScript(script)
-    this.stage = 'Postinstalled'
   }
 
   public async applyNetplan(config: NetplanConfiguration, confName = '00-default.yaml') {
@@ -222,11 +212,28 @@ echo "${username}:${password}" | chpasswd
     await this.execScriptChroot(`echo "${hostname}" > /etc/hostname`)
   }
 
-  public async applyAptSources(sources: string) {
-    await this.execScriptChroot(`cat <<EOF > /etc/apt/sources.list
-${sources}
-EOF
+  public async applyAptSources(sources?: string) {
+    const sources_ =
+      sources ??
+      `Types: deb
+URIs: http://cn.archive.ubuntu.com/ubuntu/
+Suites: noble noble-updates noble-backports
+Components: main restricted universe multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+Types: deb
+URIs: http://security.ubuntu.com/ubuntu/
+Suites: noble-security
+Components: main restricted universe multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+`
+    await this.execScriptChroot(`
 rm /etc/apt/sources.list.d/*
-`)
+cat <<EOF > /etc/apt/sources.list
+# Moved to sources.list.d
+EOF
+cat <<EOF > /etc/apt/sources.list.d/ubuntu.list
+${sources_}
+EOF`)
   }
 }
