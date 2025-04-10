@@ -3,6 +3,7 @@ import { writeFileSync } from 'node:fs'
 import superjson from 'superjson'
 
 import { GlobalState } from '@/stores/global-store'
+import { InstallStore } from '@/stores/install-store'
 import { isWriteState } from '@/stores/server-config'
 import { clientDataMap, persistFile } from '@/stores/server-store'
 import { baseProcedure, createRouter } from '@/trpc/init'
@@ -16,5 +17,8 @@ export const stateStoreRouter = createRouter({
       const text = superjson.stringify(input)
       writeFileSync(persistFile, text, 'utf-8')
     }
+  }),
+  saveInstall: baseProcedure.input(inputType<InstallStore>).mutation(async ({ input }) => {
+    clientDataMap.set('install', input)
   }),
 })

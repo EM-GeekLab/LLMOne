@@ -28,8 +28,11 @@ export const defaultInstallStoreState: InstallStoreState = {
   installationLog: new Map(),
 }
 
-export const createInstallStore = (initState = defaultInstallStoreState) => {
-  return createStore<InstallStore>()(
+export const createInstallStore = (
+  initState = defaultInstallStoreState,
+  listener?: (state: InstallStore, prev: InstallStore) => void,
+) => {
+  const store = createStore<InstallStore>()(
     immer((set) => ({
       ...initState,
       setInstallationProgress: (hostId, progress) =>
@@ -52,4 +55,8 @@ export const createInstallStore = (initState = defaultInstallStoreState) => {
         }),
     })),
   )
+  if (listener) {
+    store.subscribe(listener)
+  }
+  return store
 }

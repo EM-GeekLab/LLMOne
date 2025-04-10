@@ -2,6 +2,7 @@ import { AppCardDescription, AppCardHeader, AppCardSection, AppCardTitle } from 
 import { AppFrame } from '@/components/app/app-frame'
 import { ConnectModeIf, DeployModeIf } from '@/app/_shared/condition'
 import { InstallStoreProvider } from '@/stores/install-store-provider'
+import { loadInstallData } from '@/stores/server-store'
 
 import { BmcLocalInstallStatusIf } from './condition'
 import { ConfirmCard } from './confirm-card'
@@ -10,7 +11,7 @@ import { InstallPage } from './install-page'
 
 export default function Page() {
   return (
-    <InstallStoreProvider>
+    <InstallStoreProvider initState={loadInstallData()}>
       <AppFrame title="基础系统部署" current="install-env">
         <AppCardHeader>
           <AppCardTitle>安装运行环境</AppCardTitle>
