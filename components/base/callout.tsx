@@ -5,7 +5,7 @@ import { AlertCircleIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const errorAlertVariants = cva(
-  'grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 overflow-auto border text-sm [&>svg]:text-muted-foreground [&>svg]:size-4 [&>svg]:translate-y-0.5',
+  'grid items-start gap-2 overflow-auto border text-sm [&>svg]:text-muted-foreground [&>svg]:size-4',
   {
     variants: {
       size: {
@@ -36,10 +36,19 @@ export function Callout({
   ...props
 }: ComponentProps<'div'> & VariantProps<typeof errorAlertVariants> & { icon?: ReactNode; action?: ReactNode }) {
   return (
-    <div className={cn(errorAlertVariants({ size, variant }), className)} {...props}>
+    <div
+      className={cn(
+        errorAlertVariants({ size, variant }),
+        action
+          ? 'grid-cols-[auto_minmax(0,1fr)_auto] items-center'
+          : 'grid-cols-[auto_minmax(0,1fr)] [&>svg]:translate-y-0.5',
+        className,
+      )}
+      {...props}
+    >
       {icon}
       <div>{children}</div>
-      {action && <div className="col-start-2 row-start-2">{action}</div>}
+      {action && <div className="col-start-3">{action}</div>}
     </div>
   )
 }
