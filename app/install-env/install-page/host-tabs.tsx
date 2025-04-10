@@ -1,47 +1,18 @@
-'use client'
-
 import { useRef } from 'react'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import { useQuery } from '@tanstack/react-query'
-import { format } from 'date-fns'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
-import { match } from 'ts-pattern'
-import { useStickToBottom } from 'use-stick-to-bottom'
 
-import { InstallProgress } from '@/lib/metalx'
-import { createSafeContext } from '@/lib/react/create-safe-context'
 import { cn } from '@/lib/utils'
-import { AppCardSection, AppCardTitle } from '@/components/app/app-card'
+import { AppCardSection } from '@/components/app/app-card'
 import { Button } from '@/components/ui/button'
 import type { HostConfigType } from '@/app/host-info/schemas'
 import { useOverflow } from '@/hooks/use-overflow'
-import { useGlobalStore } from '@/stores'
 import { useInstallStore } from '@/stores/install-store-provider'
-import { useTRPC } from '@/trpc/client'
 
-import { FakeProgressBar, FakeRingProgressBar } from './fake-progress-bar'
-import { ProgressCard, ProgressCardDescription, ProgressCardTitle } from './progress-card'
-import { formatProgress } from './utils'
+import { FakeRingProgressBar } from '../fake-progress-bar'
+import { FormatProgress } from './format-progress'
 
-const InstallPageContext = createSafeContext<{ hostId: string }>()
-
-export function InstallPage() {
-  const hosts = useGlobalStore((s) => s.hostConfig.hosts)
-  const hostsList = Array.from(hosts.values())
-
-  return (
-    <TabsPrimitive.Tabs className="grid gap-4" defaultValue={hostsList[0].id}>
-      <HostTabsList hostsList={hostsList as HostConfigType[]} />
-      {hostsList.map((host) => (
-        <TabsPrimitive.TabsContent key={host.id} value={host.id} className="grid gap-4">
-          <HostInstallPage hostId={host.id} />
-        </TabsPrimitive.TabsContent>
-      ))}
-    </TabsPrimitive.Tabs>
-  )
-}
-
-function HostTabsList({ hostsList }: { hostsList: HostConfigType[] }) {
+export function HostTabsList({ hostsList }: { hostsList: HostConfigType[] }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const childRef = useRef<HTMLDivElement>(null)
 
@@ -99,7 +70,7 @@ function ScrollController({ onClick, side }: { onClick: () => void; side: 'left'
 }
 
 function HostTabsTrigger({ host, className }: { host: HostConfigType; className?: string }) {
-  const progress = useInstallStore((s) => s.installationProgress.get(host.id))
+  const progress = useInstallStore((s) => s.systemInstallProgress.get(host.id))
   const isError = progress && !progress.ok
   const isSuccess = progress && progress.from === 100
 
@@ -128,73 +99,5 @@ function HostTabsTrigger({ host, className }: { host: HostConfigType; className?
       </div>
       <div className="group-data-[state=active]:border-t-primary group-data-error:group-data-[state=active]:border-t-destructive group-data-success:group-data-[state=active]:border-t-success absolute -bottom-2.5 left-1/2 h-1.5 w-4.5 -translate-x-1/2 border-x-9 border-t-6 border-transparent" />
     </TabsPrimitive.TabsTrigger>
-  )
-}
-
-export function HostInstallPage({ hostId }: { hostId: string }) {
-  return (
-    <InstallPageContext.Provider value={{ hostId }}>
-      <AppCardSection>
-        <AppCardTitle className="text-base">进度</AppCardTitle>
-        <SystemInstallCard />
-      </AppCardSection>
-      <AppCardSection>
-        <AppCardTitle className="text-base">日志</AppCardTitle>
-        <LogDisplay />
-      </AppCardSection>
-    </InstallPageContext.Provider>
-  )
-}
-
-function SystemInstallCard() {
-  const osInfoPath = useGlobalStore((s) => s.osInfoPath)
-  const trpc = useTRPC()
-  const { data } = useQuery(
-    trpc.resource.getOsInfo.queryOptions(osInfoPath || '', { enabled: !!osInfoPath, refetchOnMount: false }),
-  )
-
-  const { hostId } = InstallPageContext.useContext()
-  const progress = useInstallStore((s) => s.installationProgress.get(hostId))
-
-  return (
-    <ProgressCard>
-      <ProgressCardTitle>{data?.displayName}</ProgressCardTitle>
-      <FakeProgressBar progress={progress} />
-      <ProgressCardDescription>
-        <FormatProgress progress={progress} />
-      </ProgressCardDescription>
-    </ProgressCard>
-  )
-}
-
-function FormatProgress({ progress }: { progress?: InstallProgress }) {
-  if (!progress) {
-    return <p>准备安装...</p>
-  }
-  return match(formatProgress(progress))
-    .with({ type: 'info' }, (log) => <p>{log.log}</p>)
-    .with({ type: 'error' }, (log) => <p className="text-destructive">{log.log}</p>)
-    .exhaustive()
-}
-
-function LogDisplay() {
-  const { hostId } = InstallPageContext.useContext()
-  const logs = useInstallStore((s) => s.installationLog.get(hostId))
-
-  const { scrollRef, contentRef } = useStickToBottom()
-
-  return (
-    <div ref={scrollRef} className="bg-muted/50 h-56 overflow-auto rounded-lg px-3.5 py-2.5 font-mono text-sm">
-      <div ref={contentRef}>
-        {logs?.map((item) => (
-          <div key={item.time.getTime()}>
-            <p className={cn('flex gap-2', item.type === 'error' && 'text-destructive')}>
-              <span>[{format(item.time, 'yyyy-MM-dd HH:mm:ss')}]</span>
-              <span>{item.log}</span>
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
   )
 }

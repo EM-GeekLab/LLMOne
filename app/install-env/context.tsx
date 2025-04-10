@@ -4,7 +4,7 @@ import { ReactNode } from 'react'
 import { useMutation, UseMutationResult } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { InstallStep } from '@/lib/metalx'
+import { SystemInstallStep } from '@/lib/metalx'
 import { createSafeContext } from '@/lib/react/create-safe-context'
 import { installConfigSchema } from '@/app/install-env/schemas'
 import { formatProgress, progressText } from '@/app/install-env/utils'
@@ -15,9 +15,9 @@ import { useTRPCClient } from '@/trpc/client'
 
 const BmcLocalInstallContext = createSafeContext<{
   start: () => void
-  retry: (hostId: string, step: InstallStep) => void
+  retry: (hostId: string, step: SystemInstallStep) => void
   installMutation: UseMutationResult<void, Error, void>
-  retryMutation: UseMutationResult<void, Error, { hostId: string; step: InstallStep }>
+  retryMutation: UseMutationResult<void, Error, { hostId: string; step: SystemInstallStep }>
 }>()
 
 export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
@@ -26,15 +26,26 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
   const addLog = useInstallStore((s) => s.addInstallationLog)
   const trpc = useTRPCClient()
 
+  const initDeployer = async () => {
+    const { hosts: hostsMap, account, network } = storeApi.getState().hostConfig
+    const osInfoPath = storeApi.getState().osInfoPath
+    const hosts = Array.from(hostsMap.values())
+    const input = installConfigSchema.parse({ hosts, account, network, osInfoPath })
+    await trpc.deploy.initDeployer.mutate(input)
+    return input
+  }
+
   const mutation = useMutation({
     mutationFn: async () => {
-      const { hosts, account, network } = storeApi.getState().hostConfig
-      const osInfoPath = storeApi.getState().osInfoPath
-      const input = installConfigSchema.parse({ hosts: Array.from(hosts.values()), account, network, osInfoPath })
-      for await (const result of await trpc.deploy.os.installAll.mutate(input, { context: { stream: true } })) {
-        setProgress(result.host.id, result)
-        addLog(result.host.id, formatProgress(result))
-      }
+      const { hosts } = await initDeployer()
+      await Promise.all(
+        hosts.map(async (_, index) => {
+          for await (const result of await trpc.deploy.os.installOne.mutate(index, { context: { stream: true } })) {
+            setProgress(result.host.id, result)
+            addLog(result.host.id, formatProgress(result))
+          }
+        }),
+      )
     },
     onError: (error) => {
       console.error(error)
@@ -43,7 +54,7 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
   })
 
   const retryMutation = useMutation({
-    mutationFn: async ({ hostId, step }: { hostId: string; step: InstallStep }) => {
+    mutationFn: async ({ hostId, step }: { hostId: string; step: SystemInstallStep }) => {
       addLog(hostId, { type: 'info', log: `从${progressText(step)}重试`, time: new Date() })
       for await (const result of await trpc.deploy.os.retryFromStep.mutate(
         { host: hostId, step },

@@ -1,0 +1,98 @@
+import { match } from 'ts-pattern'
+
+import { NetplanConfiguration } from '@/sdk/mxlite/netplan'
+
+import { InstallProgressBase, InstallStepConfig } from './types'
+
+export const systemInstallSteps = [
+  'preinstall',
+  'downloadRootfs',
+  'install',
+  'postinstall',
+  'configNetwork',
+  'configHostname',
+  'configUser',
+  'configMirrors',
+  'reboot',
+  'complete',
+] as const
+
+export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstallStep>>[] = [
+  {
+    step: 'preinstall',
+    progress: 50,
+    executor: ({ deployer }) => deployer.preinstall(),
+  },
+  {
+    step: 'downloadRootfs',
+    progress: 65,
+    executor: ({ deployer }) => deployer.downloadRootfs(),
+  },
+  {
+    step: 'install',
+    progress: 80,
+    executor: ({ deployer }) => deployer.install(),
+  },
+  {
+    step: 'postinstall',
+    progress: 85,
+    executor: ({ deployer }) => deployer.postinstall(),
+  },
+  {
+    step: 'configNetwork',
+    progress: 90,
+    executor: ({ deployer, info, host }, { network }) =>
+      deployer.applyNetplan({
+        network: {
+          version: 2,
+          renderer: 'networkd',
+          /* eslint-disable camelcase */
+          ethernets: Object.fromEntries(
+            info.system_info?.nics.map(({ mac_address }, index) => {
+              const record: NetplanConfiguration['network']['ethernets'][string] = {
+                match: { macaddress: mac_address },
+                dhcp4: network.ipv4.type === 'dhcp' || network.dns.type === 'dhcp',
+                routes: network.ipv4.type === 'static' ? [{ to: 'default', via: network.ipv4.gateway }] : undefined,
+                'dhcp4-overrides': match(network)
+                  .with({ ipv4: { type: 'dhcp' }, dns: { type: 'static' } }, () => ({ 'use-dns': false }))
+                  .with({ ipv4: { type: 'static' }, dns: { type: 'dhcp' } }, () => ({ 'use-routes': false }))
+                  .otherwise(() => undefined),
+                addresses: host.ip ? { [host.ip]: { lifetime: 'forever' } } : undefined,
+                nameservers: network.dns.type === 'static' ? { addresses: network.dns.list, search: [] } : undefined,
+              }
+              return [`eth${index}`, record]
+            }) || [],
+          ),
+        },
+      }),
+  },
+  {
+    step: 'configHostname',
+    progress: 93,
+    executor: ({ deployer, host }) => deployer.applyHostname(host.hostname),
+  },
+  {
+    step: 'configUser',
+    progress: 95,
+    executor: ({ deployer }, { account }) => deployer.applyUserconfig(account.username, account.password || ''),
+  },
+  {
+    step: 'configMirrors',
+    progress: 98,
+    executor: ({ deployer }) => deployer.applyAptSources(),
+  },
+  {
+    step: 'reboot',
+    progress: 100,
+    executor: ({ deployer }) => deployer.reboot(),
+  },
+  {
+    step: 'complete',
+    progress: 100,
+    executor: () => Promise.resolve(),
+  },
+]
+
+export type SystemInstallStep = (typeof systemInstallSteps)[number] | null
+
+export type SystemInstallProgress = InstallProgressBase<SystemInstallStep>

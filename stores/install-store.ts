@@ -2,19 +2,19 @@ import { enableMapSet } from 'immer'
 import { immer } from 'zustand/middleware/immer'
 import { createStore } from 'zustand/vanilla'
 
-import type { InstallProgress } from '@/lib/metalx'
+import type { SystemInstallProgress } from '@/lib/metalx'
 
 enableMapSet()
 
 export type LogItem = { type: 'info' | 'error'; time: Date; log: string }
 
 type InstallStoreState = {
-  installationProgress: Map<string, InstallProgress>
+  systemInstallProgress: Map<string, SystemInstallProgress>
   installationLog: Map<string, LogItem[]>
 }
 
 type InstallStoreActions = {
-  setInstallationProgress: (hostId: string, progress: InstallProgress) => void
+  setInstallationProgress: (hostId: string, progress: SystemInstallProgress) => void
   clearInstallationProgress: (hostId: string) => void
 
   addInstallationLog: (hostId: string, log: LogItem) => void
@@ -24,7 +24,7 @@ type InstallStoreActions = {
 export type InstallStore = InstallStoreState & InstallStoreActions
 
 export const defaultInstallStoreState: InstallStoreState = {
-  installationProgress: new Map(),
+  systemInstallProgress: new Map(),
   installationLog: new Map(),
 }
 
@@ -37,11 +37,11 @@ export const createInstallStore = (
       ...initState,
       setInstallationProgress: (hostId, progress) =>
         set((state) => {
-          state.installationProgress.set(hostId, progress)
+          state.systemInstallProgress.set(hostId, progress)
         }),
       clearInstallationProgress: (hostId) =>
         set((state) => {
-          state.installationProgress.delete(hostId)
+          state.systemInstallProgress.delete(hostId)
         }),
       addInstallationLog: (hostId, log) =>
         set((state) => {

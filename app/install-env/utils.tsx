@@ -1,9 +1,9 @@
 import { match } from 'ts-pattern'
 
-import { InstallProgress, InstallStep } from '@/lib/metalx'
+import { SystemInstallProgress, SystemInstallStep } from '@/lib/metalx'
 import { LogItem } from '@/stores/local-store'
 
-export function progressText(stage: InstallStep) {
+export function progressText(stage: SystemInstallStep) {
   return match(stage)
     .with(null, () => '准备安装')
     .with('preinstall', () => '分配磁盘空间')
@@ -13,11 +13,13 @@ export function progressText(stage: InstallStep) {
     .with('configNetwork', () => '配置网络')
     .with('configHostname', () => '配置主机名')
     .with('configUser', () => '配置用户')
+    .with('configMirrors', () => '配置镜像源')
+    .with('reboot', () => '重启系统')
     .with('complete', () => '安装完成')
     .exhaustive()
 }
 
-export function formatProgress(progress: InstallProgress, time = new Date()): LogItem {
+export function formatProgress(progress: SystemInstallProgress, time = new Date()): LogItem {
   if (progress.ok) {
     return {
       type: 'info',

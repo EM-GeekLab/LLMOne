@@ -1,52 +1,9 @@
-import { match } from 'ts-pattern'
-
+import { InstallProgressBase, InstallStepConfig, MxdItem, SharedConfig } from '@/lib/metalx/types'
 import type { AccountConfigType, HostConfigType, NetworkConfigType } from '@/app/host-info/schemas'
-import { HostExtraInfo } from '@/sdk/mxlite'
 import { Deployer } from '@/sdk/mxlite/deployer'
-import { NetplanConfiguration } from '@/sdk/mxlite/netplan'
 
 import { mxc } from './mxc'
-
-export const installSteps = [
-  'preinstall',
-  'downloadRootfs',
-  'install',
-  'postinstall',
-  'configNetwork',
-  'configHostname',
-  'configUser',
-  'complete',
-] as const
-
-export type InstallStep = (typeof installSteps)[number] | null
-
-const installStepProgressMap: Record<NonNullable<InstallStep>, [number, number]> = {
-  preinstall: [0, 50],
-  downloadRootfs: [50, 65],
-  install: [65, 80],
-  postinstall: [80, 85],
-  configNetwork: [85, 90],
-  configHostname: [90, 95],
-  configUser: [95, 100],
-  complete: [100, 100],
-}
-
-export type InstallProgress = {
-  host: HostConfigType
-  from: number
-  to: number
-} & (
-  | {
-      ok: true
-      completed: InstallStep
-      started: InstallStep
-    }
-  | {
-      ok: false
-      step: InstallStep
-      error: Error
-    }
-)
+import { SystemInstallProgress, SystemInstallStep, systemInstallStepConfig } from './os-config'
 
 export type CreateMxdParams = {
   hosts: HostConfigType[]
@@ -55,21 +12,13 @@ export type CreateMxdParams = {
   systemImagePath: string
 }
 
-type MxdItem = {
-  host: HostConfigType
-  info: HostExtraInfo
-  deployer: Deployer
-}
-
 export class MxdManager {
-  private readonly list: MxdItem[]
-  private readonly account: AccountConfigType
-  private readonly network: NetworkConfigType
+  readonly list: MxdItem[]
+  readonly shared: SharedConfig
 
   constructor(list: MxdItem[], account: AccountConfigType, network: NetworkConfigType) {
     this.list = list
-    this.account = account
-    this.network = network
+    this.shared = { account, network }
   }
 
   static async create({ hosts, account, network, systemImagePath }: CreateMxdParams) {
@@ -79,127 +28,84 @@ export class MxdManager {
     }
     const deployerList = await Promise.all(
       hosts.map(async (host) => {
-        const [resp] = await mxc.getHostInfo(host.id)
-        if (!resp.info?.controller_url) {
-          console.error('主机信息获取失败', resp)
-          throw new Error('主机信息获取失败，无法获取控制器地址')
+        const [result1, result2] = await Promise.all([
+          mxc.getHostInfo(host.id),
+          mxc.urlSubByHost('srv/file/image.tar.zst', host.id),
+        ])
+
+        const [res1, status1] = result1
+        if (!res1.info?.controller_url || status1 >= 400) {
+          console.error('主机信息获取失败', res1)
+          throw new Error('主机信息获取失败')
         }
-        const url = new URL(resp.info.controller_url)
-        url.protocol = 'http:'
-        url.pathname = '/services/file/image.tar.zst'
+
+        const [res2, status2] = result2
+        if (!res2.ok || status2 >= 400) {
+          console.error('无法获取控制器地址', res2)
+          throw new Error('无法获取控制器地址')
+        }
+
         return {
           host,
-          info: resp.info,
-          deployer: new Deployer(mxc, host.id, host.disk, url.toString()),
+          info: res1.info,
+          deployer: new Deployer(mxc, host.id, host.disk, res2.urls[0]),
         }
       }),
     )
     return new MxdManager(deployerList, account, network)
   }
 
-  async *installAll(): AsyncGenerator<InstallProgress> {
+  async *installOsAll(): AsyncGenerator<SystemInstallProgress> {
     for (let i = 0; i < this.list.length; i++) {
-      yield* this.installOne(i)
+      yield* this.installOsOne(i)
     }
   }
 
-  async *installHostFromStep(hostId: string, from: InstallStep) {
+  async *installOsOneFromStep(hostId: string, from?: SystemInstallStep | null) {
+    yield* this.runInstallConfigFromStep(hostId, systemInstallStepConfig, from)
+  }
+
+  async *installOsOne(index: number, fromStepIndex = 0): AsyncGenerator<SystemInstallProgress> {
+    yield* this.runInstallConfig(index, systemInstallStepConfig, fromStepIndex)
+  }
+
+  private async *runInstallConfigFromStep<Stage extends string>(
+    hostId: string,
+    config: InstallStepConfig<Stage>[],
+    from?: Stage | null,
+  ): AsyncGenerator<InstallProgressBase<Stage | null>> {
     const index = this.list.findIndex((item) => item.host.id === hostId)
     if (index === -1) {
       throw new Error(`主机 ${hostId} 不在列表中`)
     }
-    if (from == null) {
-      from = installSteps[0]
+    if (from == undefined) {
+      from = config[0].step
     }
-    const stepIndex = installSteps.findIndex((step) => step === from)
-    yield* this.installOne(index, stepIndex)
+    const stepIndex = config.findIndex((step) => step.step === from)
+    yield* this.runInstallConfig(index, config, stepIndex)
   }
 
-  async *installOne(index: number, fromStepIndex = 0): AsyncGenerator<InstallProgress> {
-    const { host, info, deployer } = this.list[index]
-
-    let started: InstallStep = null
+  private async *runInstallConfig<Stage extends string>(
+    index: number,
+    config: InstallStepConfig<Stage>[],
+    fromStepIndex = 0,
+  ): AsyncGenerator<InstallProgressBase<Stage | null>> {
+    const { host } = this.list[index]
+    let started: Stage | null = null
     let [from, to] = [0, 0]
     try {
-      if (fromStepIndex <= 0) {
-        started = 'preinstall'
-        ;[from, to] = installStepProgressMap.preinstall
-        yield { ok: true, host, from, to, completed: null, started }
-        await deployer.preinstall()
+      for (let i = Math.max(0, fromStepIndex); i < config.length; i++) {
+        const { step, progress, executor } = config[i]
+        started = step
+        from = i === 0 ? 0 : config[i - 1].progress
+        to = progress
+        const completed = i === 0 ? null : config[i - 1].step
+        yield { ok: true, host, from, to, completed, started }
+        await executor(this.list[index], this.shared)
       }
-
-      if (fromStepIndex <= 1) {
-        started = 'downloadRootfs'
-        ;[from, to] = installStepProgressMap.downloadRootfs
-        yield { ok: true, host, from, to, completed: 'preinstall', started }
-        await deployer.downloadRootfs()
-      }
-
-      if (fromStepIndex <= 2) {
-        started = 'install'
-        ;[from, to] = installStepProgressMap.install
-        yield { ok: true, host, from, to, completed: 'downloadRootfs', started }
-        await deployer.install()
-      }
-
-      if (fromStepIndex <= 3) {
-        started = 'postinstall'
-        ;[from, to] = installStepProgressMap.postinstall
-        yield { ok: true, host, from, to, completed: 'install', started }
-        await deployer.postinstall()
-      }
-
-      if (fromStepIndex <= 4) {
-        started = 'configNetwork'
-        ;[from, to] = installStepProgressMap.configNetwork
-        yield { ok: true, host, from, to, completed: 'postinstall', started }
-        await deployer.applyNetplan({
-          version: 2,
-          renderer: 'networkd',
-          /* eslint-disable camelcase */
-          ethernets: Object.fromEntries(
-            info.system_info?.nics.map(({ mac_address }, index) => {
-              const record: NetplanConfiguration['ethernets'][string] = {
-                match: { macaddress: mac_address },
-                dhcp4: this.network.ipv4.type === 'dhcp' || this.network.dns.type === 'dhcp',
-                routes:
-                  this.network.ipv4.type === 'static' ? [{ to: 'default', via: this.network.ipv4.gateway }] : undefined,
-                'dhcp4-overrides': match(this.network)
-                  .with({ ipv4: { type: 'dhcp' }, dns: { type: 'static' } }, () => ({ 'use-dns': false }))
-                  .with({ ipv4: { type: 'static' }, dns: { type: 'dhcp' } }, () => ({ 'use-routes': false }))
-                  .otherwise(() => undefined),
-                addresses: host.ip ? { [host.ip]: { lifetime: 'forever' } } : undefined,
-                nameservers:
-                  this.network.dns.type === 'static' ? { addresses: this.network.dns.list, search: [] } : undefined,
-              }
-              return [`eth${index}`, record]
-            }) || [],
-          ),
-        })
-      }
-
-      if (fromStepIndex <= 5) {
-        started = 'configHostname'
-        ;[from, to] = installStepProgressMap.configHostname
-        yield { ok: true, host, from, to, completed: 'configNetwork', started }
-        await deployer.applyHostname(host.hostname)
-      }
-
-      if (fromStepIndex <= 6) {
-        started = 'configUser'
-        ;[from, to] = installStepProgressMap.configUser
-        yield { ok: true, host, from, to, completed: 'configNetwork', started }
-        await deployer.applyUserconfig(this.account.username, this.account.password || '')
-      }
-
-      await deployer.reboot()
-
-      started = 'complete'
-      ;[from, to] = installStepProgressMap.complete
-      yield { ok: true, host, from, to, completed: 'postinstall', started }
     } catch (err) {
       const error = err as Error
-      const info: InstallProgress = { ok: false, host, from, to, step: started, error }
+      const info: InstallProgressBase<Stage | null> = { ok: false, host, from, to, step: started, error }
       console.error(info)
       yield info
     }
