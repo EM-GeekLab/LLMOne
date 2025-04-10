@@ -103,6 +103,7 @@ export type CheckPathResult =
 
 export async function checkPath(checkPath: string): Promise<CheckPathResult> {
   try {
+    // 路径存在
     const stats = await stat(checkPath)
     const isDirectory = checkPath.endsWith(PATH_SEPARATOR) && stats.isDirectory()
     const directory = isDirectory ? checkPath : dirname(checkPath)
@@ -113,7 +114,8 @@ export async function checkPath(checkPath: string): Promise<CheckPathResult> {
       directory,
     }
   } catch {
-    const directory = checkPath.split(PATH_SEPARATOR).slice(0, -1).join(PATH_SEPARATOR) || PATH_SEPARATOR
+    // 路径不存在
+    const directory = dirname(checkPath)
     const dirExists = existsSync(directory)
     return dirExists
       ? {
