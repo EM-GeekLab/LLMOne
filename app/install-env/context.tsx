@@ -29,10 +29,11 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
   const initDeployer = async () => {
     const { hosts: hostsMap, account, network } = storeApi.getState().hostConfig
     const osInfoPath = storeApi.getState().osInfoPath
+    const bmcHosts = storeApi.getState().finalBmcHosts
     const hosts = Array.from(hostsMap.values())
-    const input = installConfigSchema.parse({ hosts, account, network, osInfoPath })
-    await trpc.deploy.initDeployer.mutate(input)
-    return input
+    const config = installConfigSchema.parse({ hosts, account, network, osInfoPath })
+    await trpc.deploy.initDeployer.mutate({ ...config, bmcHosts })
+    return config
   }
 
   const mutation = useMutation({

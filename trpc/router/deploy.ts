@@ -1,7 +1,9 @@
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 
+import { BmcClients } from '@/lib/bmc-clients'
 import { MxdManager, systemInstallSteps } from '@/lib/metalx'
+import { bmcHostsListSchema } from '@/app/connect-info/schemas'
 import { installConfigSchema } from '@/app/install-env/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
@@ -21,17 +23,35 @@ function getMxdManager() {
 }
 
 export const deployRouter = createRouter({
-  initDeployer: baseProcedure.input(installConfigSchema).mutation(async function ({
-    input: { hosts, account, network, osInfoPath },
-  }) {
-    try {
-      const osInfo = await readOsInfoAbsolute(osInfoPath)
-      mxd = await MxdManager.create({ hosts, account, network, systemImagePath: osInfo.file })
-    } catch (err) {
-      log.error(err, '初始化部署器失败')
-      throw err
-    }
-  }),
+  initDeployer: baseProcedure
+    .input(installConfigSchema.extend({ bmcHosts: bmcHostsListSchema }))
+    .mutation(async function ({ input: { hosts, account, network, osInfoPath, bmcHosts } }) {
+      const bmcClients = await BmcClients.create(bmcHosts)
+      await bmcClients
+        // @ts-expect-error enum not compatible
+        .map(({ client, defaultId }) => client.setNextBootDevice(defaultId, 'Hdd'))
+        .catch((err) => {
+          log.error(err, '设置 BMC 启动设备失败')
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: `设置 BMC 启动设备失败`,
+            cause: err,
+          })
+        })
+      try {
+        const osInfo = await readOsInfoAbsolute(osInfoPath)
+        mxd = await MxdManager.create({ hosts, account, network, systemImagePath: osInfo.file })
+      } catch (err) {
+        log.error(err, '初始化部署器失败')
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `初始化部署器失败：${(err as Error).message}`,
+          cause: err,
+        })
+      } finally {
+        await bmcClients.dispose()
+      }
+    }),
   os: {
     installAll: baseProcedure.mutation(async function* () {
       const mxd = getMxdManager()
