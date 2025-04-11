@@ -1,24 +1,11 @@
-import { writeFileSync } from 'node:fs'
-
-import superjson from 'superjson'
-
 import { GlobalState } from '@/stores/global-store'
-import { InstallStore } from '@/stores/install-store'
-import { isWriteState } from '@/stores/server-config'
-import { clientDataMap, persistFile } from '@/stores/server-store'
+import { InstallStoreState } from '@/stores/install-store'
+import { setGlobalData, setInstallData } from '@/stores/server-store'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
 import { inputType } from './utils'
 
 export const stateStoreRouter = createRouter({
-  save: baseProcedure.input(inputType<GlobalState>).mutation(async ({ input }) => {
-    clientDataMap.set('data', input)
-    if (isWriteState) {
-      const text = superjson.stringify(input)
-      writeFileSync(persistFile, text, 'utf-8')
-    }
-  }),
-  saveInstall: baseProcedure.input(inputType<InstallStore>).mutation(async ({ input }) => {
-    clientDataMap.set('install', input)
-  }),
+  save: baseProcedure.input(inputType<GlobalState>).mutation(async ({ input }) => setGlobalData(input)),
+  saveInstall: baseProcedure.input(inputType<InstallStoreState>).mutation(({ input }) => setInstallData(input)),
 })

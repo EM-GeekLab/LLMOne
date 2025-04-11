@@ -54,5 +54,6 @@ next-env.d.ts
 .local
 local-test
 
-# global store persistence
+# store persistence
 .global-store.json
+.install-store.json

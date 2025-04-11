@@ -1,32 +1,47 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 
 import superjson from 'superjson'
 
 import { GlobalState } from './global-store'
-import { InstallStore } from './install-store'
-import { isPersistState } from './server-config'
+import { InstallStoreState } from './install-store'
+import { isPersistState, isWriteState } from './server-config'
 
-export const clientDataMap = new Map<string, object>()
-
-export const persistFile = '.global-store.json'
-
-export function loadGlobalData() {
-  const data = clientDataMap.get('data')
-  if (!data) return loadGlobalDataFromFile()
-  return data as GlobalState | undefined
+function saveDataToFile<T>(file: string, data: T) {
+  if (!isWriteState) return
+  const text = superjson.stringify(data)
+  writeFileSync(file, text, 'utf-8')
 }
 
-function loadGlobalDataFromFile() {
+function loadDataFromFile<T>(file: string) {
   if (!isPersistState) return undefined
   try {
-    const stringData = readFileSync(persistFile, 'utf-8')
-    return superjson.parse<GlobalState>(stringData)
+    const stringData = readFileSync(file, 'utf-8')
+    return superjson.parse<T>(stringData)
   } catch {
     return undefined
   }
 }
 
+let globalState: GlobalState | undefined = undefined
+let installState: InstallStoreState | undefined = undefined
+
+const globalStatePersistFile = '.global-store.json'
+const installStatePersistFile = '.install-store.json'
+
+export function setGlobalData(data: GlobalState) {
+  globalState = data
+  saveDataToFile(globalStatePersistFile, data)
+}
+
+export function loadGlobalData() {
+  return globalState ?? loadDataFromFile<GlobalState>(globalStatePersistFile)
+}
+
+export function setInstallData(data: InstallStoreState) {
+  installState = data
+  saveDataToFile(installStatePersistFile, data)
+}
+
 export function loadInstallData() {
-  const data = clientDataMap.get('install')
-  return data as InstallStore | undefined
+  return installState ?? loadDataFromFile<InstallStoreState>(installStatePersistFile)
 }

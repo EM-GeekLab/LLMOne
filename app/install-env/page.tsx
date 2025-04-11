@@ -10,8 +10,10 @@ import { BmcLocalInstallProvider } from './context'
 import { InstallPage } from './install-page'
 
 export default function Page() {
+  const state = loadInstallData()
   return (
-    <InstallStoreProvider initState={loadInstallData()}>
+    <InstallStoreProvider initState={state}>
+      x
       <AppFrame title="基础系统部署" current="install-env">
         <AppCardHeader>
           <AppCardTitle>安装运行环境</AppCardTitle>
@@ -20,12 +22,12 @@ export default function Page() {
         <ConnectModeIf mode="bmc">
           <DeployModeIf mode="local">
             <BmcLocalInstallProvider>
-              <BmcLocalInstallStatusIf status="idle" or={['error']}>
+              <BmcLocalInstallStatusIf status="idle" or={['error']} not={['hasProgress']}>
                 <AppCardSection>
                   <ConfirmCard />
                 </AppCardSection>
               </BmcLocalInstallStatusIf>
-              <BmcLocalInstallStatusIf status="pending" or={['success']}>
+              <BmcLocalInstallStatusIf status="pending" or={['success', 'hasProgress']}>
                 <InstallPage />
               </BmcLocalInstallStatusIf>
             </BmcLocalInstallProvider>

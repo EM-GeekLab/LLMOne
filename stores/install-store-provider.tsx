@@ -8,13 +8,19 @@ import { useStore } from 'zustand/react'
 import { debounceFunction } from '@/stores/utils'
 import { useTRPCClient } from '@/trpc/client'
 
-import { createInstallStore, defaultInstallStoreState, InstallStore } from './install-store'
+import { createInstallStore, defaultInstallStoreState, InstallStore, InstallStoreState } from './install-store'
 
 type InstallStoreApi = ReturnType<typeof createInstallStore>
 
 export const InstallStoreContext = createContext<InstallStoreApi | null>(null)
 
-export function InstallStoreProvider({ children, initState }: { children: React.ReactNode; initState?: InstallStore }) {
+export function InstallStoreProvider({
+  children,
+  initState,
+}: {
+  children: React.ReactNode
+  initState?: InstallStoreState
+}) {
   const trpc = useTRPCClient()
   const { mutate } = useMutation({ mutationFn: trpc.stateStore.saveInstall.mutate })
 

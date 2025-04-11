@@ -8,6 +8,7 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { createSafeContext } from '@/lib/react/create-safe-context'
 import { cn } from '@/lib/utils'
 import { AppCardSection, AppCardTitle } from '@/components/app/app-card'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { HostConfigType } from '@/app/host-info/schemas'
 import { FormatProgress } from '@/app/install-env/install-page/format-progress'
 import { HostTabsList } from '@/app/install-env/install-page/host-tabs'
@@ -63,7 +64,7 @@ function SystemInstallCard() {
 
   return (
     <ProgressCard>
-      <ProgressCardTitle>{data?.displayName}</ProgressCardTitle>
+      <ProgressCardTitle>{data?.displayName ?? <Skeleton className="h-5 w-36" />}</ProgressCardTitle>
       <FakeProgressBar progress={progress} />
       <ProgressCardDescription>
         <FormatProgress progress={progress} />
@@ -84,7 +85,7 @@ function LogDisplay() {
         {logs?.map((item) => (
           <div key={item.time.getTime()}>
             <p className={cn('flex gap-2', item.type === 'error' && 'text-destructive')}>
-              <span>[{format(item.time, 'yyyy-MM-dd HH:mm:ss')}]</span>
+              <span>[{format(item.time, 'HH:mm:ss')}]</span>
               <span>{item.log}</span>
             </p>
           </div>

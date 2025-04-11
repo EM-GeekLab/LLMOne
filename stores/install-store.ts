@@ -8,12 +8,12 @@ enableMapSet()
 
 export type LogItem = { type: 'info' | 'error'; time: Date; log: string }
 
-type InstallStoreState = {
+export type InstallStoreState = {
   systemInstallProgress: Map<string, SystemInstallProgress>
   installationLog: Map<string, LogItem[]>
 }
 
-type InstallStoreActions = {
+export type InstallStoreActions = {
   setInstallationProgress: (hostId: string, progress: SystemInstallProgress) => void
   clearInstallationProgress: (hostId: string) => void
 
