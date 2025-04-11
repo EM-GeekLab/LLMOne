@@ -5,7 +5,7 @@ import type { MutationStatus } from '@tanstack/react-query'
 import { intersects } from 'radash'
 
 import { useBmcLocalInstallContext } from '@/app/install-env/context'
-import { useGlobalStore } from '@/stores'
+import { useGlobalStoreApi } from '@/stores'
 import { useInstallStore } from '@/stores/install-store-provider'
 
 type Status = MutationStatus | 'hasProgress'
@@ -27,9 +27,9 @@ export function BmcLocalInstallStatusIf({
     installMutation: { status: realStatus },
   } = useBmcLocalInstallContext()
 
-  const hosts = useGlobalStore((s) => s.hostConfig.hosts)
+  const api = useGlobalStoreApi()
   const hasProgress = useInstallStore((s) =>
-    intersects(Array.from(s.systemInstallProgress.keys()), Array.from(hosts.keys())),
+    intersects(Array.from(s.systemInstallProgress.keys()), Array.from(api.getState().hostConfig.hosts.keys())),
   )
 
   const internalStatus = hasProgress ? 'hasProgress' : realStatus
