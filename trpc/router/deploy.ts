@@ -29,7 +29,7 @@ export const deployRouter = createRouter({
       const bmcClients = await BmcClients.create(bmcHosts)
       await bmcClients
         // @ts-expect-error enum not compatible
-        .map(({ client, defaultId }) => client.setNextBootDevice(defaultId, 'Hdd'))
+        .map(({ client, defaultId }) => client.setNextBootDevice(defaultId, 'Hdd', false))
         .catch((err) => {
           log.error(err, '设置 BMC 启动设备失败')
           throw new TRPCError({
@@ -38,6 +38,7 @@ export const deployRouter = createRouter({
             cause: err,
           })
         })
+      await bmcClients.dispose()
       try {
         const osInfo = await readOsInfoAbsolute(osInfoPath)
         mxd = await MxdManager.create({ hosts, account, network, systemImagePath: osInfo.file })
@@ -48,8 +49,6 @@ export const deployRouter = createRouter({
           message: `初始化部署器失败：${(err as Error).message}`,
           cause: err,
         })
-      } finally {
-        await bmcClients.dispose()
       }
     }),
   os: {
