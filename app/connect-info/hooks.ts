@@ -38,7 +38,7 @@ export function useAutoCheckConnection(id: string) {
       const parseResult = validateDefaultCredentials(defaultCredentials)
       if (!parseResult.success) {
         console.warn(parseResult.error)
-        throw new Error('连接配置不完整')
+        throw new Error('连接配置不完整', { cause: parseResult.error })
       }
       const parsedDefault = parseResult.data
 
@@ -54,7 +54,7 @@ export function useAutoCheckConnection(id: string) {
             const result = validateBmcHostConnectionInfo(host, parsedDefault)
             if (!result.success) {
               console.warn(result.error)
-              throw new Error('连接配置不完整')
+              throw new Error('连接配置不完整', { cause: result.error })
             }
             return await trpc.connection.bmc.check.mutate(result.data, { signal, context: { stream: true } })
           }
@@ -62,7 +62,7 @@ export function useAutoCheckConnection(id: string) {
             const result = validateSshHostConnectionInfo(host, parsedDefault)
             if (!result.success) {
               console.warn(result.error)
-              throw new Error('连接配置不完整')
+              throw new Error('连接配置不完整', { cause: result.error })
             }
             return await trpc.connection.ssh.check.mutate(result.data, { signal, context: { stream: true } })
           }

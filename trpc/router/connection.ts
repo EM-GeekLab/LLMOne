@@ -31,7 +31,7 @@ export const connectionRouter = createRouter({
           return [ok, null]
         } catch (err) {
           log.error({ ip, username, err }, '连接 BMC 失败')
-          return [false, err instanceof Error ? err : new Error('连接时发生未知错误')]
+          return [false, err instanceof Error ? err : new Error('连接时发生未知错误', { cause: err })]
         } finally {
           await client?.closeSession()
         }
@@ -205,7 +205,7 @@ export const connectionRouter = createRouter({
           }
         } catch (err) {
           log.error({ ip, username, err }, '连接 SSH 失败')
-          return [false, err instanceof Error ? err : new Error('连接时发生未知错误')]
+          return [false, err instanceof Error ? err : new Error('连接时发生未知错误', { cause: err })]
         }
       }),
   },

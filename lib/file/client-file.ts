@@ -17,7 +17,8 @@ export function selectFile({ accept, multiple, directory }: SelectOptions = {}):
 
   return new Promise((resolve, reject) => {
     input.onchange = () => resolve(input.files)
-    input.onerror = (_e, _s, _l, _c, error) => reject(new Error('无法选择文件：' + error?.message || '未知错误'))
+    input.onerror = (_e, _s, _l, _c, error) =>
+      reject(new Error('无法选择文件：' + error?.message || '未知错误', { cause: error }))
     input.click()
   })
 }
@@ -31,7 +32,7 @@ export async function selectFileAndRead(options: SelectAndReadOptions = {}): Pro
   const { maxSize = 1024 * 1024, ...rest } = options
 
   const files = await selectFile({ ...rest, multiple: false }).catch((err) => {
-    throw new Error(err.message)
+    throw new Error(err.message, { cause: err })
   })
 
   const file = files?.[0]
