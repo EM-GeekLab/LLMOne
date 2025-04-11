@@ -34,19 +34,21 @@ export const netplanConfigurationSchema = z.object({
           .optional(),
         'dhcp4-overrides': dhcpOverrideSchema.optional(),
         'dhcp6-overrides': dhcpOverrideSchema.optional(),
-        addresses: z.array(
-          z.union([
-            z.string().cidr(),
-            z
-              .record(
-                z.string().cidr(),
-                z.object({
-                  lifetime: z.number().or(z.literal('forever')).optional(),
-                }),
-              )
-              .refine((v) => Object.keys(v).length === 1),
-          ]),
-        ),
+        addresses: z
+          .array(
+            z.union([
+              z.string().cidr(),
+              z
+                .record(
+                  z.string().cidr(),
+                  z.object({
+                    lifetime: z.number().or(z.literal('forever')).optional(),
+                  }),
+                )
+                .refine((v) => Object.keys(v).length === 1),
+            ]),
+          )
+          .optional(),
         nameservers: z
           .object({
             addresses: z.array(z.string().ip()),

@@ -59,7 +59,7 @@ export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstal
                     .with({ ipv4: { type: 'dhcp' }, dns: { type: 'static' } }, () => ({ 'use-dns': false }))
                     .with({ ipv4: { type: 'static' }, dns: { type: 'dhcp' } }, () => ({ 'use-routes': false }))
                     .otherwise(() => undefined),
-                  addresses: host.ip ? { [host.ip]: { lifetime: 'forever' } } : undefined,
+                  addresses: host.ip ? [host.ip] : undefined,
                   nameservers: network.dns.type === 'static' ? { addresses: network.dns.list, search: [] } : undefined,
                 }
                 return [`eth${index}`, record]
