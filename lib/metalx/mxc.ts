@@ -7,7 +7,7 @@ import { nanoid } from 'nanoid'
 import { logger } from '@/lib/logger'
 import { Mxc } from '@/sdk/mxlite'
 
-const log = logger.child({ module: 'mxd manager' })
+const log = logger.child({ module: 'mxc' })
 
 const endpoint = process.env.MXC_ENDPOINT || `http://localhost:${await getPort()}`
 const token = process.env.MXC_APIKEY || nanoid()
@@ -39,27 +39,27 @@ export async function runMxc(staticPath: string) {
       .toString()
       .split('\n')
       .filter(Boolean)
-      .map((v: string) => log.info('mxc |', v))
+      .map((v: string) => log.info(v))
   })
   process.stderr?.on('data', (data) => {
     data
       .toString()
       .split('\n')
       .filter(Boolean)
-      .map((v: string) => log.info('mxc |', v))
+      .map((v: string) => log.info(v))
   })
   process.on('spawn', () => {
-    log.info(`mxc | Starting mxc with static path ${staticPath}, port ${port}`)
+    log.info(`Starting mxc with static path ${staticPath}, port ${port}`)
   })
   process.on('exit', (code) => {
-    log.info(`mxc | Process exited with code: ${code}`)
+    log.info(`Process exited with code: ${code}`)
     abortController = null
   })
 }
 
 export function killMxc() {
   if (abortController) {
-    log.info(`mxc | Stopping mxc...`)
+    log.info(`Stopping mxc...`)
     abortController.abort()
     abortController = null
   }
