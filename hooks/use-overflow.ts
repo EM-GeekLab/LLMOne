@@ -14,7 +14,7 @@ export function useOverflow({
   containerRef: RefObject<HTMLElement | null>
   childRef: RefObject<HTMLElement | null>
 }) {
-  const [isStart, setIsStart] = useState(false)
+  const [isStart, setIsStart] = useState(true)
   const [isRightOverflow, setIsRightOverflow] = useState(false)
   const [isEnd, setIsEnd] = useState(false)
 
