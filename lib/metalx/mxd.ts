@@ -1,9 +1,12 @@
+import { logger } from '@/lib/logger'
 import { InstallProgressBase, InstallStepConfig, MxdItem, SharedConfig } from '@/lib/metalx/types'
 import type { AccountConfigType, HostConfigType, NetworkConfigType } from '@/app/host-info/schemas'
 import { Deployer } from '@/sdk/mxlite/deployer'
 
 import { mxc } from './mxc'
 import { SystemInstallProgress, SystemInstallStep, systemInstallStepConfig } from './os-config'
+
+const log = logger.child({ module: 'mxd manager' })
 
 export type CreateMxdParams = {
   hosts: HostConfigType[]
@@ -35,13 +38,11 @@ export class MxdManager {
 
         const [res1, status1] = result1
         if (!res1.info?.controller_url || status1 >= 400) {
-          console.error('主机信息获取失败', res1)
           throw new Error('主机信息获取失败')
         }
 
         const [res2, status2] = result2
         if (!res2.ok || status2 >= 400) {
-          console.error('无法获取控制器地址', res2)
           throw new Error('无法获取控制器地址')
         }
 
@@ -106,7 +107,7 @@ export class MxdManager {
     } catch (err) {
       const error = err as Error
       const info: InstallProgressBase<Stage | null> = { ok: false, host, from, to, step: started, error }
-      console.error(info)
+      log.error(info, `${host.hostname} (${host.bmcIp}): ${started} 步骤执行失败`)
       yield info
     }
   }

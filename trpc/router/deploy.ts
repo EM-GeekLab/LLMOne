@@ -4,7 +4,9 @@ import { z } from 'zod'
 import { MxdManager, systemInstallSteps } from '@/lib/metalx'
 import { installConfigSchema } from '@/app/install-env/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
-import { readOsInfoAbsolute } from '@/trpc/router/resource-utils'
+
+import { readOsInfoAbsolute } from './resource-utils'
+import { log } from './utils'
 
 let mxd: MxdManager | null = null
 
@@ -26,7 +28,7 @@ export const deployRouter = createRouter({
       const osInfo = await readOsInfoAbsolute(osInfoPath)
       mxd = await MxdManager.create({ hosts, account, network, systemImagePath: osInfo.file })
     } catch (err) {
-      console.log(err)
+      log.error(err, '初始化部署器失败')
       throw err
     }
   }),

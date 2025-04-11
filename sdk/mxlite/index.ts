@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger'
+
 import type {
   AddTaskResult,
   ApiResult,
@@ -8,6 +10,8 @@ import type {
   TaskResult,
 } from './types'
 import { ERR_REASON_TASK_NOT_COMPLETED } from './types'
+
+const log = logger.child({ module: 'mxlite/controller' })
 
 export class Mxc {
   readonly endpoint: string
@@ -28,28 +32,37 @@ export class Mxc {
         Authorization: this.token ? `Bearer ${this.token}` : '',
       },
       body: body && JSON.stringify(body),
+    }).catch((err) => {
+      log.error({ err, url, method, body }, 'Request failed')
+      throw err
     })
     const resp = await response.text()
     if (response.status >= 400 && this.verbose) {
-      console.error({
-        url,
-        method,
-        body,
-        status: response.status,
-        text: resp,
-      })
+      log.error(
+        {
+          url,
+          method,
+          body,
+          status: response.status,
+          text: resp,
+        },
+        'Request failed',
+      )
     }
     try {
-      const json = (await JSON.parse(resp)) as R
+      const json = JSON.parse(resp) as R
       return [json, response.status]
     } catch (err) {
-      console.error({
-        url,
-        method,
-        body,
-        status: response.status,
-        text: resp,
-      })
+      log.error(
+        {
+          url,
+          method,
+          body,
+          status: response.status,
+          text: resp,
+        },
+        'Cannot parse response as JSON',
+      )
       throw err
     }
   }
@@ -163,10 +176,13 @@ export class Mxc {
       },
     })
     if (resp.status >= 400 && this.verbose) {
-      console.error({
-        path,
-        status: resp.status,
-      })
+      log.error(
+        {
+          path,
+          status: resp.status,
+        },
+        'Failed to read file',
+      )
     }
     if (resp.status >= 400) {
       return [undefined, resp.status]

@@ -7,11 +7,14 @@ import { addAbsolutePaths } from '@/lib/file/server-path'
 import { OsArchitecture } from '@/lib/os'
 import { resourceManifestSchema, resourceOsInfoSchema } from '@/app/select-os/rescource-schema'
 
+import { log } from './utils'
+
 export async function readManifest(path: string) {
   const fileContent = (await readFileToString({ path })) || '{}'
   try {
     return resourceManifestSchema.parse(JSON.parse(fileContent))
   } catch (err) {
+    log.error(err, '解析 manifest.json 失败')
     throw new TRPCError({
       message: `${path} 格式错误`,
       code: 'BAD_REQUEST',
@@ -25,6 +28,7 @@ export async function readOsInfo(path: string) {
   try {
     return resourceOsInfoSchema.parse(JSON.parse(fileContent))
   } catch (err) {
+    log.error(err, '解析 osInfo.json 失败')
     throw new TRPCError({
       message: `${path} 格式错误`,
       code: 'BAD_REQUEST',

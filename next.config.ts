@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
 
     return config
   },
+  logging: {
+    incomingRequests: false,
+  },
+  serverExternalPackages: ['pino', 'pino-pretty'],
   experimental: {
     turbo: {
       rules: {

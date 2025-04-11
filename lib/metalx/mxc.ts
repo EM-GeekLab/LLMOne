@@ -4,7 +4,10 @@ import { join } from 'path'
 import getPort from 'get-port'
 import { nanoid } from 'nanoid'
 
+import { logger } from '@/lib/logger'
 import { Mxc } from '@/sdk/mxlite'
+
+const log = logger.child({ module: 'mxd manager' })
 
 const endpoint = process.env.MXC_ENDPOINT || `http://localhost:${await getPort()}`
 const token = process.env.MXC_APIKEY || nanoid()
@@ -27,7 +30,7 @@ export async function runMxc(staticPath: string) {
     { signal: abortController.signal },
     (error) => {
       if (error) {
-        console.error(`Error executing mxc: ${error.message}`)
+        log.error(error, `Error executing mxc`)
       }
     },
   )
@@ -36,27 +39,27 @@ export async function runMxc(staticPath: string) {
       .toString()
       .split('\n')
       .filter(Boolean)
-      .map((v: string) => console.log('mxc |', v))
+      .map((v: string) => log.info('mxc |', v))
   })
   process.stderr?.on('data', (data) => {
     data
       .toString()
       .split('\n')
       .filter(Boolean)
-      .map((v: string) => console.log('mxc |', v))
+      .map((v: string) => log.info('mxc |', v))
   })
   process.on('spawn', () => {
-    console.log(`mxc | Starting mxc with static path ${staticPath}, port ${port}`)
+    log.info(`mxc | Starting mxc with static path ${staticPath}, port ${port}`)
   })
   process.on('exit', (code) => {
-    console.log(`mxc | Process exited with code: ${code}`)
+    log.info(`mxc | Process exited with code: ${code}`)
     abortController = null
   })
 }
 
 export function killMxc() {
   if (abortController) {
-    console.log(`mxc | Stopping mxc...`)
+    log.info(`mxc | Stopping mxc...`)
     abortController.abort()
     abortController = null
   }

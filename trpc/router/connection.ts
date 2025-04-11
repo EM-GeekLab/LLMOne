@@ -15,7 +15,7 @@ import { baseProcedure, createRouter } from '@/trpc/init'
 
 import { getDefaultArchitecture } from './bmc-utils'
 import { getBootstrapPath } from './resource-utils'
-import { inputType } from './utils'
+import { inputType, log } from './utils'
 
 export type DiskInfo = (NonNullable<HostExtraInfo['system_info']>['blks'][number] & { path: string })[]
 
@@ -30,7 +30,7 @@ export const connectionRouter = createRouter({
           const ok = await client.isAvailable()
           return [ok, null]
         } catch (err) {
-          console.log({ ip, username, err })
+          log.error({ ip, username, err }, '连接 BMC 失败')
           return [false, err instanceof Error ? err : new Error('连接时发生未知错误')]
         } finally {
           await client?.closeSession()
@@ -56,7 +56,7 @@ export const connectionRouter = createRouter({
             if (status >= 400 || !res.ok) {
               return new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
-                message: `${ip} 引导文件服务失败`,
+                message: `${ip} 引导文件服务失败，状态码 ${status}`,
               })
             }
 
@@ -70,7 +70,7 @@ export const connectionRouter = createRouter({
                   message: `${ip} 引导失败`,
                 })
             } catch (err) {
-              console.error(`${ip} 引导失败`, err)
+              log.error(err, `${ip} 引导失败`)
               return new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
                 message: `${ip} 引导失败`,
@@ -204,7 +204,7 @@ export const connectionRouter = createRouter({
             }
           }
         } catch (err) {
-          console.log({ ip, username, err })
+          log.error({ ip, username, err }, '连接 SSH 失败')
           return [false, err instanceof Error ? err : new Error('连接时发生未知错误')]
         }
       }),

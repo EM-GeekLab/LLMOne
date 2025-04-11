@@ -1,6 +1,10 @@
+import { logger } from '@/lib/logger'
+
 import type { Mxc } from '.'
 import { configToYaml, type NetplanConfiguration } from './netplan'
 import type { OperationError } from './types'
+
+const log = logger.child({ module: 'mxlite/deployer' })
 
 export type DeployStage =
   | 'Pending'
@@ -67,10 +71,11 @@ class DeployError extends Error {
     super(error)
     this.name = error
     this.reason = reason
-  }
-
-  toString() {
-    return this.reason ? `${this.name}: ${this.reason}` : this.name
+    if (reason) {
+      this.message = `${error}: ${reason}`
+    } else {
+      this.message = error
+    }
   }
 }
 
@@ -109,16 +114,16 @@ export class Deployer {
       })
     }
     if (r2.payload.payload.code !== 0) {
-      console.error(r2.payload.payload)
+      log.error(r2.payload.payload, 'Command execution failed')
       throw new DeployError({
         error: 'ExecError',
       })
     }
     if (r2.payload.payload.stdout.length > 0) {
-      console.log(r2.payload.payload.stdout)
+      log.info({ stdout: r2.payload.payload.stdout }, 'Command execution output')
     }
     if (r2.payload.payload.stderr.length > 0) {
-      console.error(r2.payload.payload.stderr)
+      log.error({ stderr: r2.payload.payload.stderr }, 'Command execution error output')
     }
   }
 
@@ -242,7 +247,7 @@ ${content}
 EOF
 `
     }
-    console.log(script)
+    log.info({ script }, 'apply apt sources')
     await this.execScriptChroot(script)
   }
 }
