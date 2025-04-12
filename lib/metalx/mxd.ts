@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger'
 import { InstallProgressBase, InstallStepConfig, MxdItem, SharedConfig } from '@/lib/metalx/types'
 import type { AccountConfigType, HostConfigType, NetworkConfigType } from '@/app/host-info/schemas'
-import { Deployer } from '@/sdk/mxlite/deployer'
+import { SystemDeployer } from '@/sdk/mxlite/deployer'
 
 import { mxc } from './mxc'
 import { SystemInstallProgress, SystemInstallStep, systemInstallStepConfig } from './os-config'
@@ -49,7 +49,7 @@ export class MxdManager {
         return {
           host,
           info: res1.info,
-          deployer: new Deployer(mxc, host.id, host.disk, res2.urls[0]),
+          deployer: new SystemDeployer(mxc, host.id, host.disk, res2.urls[0]),
         }
       }),
     )

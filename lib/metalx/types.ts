@@ -1,5 +1,5 @@
 import type { AccountConfigType, HostConfigType, NetworkConfigType } from '@/app/host-info/schemas'
-import { Deployer } from '@/sdk/mxlite/deployer'
+import { SystemDeployer } from '@/sdk/mxlite/deployer'
 import { HostExtraInfo } from '@/sdk/mxlite/types'
 
 export type InstallStepConfig<T extends string> = {
@@ -28,7 +28,7 @@ export type InstallProgressBase<Stage extends string | null> = {
 export type MxdItem = {
   host: HostConfigType
   info: HostExtraInfo
-  deployer: Deployer
+  deployer: SystemDeployer
 }
 
 export type SharedConfig = {

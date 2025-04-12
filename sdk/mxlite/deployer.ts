@@ -19,34 +19,30 @@ export type DeployStage =
   | 'Failed'
 export type DeployerError = 'Ok' | 'FailedToExec' | 'ReturnTypeMismatch' | 'ExecError' | 'Timeout'
 
-const PREINSTALL_SCRIPT = `umount -R /mnt
-parted "$DISK" --fix --script 'mklabel gpt'
-parted "$DISK" --fix --script --align 'optimal' 'mkpart primary fat32 1MiB 512MiB'
-parted "$DISK" --fix --script --align 'optimal' 'mkpart primary ext4 512MiB 100%'
-parted "$DISK" --fix --script 'set 1 esp on'
+const PREINSTALL_SCRIPT = `
+umount -R /mnt || true
+parted "$DISK" --fix --script --align 'optimal' 'mklabel gpt \
+  mkpart primary fat32 1MiB 512MiB \
+  mkpart primary ext4 512MiB 100% \
+  set 1 esp on \
+  print' || exit 1
+partprobe "$DISK"
+mdev -s
+
 DISK_INFO="$(parted "$DISK" --script 'print' -j)"
 EFI_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[0].uuid' -r)"
 ROOTFS_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[1].uuid' -r)"
 EFI_PATH="/dev/disk/by-partuuid/$EFI_PARTUUID"
 ROOTFS_PATH="/dev/disk/by-partuuid/$ROOTFS_PARTUUID"
-mkfs.vfat -F 32 -n EFI "$EFI_PATH"
-mkfs.ext4 -L rootfs "$ROOTFS_PATH"
-partprobe "$DISK"
-# mount partitions
-mount "$ROOTFS_PATH" /mnt -t ext4
-mkdir -p /mnt/boot/efi
-mount "$EFI_PATH" /mnt/boot/efi -t vfat
-mkdir -p /installer_tmp &&
-mount -t tmpfs tmpfs /installer_tmp -o size=8G`
 
-const POSTINSTALL_SCRIPT = `cd / &&
-umount /installer_tmp &&
-rm -rf /installer_tmp
+mkfs.vfat -F 32 -n EFI "$EFI_PATH" || exit 1
+mkfs.ext4 -L rootfs "$ROOTFS_PATH" || exit 1
 
-DISK_INFO="$(parted "$DISK" --script 'print' -j)"
-EFI_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[0].uuid' -r)"
-ROOTFS_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[1].uuid' -r)"
-
+mount "$ROOTFS_PATH" /mnt -t ext4 || exit 1
+mkdir -p /mnt/boot/efi 
+mount "$EFI_PATH" /mnt/boot/efi -t vfat || exit 1
+`
+const POSTINSTALL_SCRIPT = `
 # Prepare chroot envrionment mount special filesystems
 mkdir -p /mnt/tmp /mnt/proc /mnt/sys /mnt/dev /mnt/dev/pts
 mount -t tmpfs tmpfs /mnt/tmp
@@ -56,13 +52,17 @@ mount -t devtmpfs none /mnt/dev
 mount -t devpts none /mnt/dev/pts
 mount -t efivarfs none /mnt/sys/firmware/efi/efivars
 
+DISK_INFO="$(parted "$DISK" --script 'print' -j)"
+EFI_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[0].uuid' -r)"
+ROOTFS_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[1].uuid' -r)"
+
 cat <<EOF > /mnt/etc/fstab
 PARTUUID=$ROOTFS_PARTUUID / ext4 defaults 0 1
 PARTUUID=$EFI_PARTUUID /boot/efi vfat defaults 0 2
 EOF
 
-chroot /mnt sh -c 'update-initramfs -c -k all && grub-install --target=x86_64-efi --efi-directory=/boot/efi --recheck && update-grub'
-chroot /mnt sh -c 'ln -frs /usr/lib/systemd/systemd /sbin/init'`
+chroot /mnt sh -c 'update-initramfs -c -k all && grub-install --target=x86_64-efi --efi-directory=/boot/efi --recheck && update-grub' || exit 1
+chroot /mnt sh -c 'ln -frs /usr/lib/systemd/systemd /sbin/init' || exit 1`
 
 class DeployError extends Error {
   public reason?: OperationError
@@ -79,7 +79,7 @@ class DeployError extends Error {
   }
 }
 
-export class Deployer {
+export class SystemDeployer {
   private mxc: Mxc
   private readonly hostId: string
   private readonly diskName: string
@@ -196,11 +196,11 @@ ${PREINSTALL_SCRIPT}`
   }
 
   public async downloadRootfs() {
-    await this.downloadFile(this.rootfsUrl, '/installer_tmp/image.tar.zst')
+    await this.downloadFile(this.rootfsUrl, '/image.tar.zst')
   }
 
   public async install() {
-    const script = 'cd /installer_tmp && tar xf image.tar.zst -C /mnt --preserve-permissions --same-owner --zstd'
+    const script = 'tar xf /image.tar.zst -C /mnt --preserve-permissions --same-owner --zstd'
     await this.execScript(script)
   }
 
@@ -276,5 +276,31 @@ EOF
     }
     log.info({ script }, 'apply apt sources')
     await this.execScriptChroot(script)
+  }
+
+  public async applyModprobeConfigs() {
+    const script = `cat <<EOF > /etc/modprobe.d/blacklist.conf
+blacklist nouveau
+EOF
+`
+    await this.execScriptChroot(script)
+  }
+
+  public async applyCustomPackage(packageUrl: string) {
+    const script = `
+INSTALLER_TEMP=$(mktemp -d /tmp/installer.XXXXXX)
+cd "$INSTALLER_TEMP" || exit 1
+curl -L "${packageUrl}" | tar x --zstd
+if [ -f ./install.sh ]; then
+  chmod +x ./install.sh
+  export DEBIAN_FRONTEND=noninteractive
+  ./install.sh
+else
+  echo "No install.sh found in the package."
+fi
+cd / && rm -rf "$INSTALLER_TEMP"
+`
+
+    await this.execScript(script)
   }
 }
