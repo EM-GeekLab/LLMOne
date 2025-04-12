@@ -164,7 +164,15 @@ export class SystemDeployer {
     }
   }
 
-  public async waitUntilReady(interval = 2000, timeout = 1800) {
+  public async waitUntilReady({
+    skipSessionId,
+    interval = 2000,
+    timeout = 30 * 60 * 1000,
+  }: {
+    interval?: number
+    timeout?: number
+    skipSessionId?: string
+  } = {}) {
     let _timeout = timeout
     while (true) {
       const [res, status] = await this.mxc.getHostInfo(this.hostId).catch((err) => {
@@ -174,7 +182,7 @@ export class SystemDeployer {
           reason: 'INTERNAL_ERROR',
         })
       })
-      if (res.ok && status < 400) {
+      if (res.ok && status < 400 && res.info.session_id !== skipSessionId) {
         break
       }
       if (_timeout > 0) {

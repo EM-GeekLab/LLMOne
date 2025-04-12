@@ -74,7 +74,9 @@ export class Mxc {
     return await this.request(`${this.endpoint}/api/list`, 'GET')
   }
 
-  public async getHostInfo(hostId: string): ApiResult<{ host: string; ok: boolean; info: Option<HostExtraInfo> }> {
+  public async getHostInfo(
+    hostId: string,
+  ): ApiResult<{ host: string } & ({ ok: true; info: HostExtraInfo } | { ok: false; info: undefined })> {
     return await this.request(`${this.endpoint}/api/info?host=${hostId}`, 'GET')
   }
 

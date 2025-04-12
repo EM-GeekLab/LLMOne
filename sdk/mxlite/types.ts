@@ -96,6 +96,7 @@ export type HostExtraInfo = {
     }[]
   }>
   envs: Option<string[]>
+  session_id: string
 }
 
 export type GetUrlSubResponse = {

@@ -55,7 +55,7 @@ export class MxdManager {
         ])
 
         const [res1, status1] = result1
-        if (!res1.info?.controller_url || status1 >= 400) {
+        if (!res1.ok || status1 >= 400) {
           throw new Error('主机信息获取失败')
         }
 
@@ -83,7 +83,10 @@ export class MxdManager {
   }
 
   async waitUntilReady(index: number): Promise<void> {
-    await this.list[index].deployer.waitUntilReady()
+    const item = this.list[index]
+    await item.deployer.waitUntilReady({ skipSessionId: item.info.session_id })
+    const [res] = await mxc.getHostInfo(item.host.id)
+    if (res.ok) item.info = res.info
   }
 
   findIndex(hostId: string): number {
