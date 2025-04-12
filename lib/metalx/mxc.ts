@@ -38,9 +38,14 @@ export function runMxc(staticPath?: string) {
   const url = new URL(endpoint)
   const port = url.port || (url.protocol === 'http:' ? '80' : '443')
 
-  const process = execFile(
+  const childProcess = execFile(
     join('bin', executable),
-    [...(token ? ['-a', token] : []), ...(staticPath ? ['-s', staticPath] : []), '-p', port, '-v'],
+    [
+      ...(token ? ['-a', token] : []),
+      ...(staticPath ? ['-s', staticPath] : []),
+      ...['-p', port],
+      ...(process.env.NODE_ENV === 'development' ? ['-v'] : []),
+    ],
     { signal: abortController.signal },
     (error) => {
       if (error) {
@@ -48,28 +53,28 @@ export function runMxc(staticPath?: string) {
       }
     },
   )
-  process.stdout?.on('data', (data) => {
+  childProcess.stdout?.on('data', (data) => {
     data
       .toString()
       .split('\n')
       .filter(Boolean)
       .map((v: string) => log.info(v))
   })
-  process.stderr?.on('data', (data) => {
+  childProcess.stderr?.on('data', (data) => {
     data
       .toString()
       .split('\n')
       .filter(Boolean)
       .map((v: string) => log.error(v))
   })
-  process.on('spawn', () => {
+  childProcess.on('spawn', () => {
     log.info(`Starting mxc${staticPath ? ` with static path ${staticPath}` : ''}, port ${port}`)
   })
-  process.on('exit', (code) => {
+  childProcess.on('exit', (code) => {
     log.info(`Process exited with code: ${code}`)
     abortController = null
   })
-  return process
+  return childProcess
 }
 
 export function killMxc() {
