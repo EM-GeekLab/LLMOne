@@ -13,14 +13,13 @@ export const systemInstallSteps = [
   'configHostname',
   'configUser',
   'configMirrors',
-  'reboot',
   'complete',
 ] as const
 
 export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstallStep>>[] = [
   {
     step: 'preinstall',
-    progress: 50,
+    progress: 30,
     executor: ({ deployer }) => deployer.preinstall(),
   },
   {
@@ -35,12 +34,12 @@ export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstal
   },
   {
     step: 'postinstall',
-    progress: 85,
+    progress: 90,
     executor: ({ deployer }) => deployer.postinstall(),
   },
   {
     step: 'configNetwork',
-    progress: 90,
+    progress: 95,
     executor: ({ deployer, info, host }, { network }) =>
       deployer.applyNetplan({
         network: {
@@ -70,28 +69,23 @@ export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstal
   },
   {
     step: 'configHostname',
-    progress: 93,
+    progress: 97,
     executor: ({ deployer, host }) => deployer.applyHostname(host.hostname),
   },
   {
     step: 'configUser',
-    progress: 95,
+    progress: 99,
     executor: ({ deployer }, { account }) => deployer.applyUserconfig(account.username, account.password || ''),
   },
   {
     step: 'configMirrors',
-    progress: 98,
-    executor: ({ deployer }) => deployer.applyAptSources(),
-  },
-  {
-    step: 'reboot',
     progress: 100,
-    executor: ({ deployer }) => deployer.reboot(),
+    executor: ({ deployer }) => deployer.applyAptSources(),
   },
   {
     step: 'complete',
     progress: 100,
-    executor: () => Promise.resolve(),
+    executor: ({ deployer }) => deployer.reboot(),
   },
 ]
 
@@ -101,5 +95,5 @@ export type SystemInstallProgress = InstallProgressBase<SystemInstallStep>
 
 export const debugSystemInstallStepConfig = systemInstallStepConfig.map((step) => ({
   ...step,
-  executor: async () => await new Promise<void>((resolve) => setTimeout(resolve, 1000)),
+  executor: async () => await new Promise<void>((resolve) => setTimeout(resolve, 500)),
 }))

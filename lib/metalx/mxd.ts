@@ -1,10 +1,24 @@
+import { basename } from 'path'
+
 import { logger } from '@/lib/logger'
-import { InstallProgressBase, InstallStepConfig, MxdItem, SharedConfig } from '@/lib/metalx/types'
 import type { AccountConfigType, HostConfigType, NetworkConfigType } from '@/app/host-info/schemas'
+import type { ResourcePackage } from '@/app/select-os/rescource-schema'
 import { SystemDeployer } from '@/sdk/mxlite/deployer'
 
 import { mxc } from './mxc'
-import { SystemInstallProgress, SystemInstallStep, systemInstallStepConfig } from './os-config'
+import {
+  DriverInstallProgress,
+  DriverInstallStep,
+  generateDriverInstallStepConfig,
+  InstallProgressBase,
+  InstallStage,
+  InstallStepConfig,
+  MxdItem,
+  SharedConfig,
+  SystemInstallProgress,
+  SystemInstallStep,
+  systemInstallStepConfig,
+} from './stages'
 
 const log = logger.child({ module: 'mxd manager' })
 
@@ -13,19 +27,23 @@ export type CreateMxdParams = {
   account: AccountConfigType
   network: NetworkConfigType
   systemImagePath: string
+  packages: ResourcePackage[]
 }
 
 export class MxdManager {
   readonly list: MxdItem[]
   readonly shared: SharedConfig
+  readonly packages: ResourcePackage[]
 
-  constructor(list: MxdItem[], account: AccountConfigType, network: NetworkConfigType) {
+  constructor(list: MxdItem[], account: AccountConfigType, network: NetworkConfigType, packages: ResourcePackage[]) {
     this.list = list
     this.shared = { account, network }
+    this.packages = packages
   }
 
-  static async create({ hosts, account, network, systemImagePath }: CreateMxdParams) {
-    const [, status] = await mxc.addFileMap(systemImagePath, 'image.tar.zst')
+  static async create({ hosts, account, network, systemImagePath, packages }: CreateMxdParams) {
+    const systemImageFile = basename(systemImagePath)
+    const [, status] = await mxc.addFileMap(systemImagePath, systemImageFile)
     if (status >= 400) {
       throw new Error(`系统镜像文件服务失败，状态码 ${status}`)
     }
@@ -33,7 +51,7 @@ export class MxdManager {
       hosts.map(async (host) => {
         const [result1, result2] = await Promise.all([
           mxc.getHostInfo(host.id),
-          mxc.urlSubByHost('srv/file/image.tar.zst', host.id),
+          mxc.urlSubByHost(`srv/file/${systemImageFile}`, host.id),
         ])
 
         const [res1, status1] = result1
@@ -53,46 +71,58 @@ export class MxdManager {
         }
       }),
     )
-    return new MxdManager(deployerList, account, network)
+    return new MxdManager(deployerList, account, network, packages)
   }
 
-  async *installOsAll(): AsyncGenerator<SystemInstallProgress> {
-    for (let i = 0; i < this.list.length; i++) {
-      yield* this.installOsOne(i)
-    }
-  }
-
-  async *installOsOneFromStep(hostId: string, from?: SystemInstallStep | null) {
-    yield* this.runInstallConfigFromStep(hostId, systemInstallStepConfig, from)
+  async *installOsOneFromStep(index: number, from?: SystemInstallStep | null) {
+    yield* this.runInstallConfigFromStep(index, systemInstallStepConfig, 'system', from)
   }
 
   async *installOsOne(index: number, fromStepIndex = 0): AsyncGenerator<SystemInstallProgress> {
-    yield* this.runInstallConfig(index, systemInstallStepConfig, fromStepIndex)
+    yield* this.runInstallConfig(index, systemInstallStepConfig, 'system', fromStepIndex)
   }
 
-  private async *runInstallConfigFromStep<Stage extends string>(
-    hostId: string,
-    config: InstallStepConfig<Stage>[],
-    from?: Stage | null,
-  ): AsyncGenerator<InstallProgressBase<Stage | null>> {
-    const index = this.list.findIndex((item) => item.host.id === hostId)
-    if (index === -1) {
-      throw new Error(`主机 ${hostId} 不在列表中`)
-    }
+  async waitUntilReady(index: number): Promise<void> {
+    await this.list[index].deployer.waitUntilReady()
+  }
+
+  findIndex(hostId: string): number {
+    return this.list.findIndex((item) => item.host.id === hostId)
+  }
+
+  private async getDriverInstallStepConfig(index: number) {
+    return await generateDriverInstallStepConfig(this.list[index].host.id, this.packages)
+  }
+
+  async *installEnvOneFromStep(index: number, from?: DriverInstallStep | null): AsyncGenerator<DriverInstallProgress> {
+    yield* this.runInstallConfigFromStep(index, await this.getDriverInstallStepConfig(index), 'driver', from)
+  }
+
+  async *installEnvOne(index: number, fromStepIndex = 0): AsyncGenerator<DriverInstallProgress> {
+    yield* this.runInstallConfig(index, await this.getDriverInstallStepConfig(index), 'driver', fromStepIndex)
+  }
+
+  private async *runInstallConfigFromStep<Step extends string>(
+    index: number,
+    config: InstallStepConfig<Step>[],
+    stage: InstallStage,
+    from?: Step | null,
+  ): AsyncGenerator<InstallProgressBase<Step | null>> {
     if (from == undefined) {
       from = config[0].step
     }
     const stepIndex = config.findIndex((step) => step.step === from)
-    yield* this.runInstallConfig(index, config, stepIndex)
+    yield* this.runInstallConfig(index, config, stage, stepIndex)
   }
 
-  private async *runInstallConfig<Stage extends string>(
+  private async *runInstallConfig<Step extends string>(
     index: number,
-    config: InstallStepConfig<Stage>[],
+    config: InstallStepConfig<Step>[],
+    stage: InstallStage,
     fromStepIndex = 0,
-  ): AsyncGenerator<InstallProgressBase<Stage | null>> {
+  ): AsyncGenerator<InstallProgressBase<Step | null>> {
     const { host } = this.list[index]
-    let started: Stage | null = null
+    let started: Step | null = null
     let [from, to] = [0, 0]
     try {
       for (let i = Math.max(0, fromStepIndex); i < config.length; i++) {
@@ -101,12 +131,12 @@ export class MxdManager {
         from = i === 0 ? 0 : config[i - 1].progress
         to = progress
         const completed = i === 0 ? null : config[i - 1].step
-        yield { ok: true, host, from, to, completed, started }
+        yield { ok: true, host, stage, from, to, completed, started }
         await executor(this.list[index], this.shared)
       }
     } catch (err) {
       const error = err as Error
-      const info: InstallProgressBase<Stage | null> = { ok: false, host, from, to, step: started, error }
+      const info: InstallProgressBase<Step | null> = { ok: false, host, stage, from, to, step: started, error }
       log.error(info, `${host.hostname} (${host.bmcIp}): ${started} 步骤执行失败`)
       yield info
     }

@@ -25,3 +25,5 @@ export const resourceOsInfoSchema = z.object({
 })
 
 export type ResourceOsInfoType = z.infer<typeof resourceOsInfoSchema>
+
+export type ResourcePackage = ResourceOsInfoType['packages'][number]

@@ -1,3 +1,5 @@
+import { join } from 'path'
+
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 
@@ -41,7 +43,16 @@ export const deployRouter = createRouter({
       await bmcClients.dispose()
       try {
         const osInfo = await readOsInfoAbsolute(osInfoPath)
-        mxd = await MxdManager.create({ hosts, account, network, systemImagePath: osInfo.file })
+        mxd = await MxdManager.create({
+          hosts,
+          account,
+          network,
+          systemImagePath: osInfo.file,
+          packages: osInfo.packages.map(({ file, name }) => ({
+            name,
+            file: join(osInfo.packagesDir, file),
+          })),
+        })
       } catch (err) {
         log.error(err, '初始化部署器失败')
         throw new TRPCError({
@@ -52,19 +63,42 @@ export const deployRouter = createRouter({
       }
     }),
   os: {
-    installAll: baseProcedure.mutation(async function* () {
-      const mxd = getMxdManager()
-      yield* mxd.installOsAll()
-    }),
     installOne: baseProcedure.input(z.number()).mutation(async function* ({ input: index }) {
       const mxd = getMxdManager()
       yield* mxd.installOsOne(index)
     }),
     retryFromStep: baseProcedure
-      .input(z.object({ host: z.string(), step: z.enum(systemInstallSteps).nullable() }))
-      .mutation(async function* ({ input: { host, step } }) {
+      .input(z.object({ index: z.number(), step: z.enum(systemInstallSteps).nullable().optional() }))
+      .mutation(async function* ({ input: { index, step } }) {
         const mxd = getMxdManager()
-        yield* mxd.installOsOneFromStep(host, step)
+        yield* mxd.installOsOneFromStep(index, step)
+      }),
+  },
+  waitUntilReady: baseProcedure.input(z.number()).mutation(async function ({ input: index }) {
+    const mxd = getMxdManager()
+    await mxd.waitUntilReady(index)
+  }),
+  getIndexByHostId: baseProcedure.input(z.string()).query(async function ({ input: hostId }) {
+    const mxd = getMxdManager()
+    const index = mxd.findIndex(hostId)
+    if (index === -1) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: `找不到主机 ${hostId}`,
+      })
+    }
+    return index
+  }),
+  env: {
+    installOne: baseProcedure.input(z.number()).mutation(async function* ({ input: index }) {
+      const mxd = getMxdManager()
+      yield* mxd.installEnvOne(index)
+    }),
+    retryFromStep: baseProcedure
+      .input(z.object({ index: z.number(), step: z.string().nullable().optional() }))
+      .mutation(async function* ({ input: { index, step } }) {
+        const mxd = getMxdManager()
+        yield* mxd.installEnvOneFromStep(index, step)
       }),
   },
 })

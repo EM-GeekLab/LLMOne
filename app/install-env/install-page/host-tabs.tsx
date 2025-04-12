@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { match } from 'ts-pattern'
 
 import { cn } from '@/lib/utils'
 import { AppCardSection } from '@/components/app/app-card'
@@ -70,9 +71,26 @@ function ScrollController({ onClick, side }: { onClick: () => void; side: 'left'
 }
 
 function HostTabsTrigger({ host, className }: { host: HostConfigType; className?: string }) {
-  const progress = useInstallStore((s) => s.installProgress.get(host.id)?.system)
-  const isError = progress && !progress.ok
-  const isSuccess = progress && progress.from === 100
+  const stage = useInstallStore((s) => s.installProgress.get(host.id)?.stage)
+  const systemProgress = useInstallStore((s) => s.installProgress.get(host.id)?.system)
+  const driverProgress = useInstallStore((s) => s.installProgress.get(host.id)?.driver)
+  const isError = (systemProgress && !systemProgress.ok) || (driverProgress && !driverProgress.ok)
+  const isSuccess = driverProgress && driverProgress.from === 100
+
+  const progress = match(stage)
+    .with('system', 'reboot', () => systemProgress)
+    .with('driver', () => driverProgress)
+    .with(undefined, () => undefined)
+    .exhaustive()
+
+  const globalFakeProgress = match(stage)
+    .with('system', () => (systemProgress ? { from: systemProgress.from / 2, to: systemProgress.to / 2 } : undefined))
+    .with('reboot', () => ({ from: 50, to: 50 }))
+    .with('driver', () =>
+      driverProgress ? { from: driverProgress.from / 2 + 50, to: driverProgress.to / 2 + 50 } : undefined,
+    )
+    .with(undefined, () => undefined)
+    .exhaustive()
 
   return (
     <TabsPrimitive.TabsTrigger
@@ -89,12 +107,16 @@ function HostTabsTrigger({ host, className }: { host: HostConfigType; className?
         className,
       )}
     >
-      <FakeRingProgressBar progress={progress} size={44} thickness={6} />
+      <FakeRingProgressBar
+        progress={globalFakeProgress ? { ...globalFakeProgress, ok: !isError } : undefined}
+        size={44}
+        thickness={6}
+      />
       <div>
         <h4 className="group-[state=active]:text-primary truncate text-sm font-semibold">{host.hostname}</h4>
         <div>{host.bmcIp}</div>
         <div className="text-muted-foreground text-xs *:truncate">
-          <FormatProgress progress={progress} />
+          <FormatProgress stage={stage} progress={progress} />
         </div>
       </div>
       <div className="group-data-[state=active]:border-t-primary group-data-error:group-data-[state=active]:border-t-destructive group-data-success:group-data-[state=active]:border-t-success absolute -bottom-2.5 left-1/2 h-1.5 w-4.5 -translate-x-1/2 border-x-9 border-t-6 border-transparent" />

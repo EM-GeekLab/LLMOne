@@ -43,6 +43,7 @@ export function HostInstallPage({ hostId }: { hostId: string }) {
       <AppCardSection>
         <AppCardTitle className="text-base">进度</AppCardTitle>
         <SystemInstallCard />
+        <DriverInstallCard />
       </AppCardSection>
       <AppCardSection>
         <AppCardTitle className="text-base">日志</AppCardTitle>
@@ -67,7 +68,27 @@ function SystemInstallCard() {
       <ProgressCardTitle>{data?.displayName ?? <Skeleton className="h-5 w-36" />}</ProgressCardTitle>
       <FakeProgressBar progress={progress} />
       <ProgressCardDescription>
-        <FormatProgress progress={progress} />
+        <FormatProgress stage="system" progress={progress} />
+      </ProgressCardDescription>
+    </ProgressCard>
+  )
+}
+
+function DriverInstallCard() {
+  const { hostId } = InstallPageContext.useContext()
+  const stage = useInstallStore((s) => s.installProgress.get(hostId)?.stage)
+  const progress = useInstallStore((s) => s.installProgress.get(hostId)?.driver)
+
+  return (
+    <ProgressCard>
+      <ProgressCardTitle>环境组件安装</ProgressCardTitle>
+      <FakeProgressBar progress={progress} />
+      <ProgressCardDescription>
+        {stage === 'reboot' ? (
+          <p>主机重启中，这可能需要几分钟</p>
+        ) : (
+          <FormatProgress stage="driver" progress={progress} />
+        )}
       </ProgressCardDescription>
     </ProgressCard>
   )

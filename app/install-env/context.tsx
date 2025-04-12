@@ -4,7 +4,7 @@ import { ReactNode } from 'react'
 import { useMutation, UseMutationResult } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { SystemInstallStep } from '@/lib/metalx'
+import { DriverInstallStep, SystemInstallStep } from '@/lib/metalx'
 import { createSafeContext } from '@/lib/react/create-safe-context'
 import { installConfigSchema } from '@/app/install-env/schemas'
 import { usePreventUnload } from '@/hooks/use-prevent-unload'
@@ -14,16 +14,23 @@ import { useTRPCClient } from '@/trpc/client'
 
 import { formatProgress, progressText } from './install-page/format-progress'
 
+type RetryParams = { hostId: string } & (
+  | { stage: 'system'; step: SystemInstallStep }
+  | { stage: 'driver'; step: DriverInstallStep }
+)
+
 const BmcLocalInstallContext = createSafeContext<{
   start: () => void
-  retry: (hostId: string, step: SystemInstallStep) => void
+  retry: (params: RetryParams) => void
   installMutation: UseMutationResult<void, Error, void>
-  retryMutation: UseMutationResult<void, Error, { hostId: string; step: SystemInstallStep }>
+  retryMutation: UseMutationResult<void, Error, RetryParams>
 }>()
 
 export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
   const storeApi = useGlobalStoreApi()
-  const setProgress = useInstallStore((s) => s.setSystemInstallProgress)
+  const setStage = useInstallStore((s) => s.setInstallStage)
+  const setOsProgress = useInstallStore((s) => s.setSystemInstallProgress)
+  const setEnvProgress = useInstallStore((s) => s.setDriverInstallationProgress)
   const addLog = useInstallStore((s) => s.addInstallLog)
   const trpc = useTRPCClient()
 
@@ -37,14 +44,29 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
     return config
   }
 
+  const waitForReboot = async (id: string, index: number) => {
+    setStage(id, 'reboot')
+    addLog(id, { type: 'info', time: new Date(), log: '重启主机' })
+    await trpc.deploy.waitUntilReady.mutate(index).catch(() => {
+      addLog(id, { type: 'error', time: new Date(), log: '等待主机启动超时' })
+    })
+  }
+
   const mutation = useMutation({
     mutationFn: async () => {
       const { hosts } = await initDeployer()
       await Promise.all(
-        hosts.map(async (_, index) => {
+        hosts.map(async ({ id }, index) => {
+          setStage(id, 'system')
           for await (const result of await trpc.deploy.os.installOne.mutate(index, { context: { stream: true } })) {
-            setProgress(result.host.id, result)
-            addLog(result.host.id, formatProgress(result))
+            setOsProgress(id, result)
+            addLog(id, formatProgress({ stage: 'system', progress: result }))
+          }
+          await waitForReboot(id, index)
+          setStage(id, 'driver')
+          for await (const result of await trpc.deploy.env.installOne.mutate(index, { context: { stream: true } })) {
+            setEnvProgress(id, result)
+            addLog(id, formatProgress({ stage: 'driver', progress: result }))
           }
         }),
       )
@@ -56,14 +78,36 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
   })
 
   const retryMutation = useMutation({
-    mutationFn: async ({ hostId, step }: { hostId: string; step: SystemInstallStep }) => {
-      addLog(hostId, { type: 'info', log: `从${progressText(step)}重试`, time: new Date() })
-      for await (const result of await trpc.deploy.os.retryFromStep.mutate(
-        { host: hostId, step },
-        { context: { stream: true } },
-      )) {
-        setProgress(result.host.id, result)
-        addLog(result.host.id, formatProgress(result))
+    mutationFn: async ({ hostId, stage, step }: RetryParams) => {
+      const index = await trpc.deploy.getIndexByHostId.query(hostId)
+      addLog(hostId, { type: 'info', log: `从${progressText({ stage, step })}重试`, time: new Date() })
+
+      if (stage === 'system') {
+        setStage(hostId, 'system')
+        for await (const result of await trpc.deploy.os.retryFromStep.mutate(
+          { index, step },
+          { context: { stream: true } },
+        )) {
+          setOsProgress(hostId, result)
+          addLog(hostId, formatProgress({ stage: 'system', progress: result }))
+        }
+        await waitForReboot(hostId, index)
+        setStage(hostId, 'driver')
+        for await (const result of await trpc.deploy.env.installOne.mutate(index, { context: { stream: true } })) {
+          setEnvProgress(hostId, result)
+          addLog(hostId, formatProgress({ stage: 'driver', progress: result }))
+        }
+      }
+
+      if (stage === 'driver') {
+        setStage(hostId, 'driver')
+        for await (const result of await trpc.deploy.env.retryFromStep.mutate(
+          { index, step },
+          { context: { stream: true } },
+        )) {
+          setEnvProgress(hostId, result)
+          addLog(hostId, formatProgress({ stage: 'driver', progress: result }))
+        }
       }
     },
     onError: (error) => {
@@ -82,7 +126,7 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
       value={{
         start: () => mutation.mutate(),
         installMutation: mutation,
-        retry: (hostId, step) => retryMutation.mutate({ hostId, step }),
+        retry: retryMutation.mutate,
         retryMutation: retryMutation,
       }}
     >
