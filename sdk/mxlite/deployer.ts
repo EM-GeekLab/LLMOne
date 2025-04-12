@@ -120,10 +120,10 @@ export class Deployer {
       })
     }
     if (r2.payload.payload.stdout.length > 0) {
-      log.info({ stdout: r2.payload.payload.stdout }, 'Command execution output')
+      log.info({ meta: 'Command execution stdout' }, r2.payload.payload.stdout)
     }
     if (r2.payload.payload.stderr.length > 0) {
-      log.error({ stderr: r2.payload.payload.stderr }, 'Command execution error output')
+      log.info({ meta: 'Command execution stderr' }, r2.payload.payload.stderr)
     }
   }
 
