@@ -1,4 +1,4 @@
-import { basename, dirname } from 'path'
+import { basename } from 'path'
 
 import { TRPCError } from '@trpc/server'
 import { Config, NodeSSH } from 'node-ssh'
@@ -7,7 +7,6 @@ import { autoDetect, iBMCRedfishClient, iDRACRedfishClient } from 'redfish-clien
 
 import { BmcClients } from '@/lib/bmc-clients'
 import { mxc } from '@/lib/metalx'
-import { runMxc } from '@/lib/metalx/mxc'
 import { z } from '@/lib/zod'
 import { BmcFinalConnectionInfo, bmcHostsListSchema, SshFinalConnectionInfo } from '@/app/connect-info/schemas'
 import { HostExtraInfo } from '@/sdk/mxlite/types'
@@ -45,14 +44,10 @@ export const connectionRouter = createRouter({
           const bootstrapPath = await getBootstrapPath(manifestPath, architecture)
           const bootstrapFile = basename(bootstrapPath)
 
-          if (process.env.MXC_EXECUTABLE) {
-            // 如果指定了 MXC_EXECUTABLE 环境变量，则使用本地的 mxd 可执行文件
-            const bootstrapDir = dirname(bootstrapPath)
-            await runMxc(bootstrapDir)
-          }
+          await mxc.addFileMap(bootstrapPath, bootstrapFile)
 
           const errors = await bmcClients.map(async ({ defaultId, ip, client }) => {
-            const [res, status] = await mxc.urlSubByIp(`static/bootstrap/${bootstrapFile}`, ip)
+            const [res, status] = await mxc.urlSubByIp(`srv/file/${bootstrapFile}`, ip)
             if (status >= 400 || !res.ok) {
               return new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
