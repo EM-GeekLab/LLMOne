@@ -47,8 +47,8 @@ function HostsConfigContent() {
 
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: trpc.connection.bmc.scanHosts.queryKey(bmcHosts),
-    queryFn: async () => {
-      const data = await trpcClient.connection.bmc.scanHosts.query(bmcHosts, { context: { stream: true } })
+    queryFn: async ({ signal }) => {
+      const data = await trpcClient.connection.bmc.scanHosts.query(bmcHosts, { signal, context: { stream: true } })
       setHostsConfig(data.map((d) => omit(d, ['disks'])))
       data.map((host) => queryClient.setQueryData(trpc.connection.bmc.getHostDiskInfo.queryKey(host.id), host.disks))
       return data
