@@ -21,7 +21,7 @@ export const resourceOsInfoSchema = z.object({
   file: z.string(),
   sha256: z.string(),
   packagesDir: z.string(),
-  packages: z.array(z.string()),
+  packages: z.array(z.object({ name: z.string(), file: z.string() })),
 })
 
 export type ResourceOsInfoType = z.infer<typeof resourceOsInfoSchema>
