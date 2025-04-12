@@ -70,7 +70,7 @@ function ScrollController({ onClick, side }: { onClick: () => void; side: 'left'
 }
 
 function HostTabsTrigger({ host, className }: { host: HostConfigType; className?: string }) {
-  const progress = useInstallStore((s) => s.systemInstallProgress.get(host.id))
+  const progress = useInstallStore((s) => s.installProgress.get(host.id)?.system)
   const isError = progress && !progress.ok
   const isSuccess = progress && progress.from === 100
 

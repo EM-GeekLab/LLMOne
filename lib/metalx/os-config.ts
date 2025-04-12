@@ -98,3 +98,8 @@ export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstal
 export type SystemInstallStep = (typeof systemInstallSteps)[number] | null
 
 export type SystemInstallProgress = InstallProgressBase<SystemInstallStep>
+
+export const debugSystemInstallStepConfig = systemInstallStepConfig.map((step) => ({
+  ...step,
+  executor: async () => await new Promise<void>((resolve) => setTimeout(resolve, 1000)),
+}))

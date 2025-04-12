@@ -2,29 +2,40 @@ import { enableMapSet } from 'immer'
 import { immer } from 'zustand/middleware/immer'
 import { createStore } from 'zustand/vanilla'
 
-import type { SystemInstallProgress } from '@/lib/metalx'
+import { DriverInstallProgress, SystemInstallProgress } from '@/lib/metalx'
 
 enableMapSet()
 
-export type LogItem = { type: 'info' | 'error'; time: Date; log: string }
+export type LogItem = {
+  type: 'info' | 'error'
+  time: Date
+  log: string
+}
 
 export type InstallStoreState = {
-  systemInstallProgress: Map<string, SystemInstallProgress>
+  installProgress: Map<
+    string,
+    {
+      system?: SystemInstallProgress
+      driver?: DriverInstallProgress
+    }
+  >
   installationLog: Map<string, LogItem[]>
 }
 
 export type InstallStoreActions = {
-  setInstallationProgress: (hostId: string, progress: SystemInstallProgress) => void
-  clearInstallationProgress: (hostId: string) => void
+  setSystemInstallProgress: (hostId: string, progress: SystemInstallProgress) => void
+  setDriverInstallationProgress: (hostId: string, progress: DriverInstallProgress) => void
 
-  addInstallationLog: (hostId: string, log: LogItem) => void
-  clearInstallationLog: (hostId: string) => void
+  clearInstallProgress: (hostId: string) => void
+  addInstallLog: (hostId: string, log: LogItem) => void
+  clearInstallLog: (hostId: string) => void
 }
 
 export type InstallStore = InstallStoreState & InstallStoreActions
 
 export const defaultInstallStoreState: InstallStoreState = {
-  systemInstallProgress: new Map(),
+  installProgress: new Map(),
   installationLog: new Map(),
 }
 
@@ -35,21 +46,35 @@ export const createInstallStore = (
   const store = createStore<InstallStore>()(
     immer((set) => ({
       ...initState,
-      setInstallationProgress: (hostId, progress) =>
+      clearInstallProgress: (hostId) =>
         set((state) => {
-          state.systemInstallProgress.set(hostId, progress)
+          state.installProgress.delete(hostId)
         }),
-      clearInstallationProgress: (hostId) =>
+      setSystemInstallProgress: (hostId, progress) =>
         set((state) => {
-          state.systemInstallProgress.delete(hostId)
+          const host = state.installProgress.get(hostId)
+          if (!host) {
+            state.installProgress.set(hostId, { system: progress })
+          } else {
+            host.system = progress
+          }
         }),
-      addInstallationLog: (hostId, log) =>
+      setDriverInstallationProgress: (hostId, progress) =>
+        set((state) => {
+          const host = state.installProgress.get(hostId)
+          if (!host) {
+            state.installProgress.set(hostId, { driver: progress })
+          } else {
+            host.driver = progress
+          }
+        }),
+      addInstallLog: (hostId, log) =>
         set((state) => {
           const logs = state.installationLog.get(hostId) || []
           logs.push(log)
           state.installationLog.set(hostId, logs)
         }),
-      clearInstallationLog: (hostId) =>
+      clearInstallLog: (hostId) =>
         set((state) => {
           state.installationLog.delete(hostId)
         }),

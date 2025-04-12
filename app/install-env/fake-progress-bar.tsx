@@ -1,12 +1,14 @@
 import { ComponentProps } from 'react'
 import { CheckIcon, XIcon } from 'lucide-react'
 
-import { SystemInstallProgress } from '@/lib/metalx'
+import { InstallProgressBase } from '@/lib/metalx'
 import { useFakeProgress } from '@/lib/progress'
 import { Progress } from '@/components/ui/progress'
 import { RingProgress } from '@/components/ui/ring-progress'
 
-function useInstallProgress(progress?: SystemInstallProgress): {
+function useInstallProgress<T extends string | null>(
+  progress?: InstallProgressBase<T>,
+): {
   value: number
   variant: 'destructive' | 'success' | undefined
 } {
@@ -25,21 +27,21 @@ function useInstallProgress(progress?: SystemInstallProgress): {
   }
 }
 
-export function FakeProgressBar({
+export function FakeProgressBar<T extends string | null>({
   progress,
   ...props
 }: {
-  progress?: SystemInstallProgress & ComponentProps<typeof Progress>
+  progress?: InstallProgressBase<T> & ComponentProps<typeof Progress>
 }) {
   const { value, variant } = useInstallProgress(progress)
   return <Progress value={value} variant={variant} {...props} />
 }
 
-export function FakeRingProgressBar({
+export function FakeRingProgressBar<T extends string | null>({
   progress,
   ...props
 }: {
-  progress?: SystemInstallProgress
+  progress?: InstallProgressBase<T>
 } & ComponentProps<typeof RingProgress>) {
   const { value, variant } = useInstallProgress(progress)
 

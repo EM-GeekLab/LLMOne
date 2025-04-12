@@ -60,7 +60,7 @@ function SystemInstallCard() {
   )
 
   const { hostId } = InstallPageContext.useContext()
-  const progress = useInstallStore((s) => s.systemInstallProgress.get(hostId))
+  const progress = useInstallStore((s) => s.installProgress.get(hostId)?.system)
 
   return (
     <ProgressCard>

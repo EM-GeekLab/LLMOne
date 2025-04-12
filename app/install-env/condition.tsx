@@ -29,7 +29,7 @@ export function BmcLocalInstallStatusIf({
 
   const api = useGlobalStoreApi()
   const hasProgress = useInstallStore((s) =>
-    intersects(Array.from(s.systemInstallProgress.keys()), Array.from(api.getState().hostConfig.hosts.keys())),
+    intersects(Array.from(s.installProgress.keys()), Array.from(api.getState().hostConfig.hosts.keys())),
   )
 
   const internalStatus = hasProgress ? 'hasProgress' : realStatus

@@ -7,11 +7,12 @@ import { toast } from 'sonner'
 import { SystemInstallStep } from '@/lib/metalx'
 import { createSafeContext } from '@/lib/react/create-safe-context'
 import { installConfigSchema } from '@/app/install-env/schemas'
-import { formatProgress, progressText } from '@/app/install-env/utils'
 import { usePreventUnload } from '@/hooks/use-prevent-unload'
 import { useGlobalStoreApi } from '@/stores'
 import { useInstallStore } from '@/stores/install-store-provider'
 import { useTRPCClient } from '@/trpc/client'
+
+import { formatProgress, progressText } from './install-page/format-progress'
 
 const BmcLocalInstallContext = createSafeContext<{
   start: () => void
@@ -22,8 +23,8 @@ const BmcLocalInstallContext = createSafeContext<{
 
 export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
   const storeApi = useGlobalStoreApi()
-  const setProgress = useInstallStore((s) => s.setInstallationProgress)
-  const addLog = useInstallStore((s) => s.addInstallationLog)
+  const setProgress = useInstallStore((s) => s.setSystemInstallProgress)
+  const addLog = useInstallStore((s) => s.addInstallLog)
   const trpc = useTRPCClient()
 
   const initDeployer = async () => {
