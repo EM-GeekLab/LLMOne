@@ -1,8 +1,8 @@
-import { execFile } from 'node:child_process'
+import { ChildProcess, execFile } from 'node:child_process'
 import { join } from 'path'
 
 import getPort from 'get-port'
-import { nanoid } from 'nanoid'
+import { customAlphabet } from 'nanoid'
 
 import { logger } from '@/lib/logger'
 import { Mxc } from '@/sdk/mxlite'
@@ -10,14 +10,28 @@ import { Mxc } from '@/sdk/mxlite'
 const log = logger.child({ module: 'mxc' })
 
 const endpoint = process.env.MXC_ENDPOINT || `http://localhost:${await getPort()}`
-const token = process.env.MXC_APIKEY || nanoid()
-const executable = process.env.MXC_EXECUTABLE || 'mxd'
+const token = process.env.MXC_APIKEY || customAlphabet('1234567890abcdef', 32)()
+const executable = process.env.MXC_EXECUTABLE
 
 export const mxc = new Mxc(endpoint, token)
 
+const globalMxdProcess = global as typeof globalThis & {
+  mxdProcess?: ChildProcess
+}
+
 let abortController: AbortController | null = null
 
-export async function runMxc(staticPath: string) {
+if (executable && !globalMxdProcess.mxdProcess) {
+  log.info(`Using mxd executable: ${executable}`)
+  globalMxdProcess.mxdProcess = runMxc()
+}
+
+export function runMxc(staticPath?: string) {
+  if (!executable) {
+    log.warn(`No mxd executable found, skipping mxc`)
+    return
+  }
+
   if (abortController) killMxc()
 
   abortController = new AbortController()
@@ -26,7 +40,7 @@ export async function runMxc(staticPath: string) {
 
   const process = execFile(
     join('bin', executable),
-    [...(token ? ['-a', token] : []), '-s', staticPath, '-p', port],
+    [...(token ? ['-a', token] : []), ...(staticPath ? ['-s', staticPath] : []), '-p', port, '-v'],
     { signal: abortController.signal },
     (error) => {
       if (error) {
@@ -46,15 +60,16 @@ export async function runMxc(staticPath: string) {
       .toString()
       .split('\n')
       .filter(Boolean)
-      .map((v: string) => log.info(v))
+      .map((v: string) => log.error(v))
   })
   process.on('spawn', () => {
-    log.info(`Starting mxc with static path ${staticPath}, port ${port}`)
+    log.info(`Starting mxc${staticPath ? ` with static path ${staticPath}` : ''}, port ${port}`)
   })
   process.on('exit', (code) => {
     log.info(`Process exited with code: ${code}`)
     abortController = null
   })
+  return process
 }
 
 export function killMxc() {
