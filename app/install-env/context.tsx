@@ -47,6 +47,7 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
   const waitForReboot = async (id: string, index: number) => {
     setStage(id, 'reboot')
     addLog(id, { type: 'info', time: new Date(), log: '重启主机' })
+    await new Promise((resolve) => setTimeout(resolve, 10000))
     await trpc.deploy.waitUntilReady.mutate(index).catch(() => {
       addLog(id, { type: 'error', time: new Date(), log: '等待主机启动超时' })
     })

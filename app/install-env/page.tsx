@@ -13,7 +13,6 @@ export default function Page() {
   const state = loadInstallData()
   return (
     <InstallStoreProvider initState={state}>
-      x
       <AppFrame title="基础系统部署" current="install-env">
         <AppCardHeader>
           <AppCardTitle>安装运行环境</AppCardTitle>
