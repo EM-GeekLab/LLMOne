@@ -2,7 +2,8 @@ import { enableMapSet } from 'immer'
 import { immer } from 'zustand/middleware/immer'
 import { createStore } from 'zustand/vanilla'
 
-import { DriverInstallProgress, SystemInstallProgress } from '@/lib/metalx'
+import type { DriverInstallProgress, SystemInstallProgress } from '@/lib/metalx'
+import type { InstallStage } from '@/lib/metalx/stages'
 
 enableMapSet()
 
@@ -16,6 +17,7 @@ export type InstallStoreState = {
   installProgress: Map<
     string,
     {
+      stage?: InstallStage
       system?: SystemInstallProgress
       driver?: DriverInstallProgress
     }
@@ -24,6 +26,7 @@ export type InstallStoreState = {
 }
 
 export type InstallStoreActions = {
+  setInstallStage: (hostId: string, stage: InstallStage) => void
   setSystemInstallProgress: (hostId: string, progress: SystemInstallProgress) => void
   setDriverInstallationProgress: (hostId: string, progress: DriverInstallProgress) => void
 
@@ -49,6 +52,15 @@ export const createInstallStore = (
       clearInstallProgress: (hostId) =>
         set((state) => {
           state.installProgress.delete(hostId)
+        }),
+      setInstallStage: (hostId, stage) =>
+        set((state) => {
+          const host = state.installProgress.get(hostId)
+          if (!host) {
+            state.installProgress.set(hostId, { stage })
+          } else {
+            host.stage = stage
+          }
         }),
       setSystemInstallProgress: (hostId, progress) =>
         set((state) => {
