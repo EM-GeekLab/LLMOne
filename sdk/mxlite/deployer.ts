@@ -17,7 +17,7 @@ export type DeployStage =
   | 'Postinstalling'
   | 'Postinstalled'
   | 'Failed'
-export type DeployerError = 'Ok' | 'FailedToExec' | 'ReturnTypeMismatch' | 'ExecError'
+export type DeployerError = 'Ok' | 'FailedToExec' | 'ReturnTypeMismatch' | 'ExecError' | 'Timeout'
 
 const PREINSTALL_SCRIPT = `umount -R /mnt
 parted "$DISK" --fix --script 'mklabel gpt'
@@ -120,12 +120,12 @@ export class Deployer {
       })
     }
     if (r2.payload.payload.stdout.length > 0) {
-      log.info('Command execution stdout')
-      console.log(r2.payload.payload.stdout)
+      log.info({ stdout: r2.payload.payload.stdout }, 'Command execution stdout')
+      if (process.env.NODE_ENV === 'development') console.log(r2.payload.payload.stdout)
     }
     if (r2.payload.payload.stderr.length > 0) {
-      log.info('Command execution stderr')
-      console.error(r2.payload.payload.stderr)
+      log.info({ stderr: r2.payload.payload.stderr }, 'Command execution stderr')
+      if (process.env.NODE_ENV === 'development') console.error(r2.payload.payload.stderr)
     }
   }
 
@@ -161,6 +161,31 @@ export class Deployer {
           error: 'ExecError',
         })
       }
+    }
+  }
+
+  public async waitUntilReady(interval = 2000, timeout = 1800) {
+    let _timeout = timeout
+    while (true) {
+      const [res, status] = await this.mxc.getHostInfo(this.hostId).catch((err) => {
+        log.error(err, 'Failed to get host info')
+        throw new DeployError({
+          error: 'FailedToExec',
+          reason: 'INTERNAL_ERROR',
+        })
+      })
+      if (res.ok && status < 400) {
+        break
+      }
+      if (_timeout > 0) {
+        _timeout -= interval
+        if (_timeout <= 0) {
+          throw new DeployError({
+            error: 'Timeout',
+          })
+        }
+      }
+      await new Promise((resolve) => setTimeout(resolve, interval))
     }
   }
 
