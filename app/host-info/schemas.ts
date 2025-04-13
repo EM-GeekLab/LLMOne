@@ -51,3 +51,5 @@ export const hostConfigSchema = z.object({
 })
 
 export type HostConfigType = z.infer<typeof hostConfigSchema>
+
+export const hostsConfigSchema = z.array(hostConfigSchema)

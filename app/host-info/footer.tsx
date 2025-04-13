@@ -3,13 +3,15 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
 import { QueryObserver, useQueryClient } from '@tanstack/react-query'
+import { pick } from 'radash'
 import { toast } from 'sonner'
 
 import { AppCardFooter } from '@/components/app/app-card'
 import { NavButton } from '@/components/base/nav-button'
 import { NavButtonGuard } from '@/components/base/nav-button-guard'
 import { Button } from '@/components/ui/button'
-import { useGlobalStore } from '@/stores'
+import { hostsConfigSchema } from '@/app/host-info/schemas'
+import { useGlobalStore, useGlobalStoreApi } from '@/stores'
 import { useTRPC } from '@/trpc/client'
 
 import { useHostInfoContext } from './context'
@@ -27,7 +29,9 @@ export function Footer() {
 
 function NextStepButton() {
   const { push } = useRouter()
+  const storeApi = useGlobalStoreApi()
   const bmcHosts = useGlobalStore((s) => s.finalBmcHosts)
+  const setFinalHosts = useGlobalStore((s) => s.setFinalHosts)
 
   const trpc = useTRPC()
   const queryClient = useQueryClient()
@@ -56,10 +60,13 @@ function NextStepButton() {
         onClick={async (e) => {
           e.preventDefault()
           const ok = await validate()
-          if (!ok) {
+          const hosts = Array.from(storeApi.getState().hostConfig.hosts.values())
+          const parseResult = hostsConfigSchema.safeParse(hosts)
+          if (!parseResult.success || !ok) {
             toast.error('配置信息不完整或有误')
             return
           }
+          setFinalHosts(parseResult.data.map((d) => pick(d, ['id', 'ip', 'hostname'])))
           push('/install-env')
         }}
       >

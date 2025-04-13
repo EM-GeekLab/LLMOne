@@ -28,6 +28,12 @@ export type SingleHostConfig = {
   disk?: string
 }
 
+export type FinalHost = {
+  id: string
+  ip: string
+  hostname: string
+}
+
 export type HostConfig = {
   account: HostAccountConfig
   network: HostNetworkConfig
@@ -36,6 +42,7 @@ export type HostConfig = {
 
 export type HostInfoState = {
   hostConfig: HostConfig
+  finalHosts: FinalHost[]
 }
 
 export type HostInfoAction = {
@@ -67,6 +74,7 @@ export type HostInfoAction = {
       setDisk: (id: string, disk: string) => void
     }
   }
+  setFinalHosts: (hosts: FinalHost[]) => void
 }
 
 export const defaultHostInfoState: HostInfoState = {
@@ -78,6 +86,7 @@ export const defaultHostInfoState: HostInfoState = {
     },
     hosts: new Map(),
   },
+  finalHosts: [],
 }
 
 export const createHostInfoSlice: ImmerStateCreator<HostInfoAction> = (set) => ({
@@ -175,4 +184,8 @@ export const createHostInfoSlice: ImmerStateCreator<HostInfoAction> = (set) => (
         }),
     },
   },
+  setFinalHosts: (hosts) =>
+    set((state) => {
+      state.finalHosts = hosts
+    }),
 })
