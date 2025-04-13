@@ -123,9 +123,9 @@ export const connectionRouter = createRouter({
           const hostList = hosts.map(({ host, info }) => {
             return {
               id: host,
-              mac: info?.system_info?.nics.map((nic) => nic.mac_address.toLowerCase()) ?? [],
+              mac: info.system_info.nics.map((nic) => nic.mac_address.toLowerCase()) ?? [],
               disks:
-                (info?.system_info?.blks.filter(
+                (info.system_info.blks.filter(
                   (disk) =>
                     disk.path !== null && !disk.path.match(/^\/dev\/(loop|ram|sr)/) && disk.size >= 1024 * 1024 * 1024,
                 ) as DiskInfo) ?? [],
@@ -159,13 +159,13 @@ export const connectionRouter = createRouter({
     }),
     getHostDiskInfo: baseProcedure.input(inputType<string>).query(async ({ input }) => {
       const [res, status] = await mxc.getHostInfo(input)
-      if (status >= 400) {
+      if (!res.ok || status >= 400) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: `无法获取主机信息，状态码 ${status}`,
         })
       }
-      return res.info?.system_info?.blks ?? []
+      return res.info.system_info.blks ?? []
     }),
   },
   // ssh: {

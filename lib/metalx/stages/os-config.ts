@@ -47,7 +47,7 @@ export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstal
           renderer: 'networkd',
           /* eslint-disable camelcase */
           ethernets: Object.fromEntries(
-            info.system_info?.nics
+            info.system_info.nics
               .filter(({ mac_address }) => mac_address !== '00:00:00:00:00:00')
               .map(({ mac_address }, index) => {
                 const record: NetplanConfiguration['network']['ethernets'][string] = {

@@ -49,12 +49,14 @@ export type AddTaskResult =
     }
 
 export type HostExtraInfo = {
-  socket_info: Option<{
-    local_addr: Option<string>
-    remote_addr: Option<string>
-  }>
-  controller_url: Option<string>
-  system_info: Option<{
+  socket_info: {
+    local_addr: string
+    remote_addr: string
+  }
+  controller_url: string
+  // TODO: hostname
+  // TODO: 区别主系统是否已经安装完成
+  system_info: {
     total_memory: number
     name: Option<string>
     kernel_version: Option<string>
@@ -94,8 +96,8 @@ export type HostExtraInfo = {
       readonly: boolean
       path: Option<string>
     }[]
-  }>
-  envs: Option<string[]>
+  }
+  envs: string[]
   session_id: string
 }
 

@@ -1,14 +1,6 @@
 import { logger } from '@/lib/logger'
 
-import type {
-  AddTaskResult,
-  ApiResult,
-  GetUrlSubResponse,
-  HostExtraInfo,
-  LsdirResponse,
-  Option,
-  TaskResult,
-} from './types'
+import type { AddTaskResult, ApiResult, GetUrlSubResponse, HostExtraInfo, LsdirResponse, TaskResult } from './types'
 import { ERR_REASON_TASK_NOT_COMPLETED } from './types'
 
 const log = logger.child({ module: 'mxlite/controller' })
@@ -84,7 +76,7 @@ export class Mxc {
     ok: true
     hosts: Array<{
       host: string
-      info: Option<HostExtraInfo>
+      info: HostExtraInfo
     }>
   }> {
     return await this.request(`${this.endpoint}/api/list-info`, 'GET')
