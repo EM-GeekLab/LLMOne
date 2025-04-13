@@ -47,8 +47,9 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
   const waitForReboot = async (id: string, index: number) => {
     setStage(id, 'reboot')
     addLog(id, { type: 'info', time: new Date(), log: '重启主机' })
-    await trpc.deploy.waitUntilReady.mutate(index).catch(() => {
+    await trpc.deploy.waitUntilReady.mutate(index).catch((err) => {
       addLog(id, { type: 'error', time: new Date(), log: '等待主机启动超时' })
+      throw err
     })
   }
 
@@ -57,16 +58,21 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
       const { hosts } = await initDeployer()
       await Promise.all(
         hosts.map(async ({ id }, index) => {
-          setStage(id, 'system')
-          for await (const result of await trpc.deploy.os.installOne.mutate(index, { context: { stream: true } })) {
-            setOsProgress(id, result)
-            addLog(id, formatProgress({ stage: 'system', progress: result }))
-          }
-          await waitForReboot(id, index)
-          setStage(id, 'driver')
-          for await (const result of await trpc.deploy.env.installOne.mutate(index, { context: { stream: true } })) {
-            setEnvProgress(id, result)
-            addLog(id, formatProgress({ stage: 'driver', progress: result }))
+          try {
+            setStage(id, 'system')
+            for await (const result of await trpc.deploy.os.installOne.mutate(index, { context: { stream: true } })) {
+              setOsProgress(id, result)
+              addLog(id, formatProgress({ stage: 'system', progress: result }))
+            }
+            await waitForReboot(id, index)
+            setStage(id, 'driver')
+            for await (const result of await trpc.deploy.env.installOne.mutate(index, { context: { stream: true } })) {
+              setEnvProgress(id, result)
+              addLog(id, formatProgress({ stage: 'driver', progress: result }))
+            }
+          } catch (err) {
+            console.error(err)
+            return
           }
         }),
       )
