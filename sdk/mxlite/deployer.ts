@@ -127,6 +127,10 @@ export class SystemDeployer {
       log.info({ stderr: r2.payload.payload.stderr }, 'Command execution stderr')
       if (process.env.NODE_ENV === 'development') console.error(r2.payload.payload.stderr)
     }
+    return {
+      stdout: r2.payload.payload.stdout,
+      stderr: r2.payload.payload.stderr,
+    }
   }
 
   private async downloadFile(url: string, path: string, xxh3?: string) {
@@ -298,7 +302,7 @@ EOF
     const script = `
 INSTALLER_TEMP=$(mktemp -d /tmp/installer.XXXXXX)
 cd "$INSTALLER_TEMP" || exit 1
-curl -L "${packageUrl}" | tar x --zstd
+curl -Ls "${packageUrl}" | tar x --zstd
 if [ -f ./install.sh ]; then
   chmod +x ./install.sh
   export DEBIAN_FRONTEND=noninteractive
@@ -310,5 +314,21 @@ cd / && rm -rf "$INSTALLER_TEMP"
 `
 
     await this.execScript(script)
+  }
+
+  public async applyDockerImage(imageUrl: string) {
+    const script = `curl -Ls "${imageUrl}" | zstd -d | docker load | sed -E 's/^.* (.*)$/\\1/'`
+    const { stdout } = await this.execScript(script)
+    const imageId = stdout.trim()
+    return imageId
+  }
+
+  public async fetchDockerImageList() {
+    const script = 'curl -s --unix-socket /run/docker.sock http://localhost/images/json'
+    const { stdout } = await this.execScript(script)
+    return JSON.parse(stdout.trim()) as {
+      RepoTags: string[]
+      Id: string
+    }[]
   }
 }
