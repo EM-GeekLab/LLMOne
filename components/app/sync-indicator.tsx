@@ -25,7 +25,7 @@ export function SyncIndicator({ className, ...props }: ComponentProps<typeof Too
       <TooltipContent>
         <div>无法与服务端同步数据，请检查网络连接</div>
         <LastSyncTime />
-        {syncError && <div>{syncError.message}</div>}
+        {syncError && <div>{syncError}</div>}
       </TooltipContent>
     </Tooltip>
   )

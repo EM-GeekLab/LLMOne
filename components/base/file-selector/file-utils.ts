@@ -1,6 +1,6 @@
 function sep() {
   if (typeof window !== 'undefined') {
-    const platform = document.body.getAttribute('data-server-platform') as NodeJS.Platform
+    const platform = window.backendPlatform
     return platform === 'win32' ? '\\' : '/'
   }
   return '/'

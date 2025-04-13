@@ -1,19 +1,16 @@
 import './globals.css'
 
-import { platform } from 'node:os'
-
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { cn } from '@/lib/utils'
+import { EnvProvider } from '@/components/env-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { GlobalEnv } from '@/app/global-env'
 import { GlobalStoreProvider } from '@/stores'
 import { LocalStoreProvider } from '@/stores/local-store-provider'
-import { loadGlobalData } from '@/stores/server-store'
 import { TrpcReactProvider } from '@/trpc/client'
 
 const geistSans = localFont({
@@ -38,34 +35,27 @@ export const viewport: Viewport = {
   width: 'device-width',
 }
 
-export const dynamic = 'force-dynamic'
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const globalData = loadGlobalData()
-
   return (
     <html suppressHydrationWarning lang="zh">
-      <body
-        className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}
-        data-server-platform={platform()}
-      >
+      <body className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <GlobalEnv>
-            <TrpcReactProvider>
-              <NuqsAdapter>
+          <TrpcReactProvider>
+            <NuqsAdapter>
+              <EnvProvider>
                 <LocalStoreProvider>
-                  <GlobalStoreProvider initState={globalData}>
+                  <GlobalStoreProvider>
                     <TooltipProvider>{children}</TooltipProvider>
                   </GlobalStoreProvider>
                 </LocalStoreProvider>
-              </NuqsAdapter>
-            </TrpcReactProvider>
-          </GlobalEnv>
-          <Toaster />
+              </EnvProvider>
+            </NuqsAdapter>
+            <Toaster />
+          </TrpcReactProvider>
         </ThemeProvider>
       </body>
     </html>

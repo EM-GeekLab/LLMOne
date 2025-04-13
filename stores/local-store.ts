@@ -4,12 +4,12 @@ import { createStore } from 'zustand/vanilla'
 export type LogItem = { type: 'info' | 'error'; time: Date; log: string }
 
 type LocalStoreState = {
-  syncError?: Error
+  syncError?: string
   lastSyncTime?: Date
 }
 
 type LocalStoreActions = {
-  setSyncError: (error: Error) => void
+  setSyncError: (error: string) => void
   clearSyncError: () => void
   updateLastSyncTime: () => void
 }

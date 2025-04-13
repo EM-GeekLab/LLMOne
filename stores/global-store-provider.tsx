@@ -1,12 +1,12 @@
 'use client'
 
 import { createContext, ReactNode, useContext, useDebugValue, useRef, useSyncExternalStore } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { assign } from 'radash'
 import { useStore } from 'zustand/react'
 
 import { useLocalStore, useLocalStoreApi } from '@/stores/local-store-provider'
-import { useTRPCClient } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 
 import { createGlobalStore, defaultGlobalState, GlobalState, GlobalStore } from './global-store'
 import { debounceFunction, debounceSubscribe } from './utils'
@@ -14,26 +14,39 @@ import { debounceFunction, debounceSubscribe } from './utils'
 type GlobalStoreApi = ReturnType<typeof createGlobalStore>
 export const GlobalStoreContext = createContext<GlobalStoreApi | null>(null)
 
-export function GlobalStoreProvider({ children, initState }: { children: ReactNode; initState?: GlobalState }) {
-  const trpc = useTRPCClient()
+export function GlobalStoreProvider({ children }: { children: ReactNode }) {
+  const trpc = useTRPC()
+  const { data, isPending } = useQuery(trpc.stateStore.loadGlobal.queryOptions(undefined, { staleTime: Infinity }))
+
+  return (
+    <GlobalStoreProviderInner key={isPending ? 'noData' : 'hasData'} data={data}>
+      {children}
+    </GlobalStoreProviderInner>
+  )
+}
+
+function GlobalStoreProviderInner({ children, data }: { children: ReactNode; data?: GlobalState | null }) {
+  const trpc = useTRPC()
 
   const localStoreApi = useLocalStoreApi()
   const setError = useLocalStore((s) => s.setSyncError)
   const clearError = useLocalStore((s) => s.clearSyncError)
   const updateSyncTime = useLocalStore((s) => s.updateLastSyncTime)
-  const { mutate } = useMutation({
-    mutationFn: trpc.stateStore.save.mutate,
-    onError: (error) => setError(error),
-    onSuccess: () => {
-      updateSyncTime()
-      if (localStoreApi.getState().syncError) clearError()
-    },
-  })
+
+  const { mutate } = useMutation(
+    trpc.stateStore.saveGlobal.mutationOptions({
+      onError: (error) => setError(error.message),
+      onSuccess: () => {
+        updateSyncTime()
+        if (localStoreApi.getState().syncError) clearError()
+      },
+    }),
+  )
 
   const storeRef = useRef<GlobalStoreApi | null>(null)
   if (storeRef.current === null) {
     storeRef.current = createGlobalStore(
-      initState ? assign(defaultGlobalState, initState) : defaultGlobalState,
+      data ? assign(defaultGlobalState, data) : defaultGlobalState,
       debounceFunction(mutate),
     )
   }

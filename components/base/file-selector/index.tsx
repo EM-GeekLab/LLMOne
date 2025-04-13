@@ -89,11 +89,6 @@ export function FileSelector({
   onOpenChange,
   showSize = true,
 }: FileSelectorProps) {
-  const { home } = useEnvContext()
-
-  const [currentDirectory, setCurrentDirectory] = useState(defaultDirectory || getFileDirectory(path) || home)
-  const [peekPath, setPeekPath] = useState('')
-
   const [_open, setOpen] = useControllableState<boolean>({
     prop: controlledOpen,
     onChange: onOpenChange,
@@ -117,14 +112,25 @@ export function FileSelector({
             <DialogTitle>选择文件</DialogTitle>
             <DialogDescription>文件选择器</DialogDescription>
           </DialogHeader>
-          <CurrentDirectoryContext.Provider value={{ currentDirectory, setCurrentDirectory, peekPath, setPeekPath }}>
-            <DialogContext.Provider value={{ open, setOpen }}>
-              <FileSelectorList />
-            </DialogContext.Provider>
-          </CurrentDirectoryContext.Provider>
+          <DialogContext.Provider value={{ open, setOpen }}>
+            <FileSelectorContent defaultDirectory={defaultDirectory} path={path} />
+          </DialogContext.Provider>
         </DialogContent>
       </FileSelectorContext.Provider>
     </Dialog>
+  )
+}
+
+function FileSelectorContent({ defaultDirectory, path }: { defaultDirectory?: string; path?: string }) {
+  const { home } = useEnvContext()
+
+  const [currentDirectory, setCurrentDirectory] = useState(defaultDirectory || getFileDirectory(path) || home || '/')
+  const [peekPath, setPeekPath] = useState('')
+
+  return (
+    <CurrentDirectoryContext.Provider value={{ currentDirectory, setCurrentDirectory, peekPath, setPeekPath }}>
+      <FileSelectorList />
+    </CurrentDirectoryContext.Provider>
   )
 }
 

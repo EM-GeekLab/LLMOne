@@ -1,12 +1,12 @@
 'use client'
 
 import { createContext, useContext, useRef } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { assign } from 'radash'
 import { useStore } from 'zustand/react'
 
 import { debounceFunction } from '@/stores/utils'
-import { useTRPCClient } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 
 import { createInstallStore, defaultInstallStoreState, InstallStore, InstallStoreState } from './install-store'
 
@@ -16,18 +16,26 @@ export const InstallStoreContext = createContext<InstallStoreApi | null>(null)
 
 export function InstallStoreProvider({
   children,
-  initState,
+  fallback,
 }: {
   children: React.ReactNode
-  initState?: InstallStoreState
+  fallback?: React.ReactNode
 }) {
-  const trpc = useTRPCClient()
-  const { mutate } = useMutation({ mutationFn: trpc.stateStore.saveInstall.mutate })
+  const trpc = useTRPC()
+  const { data, isPending } = useQuery(trpc.stateStore.loadInstall.queryOptions(undefined, { staleTime: Infinity }))
+
+  return isPending ? fallback : <InstallStoreProviderInner data={data}>{children}</InstallStoreProviderInner>
+}
+
+function InstallStoreProviderInner({ children, data }: { children: React.ReactNode; data?: InstallStoreState | null }) {
+  const trpc = useTRPC()
+
+  const { mutate } = useMutation(trpc.stateStore.saveInstall.mutationOptions())
 
   const storeRef = useRef<InstallStoreApi | null>(null)
   if (storeRef.current === null) {
     storeRef.current = createInstallStore(
-      initState ? assign(defaultInstallStoreState, initState) : defaultInstallStoreState,
+      data ? assign(defaultInstallStoreState, data) : defaultInstallStoreState,
       debounceFunction(mutate, 100),
     )
   }

@@ -120,7 +120,7 @@ function RemoteFileReader({ maxSize = 100 * 1024, onRead }: { maxSize?: number; 
 
   return (
     <FileSelector
-      defaultDirectory={sshPath}
+      defaultDirectory={sshPath ?? undefined}
       filter={(item) => (item.size ? item.size <= 100 * 1024 : true)}
       onSelected={async (path) => {
         if (!path) return

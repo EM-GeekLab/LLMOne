@@ -2,22 +2,26 @@ import { AppCardDescription, AppCardHeader, AppCardSection, AppCardTitle } from 
 import { AppFrame } from '@/components/app/app-frame'
 import { ConnectModeIf, DeployModeIf } from '@/app/_shared/condition'
 import { InstallStoreProvider } from '@/stores/install-store-provider'
-import { loadInstallData } from '@/stores/server-store'
 
 import { BmcLocalInstallStatusIf } from './condition'
-import { ConfirmCard } from './confirm-card'
+import { ConfirmCard, ConfirmCardPlaceholder } from './confirm-card'
 import { BmcLocalInstallProvider } from './context'
 import { InstallPage } from './install-page'
 
 export default function Page() {
-  const state = loadInstallData()
   return (
-    <InstallStoreProvider initState={state}>
-      <AppFrame title="基础系统部署" current="install-env">
-        <AppCardHeader>
-          <AppCardTitle>安装运行环境</AppCardTitle>
-          <AppCardDescription>为每台服务器安装模型运行环境。</AppCardDescription>
-        </AppCardHeader>
+    <AppFrame title="基础系统部署" current="install-env">
+      <AppCardHeader>
+        <AppCardTitle>安装运行环境</AppCardTitle>
+        <AppCardDescription>为每台服务器安装模型运行环境。</AppCardDescription>
+      </AppCardHeader>
+      <InstallStoreProvider
+        fallback={
+          <AppCardSection>
+            <ConfirmCardPlaceholder />
+          </AppCardSection>
+        }
+      >
         <ConnectModeIf mode="bmc">
           <DeployModeIf mode="local">
             <BmcLocalInstallProvider>
@@ -32,7 +36,7 @@ export default function Page() {
             </BmcLocalInstallProvider>
           </DeployModeIf>
         </ConnectModeIf>
-      </AppFrame>
-    </InstallStoreProvider>
+      </InstallStoreProvider>
+    </AppFrame>
   )
 }

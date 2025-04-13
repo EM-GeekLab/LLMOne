@@ -58,6 +58,39 @@ export function ConfirmCard() {
   )
 }
 
+export function ConfirmCardPlaceholder() {
+  const { push } = useRouter()
+
+  const osInfoPath = useGlobalStore((s) => s.osInfoPath)
+  const trpc = useTRPC()
+  const { data } = useQuery(
+    trpc.resource.getOsInfo.queryOptions(osInfoPath || '', { enabled: !!osInfoPath, refetchOnMount: false }),
+  )
+
+  return (
+    <Card className="relative">
+      <CardHeader>
+        <CardTitle className="text-base/none">确认信息</CardTitle>
+        <CardDescription>即将开始安装操作系统，该操作无法撤销或中止。请确认所有信息是否正确。</CardDescription>
+      </CardHeader>
+      <DistroLogo className="absolute top-6 right-6" distro={data?.distro} />
+      <CardContent>
+        <ConfirmCardContentInfo osInfo={data} />
+      </CardContent>
+      <CardFooter className="justify-center gap-4">
+        <Button variant="outline" onClick={() => push('/host-info')}>
+          <ArrowLeftIcon />
+          返回配置
+        </Button>
+        <Button disabled>
+          开始安装
+          <ArrowRightIcon />
+        </Button>
+      </CardFooter>
+    </Card>
+  )
+}
+
 function ConfirmCardContentInfo({ osInfo }: { osInfo?: ResourceOsInfoType }) {
   const { account, network, hosts } = useGlobalStore((s) => s.hostConfig)
 
