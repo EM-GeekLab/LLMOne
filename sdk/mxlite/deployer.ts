@@ -232,7 +232,11 @@ chmod 400 /mnt/etc/netplan/${confName}`
   }
 
   public async reboot() {
-    await this.execScript('reboot')
+    await this.execScript('reboot').catch(() => undefined)
+  }
+
+  public async shutdown() {
+    await this.execScript('shutdown').catch(() => undefined)
   }
 
   private async execScriptChroot(inner: string) {

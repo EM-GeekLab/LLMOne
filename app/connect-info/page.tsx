@@ -4,7 +4,6 @@ import { ConnectModeIf } from '@/app/_shared/condition'
 
 import { BmcHostsList } from './bmc-hosts-list'
 import { Footer } from './footer'
-import { SshHostsList } from './ssh-hosts-list'
 
 export default function Page() {
   return (
@@ -17,9 +16,9 @@ export default function Page() {
         <ConnectModeIf mode="bmc">
           <BmcHostsList />
         </ConnectModeIf>
-        <ConnectModeIf mode="ssh">
-          <SshHostsList />
-        </ConnectModeIf>
+        {/* <ConnectModeIf mode="ssh"> */}
+        {/*   <SshHostsList /> */}
+        {/* </ConnectModeIf> */}
       </AppCardContent>
       <Footer />
     </AppFrame>
