@@ -29,7 +29,7 @@ function OsSelectorContainer() {
   const trpc = useTRPC()
   const bmcHosts = useGlobalStore((s) => s.finalBmcHosts)
 
-  const manifestPath = useGlobalStore((s) => s.osManifestPath)
+  const manifestPath = useGlobalStore((s) => s.manifestPath)
   const defaultArch = useQuery(
     trpc.connection.bmc.getDefaultArchitecture.queryOptions(bmcHosts, { enabled: !!manifestPath }),
   )

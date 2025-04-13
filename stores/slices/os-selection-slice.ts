@@ -9,13 +9,13 @@ export type OsSelectionInfo = {
 
 export type OsSelectionState = {
   osSelection: OsSelectionInfo
-  osManifestPath?: string
+  manifestPath?: string
   osInfoPath?: string
 }
 
 export type OsSelectionActions = {
   setOsSelection: (osSelection: OsSelectionInfo) => void
-  setOsManifestPath: (path?: string) => void
+  setManifestPath: (path?: string) => void
   setOsInfoPath: (path?: string) => void
 }
 
@@ -28,9 +28,9 @@ export const createOsSelectionSlice: ImmerStateCreator<OsSelectionActions> = (se
     set((state) => {
       state.osSelection = osSelection
     }),
-  setOsManifestPath: (path) =>
+  setManifestPath: (path) =>
     set((state) => {
-      state.osManifestPath = path
+      state.manifestPath = path
     }),
   setOsInfoPath: (path) =>
     set((state) => {

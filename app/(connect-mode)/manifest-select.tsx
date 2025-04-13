@@ -30,8 +30,8 @@ export function ManifestSelect() {
 }
 
 function ManifestSelectContent() {
-  const path = useGlobalStore((s) => s.osManifestPath)
-  const setPath = useGlobalStore((s) => s.setOsManifestPath)
+  const path = useGlobalStore((s) => s.manifestPath)
+  const setPath = useGlobalStore((s) => s.setManifestPath)
 
   const filter = useCallback((item: FileItem) => item.name === 'manifest.json', [])
   const trpc = useTRPCClient()

@@ -84,7 +84,7 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
       setHosts(result.data)
 
       if (storeApi.getState().deployMode === 'local') {
-        const manifestPath = storeApi.getState().osManifestPath
+        const manifestPath = storeApi.getState().manifestPath
         if (!manifestPath) {
           toast.error('请先选择离线安装配置')
           return
