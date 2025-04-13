@@ -168,6 +168,16 @@ export const connectionRouter = createRouter({
       return res.info.system_info.blks ?? []
     }),
   },
+  getHosts: baseProcedure.query(async () => {
+    const [res, status] = await mxc.getHostListInfo()
+    if (!res.ok || status >= 400) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: `无法获取主机列表，状态码 ${status}`,
+      })
+    }
+    return res.hosts
+  }),
   // ssh: {
   //   check: baseProcedure
   //     .input(inputType<SshFinalConnectionInfo>)
