@@ -6,7 +6,7 @@ import { getSubDirs } from '@/lib/file/server-file'
 import { z } from '@/lib/zod'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
-import { readManifest, readOsInfo, readOsInfoAbsolute } from './resource-utils'
+import { readManifest, readModelInfoAbsolute, readOsInfo, readOsInfoAbsolute } from './resource-utils'
 
 export const resourceRouter = createRouter({
   checkManifest: baseProcedure
@@ -28,7 +28,18 @@ export const resourceRouter = createRouter({
       ),
     ).then((res) => res.filter((item) => item !== null))
   }),
-  getOsInfo: baseProcedure.input(z.string()).query(async ({ input }) => {
-    return await readOsInfoAbsolute(input)
+  getOsInfo: baseProcedure.input(z.string()).query(({ input }) => readOsInfoAbsolute(input)),
+  getModels: baseProcedure.input(z.string()).query(async ({ input }) => {
+    const modelPath = await readManifest(input).then(({ modelDir }) => join(dirname(input), modelDir))
+    return await Promise.all(
+      await getSubDirs(modelPath).then((models) =>
+        models.map(async (relativePath) => {
+          const modelInfoPath = join(modelPath, relativePath, 'modelInfo.json')
+          const info = await readModelInfoAbsolute(modelInfoPath)
+          return { modelInfoPath, ...info }
+        }),
+      ),
+    ).then((res) => res.filter((item) => item !== null))
   }),
+  getModelInfo: baseProcedure.input(z.string()).query(({ input }) => readModelInfoAbsolute(input)),
 })
