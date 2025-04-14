@@ -10,6 +10,7 @@ import { z } from '@/lib/zod'
 import { BmcFinalConnectionInfo, bmcHostsListSchema } from '@/app/connect-info/schemas'
 import { HostExtraInfo } from '@/sdk/mxlite/types'
 import { baseProcedure, createRouter } from '@/trpc/init'
+import { findMatchedIp } from '@/trpc/router/connect-utils'
 
 import { getDefaultArchitecture } from './bmc-utils'
 import { getBootstrapPath } from './resource-utils'
@@ -176,7 +177,7 @@ export const connectionRouter = createRouter({
         message: `无法获取主机列表，状态码 ${status}`,
       })
     }
-    return res.hosts
+    return res.hosts.map(({ host, info }) => ({ host, info, ip: findMatchedIp(info) }))
   }),
   getHostInfo: baseProcedure.input(z.string()).query(async ({ input }) => {
     const [res, status] = await mxc.getHostInfo(input)
@@ -186,7 +187,7 @@ export const connectionRouter = createRouter({
         message: `无法获取主机信息，状态码 ${status}`,
       })
     }
-    return res.info
+    return { info: res.info, ip: findMatchedIp(res.info) }
   }),
   // ssh: {
   //   check: baseProcedure

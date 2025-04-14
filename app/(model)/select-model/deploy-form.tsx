@@ -113,13 +113,13 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
     queryKey: trpc.connection.getHosts.queryKey(),
     queryFn: async ({ signal }) => {
       const hosts = await trpcClient.connection.getHosts.query(undefined, { signal })
-      hosts.map(({ host, info }) => queryClient.setQueryData(trpc.connection.getHostInfo.queryKey(host), info))
+      hosts.map(({ host, ...rest }) => queryClient.setQueryData(trpc.connection.getHostInfo.queryKey(host), rest))
       return hosts
     },
     select: (list) =>
-      list.map(({ host, info }) => ({
+      list.map(({ host, info, ip }) => ({
         id: host,
-        ip: info.socket_info.remote_addr,
+        ip: ip?.address,
         hostname: info.system_info.name,
       })),
   })
@@ -160,6 +160,7 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
                       hosts.map((host) => (
                         <SelectItem value={host.id} key={host.id}>
                           {host.hostname}
+                          {host.ip && ` (${host.ip})`}
                         </SelectItem>
                       ))
                     ) : (
