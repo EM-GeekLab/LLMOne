@@ -35,7 +35,10 @@ export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstal
   {
     step: 'postinstall',
     progress: 90,
-    executor: ({ deployer }) => deployer.postinstall(),
+    executor: async ({ deployer }) => {
+      await deployer.postinstall()
+      await deployer.applyModprobeConfigs()
+    },
   },
   {
     step: 'configNetwork',
