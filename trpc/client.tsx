@@ -36,7 +36,7 @@ export function TrpcReactProvider({
       Parameters<typeof httpSubscriptionLink>[0] &
       Parameters<typeof httpBatchLink>[0] = {
       transformer: superjson,
-      url: `${isServer ? '' : location.origin}/rpc`,
+      url: `${isServer ? '' : process.env.NEXT_PUBLIC_TRPC_SERVER_URL || location.origin}/rpc`,
     }
     return createTRPCClient<AppRouter>({
       links: [
