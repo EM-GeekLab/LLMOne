@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cp -r bin .next/standalone/",
+    "dev": "concurrently \"next dev --turbopack\" \"bun run --hot trpc/index.ts\"",
+    "dev:next": "next dev --turbopack",
+    "dev:trpc": "bun run --hot trpc/index.ts",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -94,6 +96,7 @@
     "@types/react": "^19.1.1",
     "@types/react-dom": "^19.1.2",
     "@types/ssh2": "^1.15.5",
+    "concurrently": "^9.1.2",
     "eslint": "^9.24.0",
     "eslint-config-next": "15.2.4",
     "nextjs-node-loader": "^1.1.9",
