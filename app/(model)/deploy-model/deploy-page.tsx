@@ -65,7 +65,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
   )
   const progress = useModelStore((s) => s.deployProgress.get(hostId))
 
-  const { retryMutation } = useModelDeployContext()
+  const { deployOneMutation } = useModelDeployContext()
 
   if (!progress) return null
 
@@ -90,7 +90,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
           .with('deploying', () => (
             <>
               <Spinner />
-              <div>模型部署中</div>
+              <div>模型部署中，这可能需要几十分钟到几个小时，取决于模型大小和网速</div>
             </>
           ))
           .with('failed', () => (
@@ -99,7 +99,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
               <div className="text-destructive">部署时发生错误：{progress.error?.message}</div>
               <button
                 className="text-primary hover:text-primary/90 font-medium"
-                onClick={() => retryMutation.mutate({ host: hostId })}
+                onClick={() => deployOneMutation.mutate({ host: hostId })}
               >
                 重试
               </button>

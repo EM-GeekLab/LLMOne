@@ -9,7 +9,7 @@ import { useTRPCClient } from '@/trpc/client'
 
 const ModelDeployContext = createSafeContext<{
   deployMutation: UseMutationResult<void, Error, void>
-  retryMutation: UseMutationResult<void, Error, { host: string }>
+  deployOneMutation: UseMutationResult<void, Error, { host: string }>
 }>()
 
 export function ModelDeployProvider({ children }: { children: ReactNode }) {
@@ -32,7 +32,7 @@ export function ModelDeployProvider({ children }: { children: ReactNode }) {
     },
   })
 
-  const retryMutation = useMutation({
+  const deployOneMutation = useMutation({
     mutationFn: async ({ host }: { host: string }) => {
       const config = storeApi.getState().deployments.get(host)
       if (!config) throw new Error('未找到主机')
@@ -44,7 +44,9 @@ export function ModelDeployProvider({ children }: { children: ReactNode }) {
     },
   })
 
-  return <ModelDeployContext.Provider value={{ deployMutation, retryMutation }}>{children}</ModelDeployContext.Provider>
+  return (
+    <ModelDeployContext.Provider value={{ deployMutation, deployOneMutation }}>{children}</ModelDeployContext.Provider>
+  )
 }
 
 export const useModelDeployContext = () => ModelDeployContext.useContext()
