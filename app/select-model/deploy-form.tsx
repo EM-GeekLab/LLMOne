@@ -130,11 +130,15 @@ function DeployForm() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {hosts.map((host) => (
-                      <SelectItem value={host.id} key={host.id}>
-                        {host.hostname}
-                      </SelectItem>
-                    ))}
+                    {hosts.length > 0 ? (
+                      hosts.map((host) => (
+                        <SelectItem value={host.id} key={host.id}>
+                          {host.hostname}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="text-muted-foreground py-2 text-center text-sm">暂无在线主机</div>
+                    )}
                   </SelectContent>
                 </Select>
                 <FormMessage />
