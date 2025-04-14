@@ -2,6 +2,8 @@ import { readFileSync, writeFileSync } from 'node:fs'
 
 import superjson from 'superjson'
 
+import { ModelStoreState } from '@/stores/model-store'
+
 import { GlobalState } from './global-store'
 import { InstallStoreState } from './install-store'
 import { isPersistState, isWriteState } from './server-config'
@@ -23,10 +25,7 @@ function loadDataFromFile<T>(file: string) {
 }
 
 let globalState: GlobalState | undefined = undefined
-let installState: InstallStoreState | undefined = undefined
-
 const globalStatePersistFile = '.global-store.json'
-const installStatePersistFile = '.install-store.json'
 
 export function setGlobalData(data: GlobalState) {
   globalState = data
@@ -37,6 +36,9 @@ export function loadGlobalData() {
   return globalState ?? loadDataFromFile<GlobalState>(globalStatePersistFile)
 }
 
+let installState: InstallStoreState | undefined = undefined
+const installStatePersistFile = '.install-store.json'
+
 export function setInstallData(data: InstallStoreState) {
   installState = data
   saveDataToFile(installStatePersistFile, data)
@@ -44,4 +46,16 @@ export function setInstallData(data: InstallStoreState) {
 
 export function loadInstallData() {
   return installState ?? loadDataFromFile<InstallStoreState>(installStatePersistFile)
+}
+
+let modelState: ModelStoreState | undefined = undefined
+const modelStatePersistFile = '.model-store.json'
+
+export function setModelData(data: ModelStoreState) {
+  modelState = data
+  saveDataToFile(modelStatePersistFile, data)
+}
+
+export function loadModelData() {
+  return modelState ?? loadDataFromFile<ModelStoreState>(modelStatePersistFile)
 }

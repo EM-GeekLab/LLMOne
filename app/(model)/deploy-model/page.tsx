@@ -1,17 +1,17 @@
 import { AppCardContent, AppCardHeader, AppCardTitle } from '@/components/app/app-card'
 import { AppFrame } from '@/components/app/app-frame'
 
+import { DeployPage } from './deploy-page'
 import { Footer } from './footer'
-import { ModelsListPage } from './models-list'
 
 export default function Page() {
   return (
-    <AppFrame title="基础系统部署" current="select-model">
+    <AppFrame title="模型部署" current="deploy-model">
       <AppCardHeader>
-        <AppCardTitle>选择模型</AppCardTitle>
+        <AppCardTitle>部署模型</AppCardTitle>
       </AppCardHeader>
       <AppCardContent>
-        <ModelsListPage />
+        <DeployPage />
       </AppCardContent>
       <Footer />
     </AppFrame>

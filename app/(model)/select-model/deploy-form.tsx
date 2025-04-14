@@ -1,8 +1,9 @@
 import * as React from 'react'
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ModelIcon } from '@lobehub/icons'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 
 import { Button } from '@/components/ui/button'
@@ -19,16 +20,22 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { modelDeployConfigSchema, ModelDeployConfigType } from '@/app/select-model/schemas'
 import { CredentialType, useGlobalStoreNoUpdate } from '@/stores'
-import { useTRPC } from '@/trpc/client'
+import { useModelStore } from '@/stores/model-store-provider'
+import { useTRPC, useTRPCClient } from '@/trpc/client'
 import { AppRouter } from '@/trpc/router'
+
+import { useModelDeployContext } from '../model-deploy-provider'
+import { modelDeployConfigSchema, ModelDeployConfigType } from './schemas'
 
 type ModelInfo = Awaited<ReturnType<AppRouter['resource']['getModels']>>[number]
 
 export function DeployButton({ model }: { model: ModelInfo }) {
+  const [open, setOpen] = useState(false)
+  const { push } = useRouter()
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">部署模型</Button>
       </DialogTrigger>
@@ -38,7 +45,13 @@ export function DeployButton({ model }: { model: ModelInfo }) {
         </DialogHeader>
         <DialogDescription className="sr-only">配置模型部署的参数和选项</DialogDescription>
         <ModelInfo model={model} />
-        <DeployForm />
+        <DeployForm
+          modelPath={model.modelInfoPath}
+          onSubmitted={() => {
+            setOpen(false)
+            push('/deploy-model')
+          }}
+        />
       </DialogContent>
     </Dialog>
   )
@@ -91,31 +104,44 @@ function ModelInfo({ model }: { model: ModelInfo }) {
   )
 }
 
-function DeployForm() {
+function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted?: () => void }) {
   const initHosts = useGlobalStoreNoUpdate((s) => s.finalHosts)
   const trpc = useTRPC()
-  const { data: hosts = initHosts } = useQuery(
-    trpc.connection.getHosts.queryOptions(undefined, {
-      select: (list) =>
-        list.map(({ host, info }) => ({
-          id: host,
-          ip: info.socket_info.remote_addr,
-          hostname: info.system_info.name,
-        })),
-    }),
-  )
+  const trpcClient = useTRPCClient()
+  const queryClient = useQueryClient()
+  const { data: hosts = initHosts } = useQuery({
+    queryKey: trpc.connection.getHosts.queryKey(),
+    queryFn: async ({ signal }) => {
+      const hosts = await trpcClient.connection.getHosts.query(undefined, { signal })
+      hosts.map(({ host, info }) => queryClient.setQueryData(trpc.connection.getHostInfo.queryKey(host), info))
+      return hosts
+    },
+    select: (list) =>
+      list.map(({ host, info }) => ({
+        id: host,
+        ip: info.socket_info.remote_addr,
+        hostname: info.system_info.name,
+      })),
+  })
+
+  const addDeployment = useModelStore((s) => s.addDeployment)
+  const { deployMutation } = useModelDeployContext()
 
   const form = useForm<ModelDeployConfigType>({
     resolver: zodResolver(modelDeployConfigSchema),
+    defaultValues: { modelPath },
   })
-
-  const handleSubmit = (values: ModelDeployConfigType) => {
-    console.log(values)
-  }
 
   return (
     <Form {...form}>
-      <form className="grid gap-4" onSubmit={form.handleSubmit(handleSubmit)}>
+      <form
+        className="grid gap-4"
+        onSubmit={form.handleSubmit((values) => {
+          addDeployment(values)
+          deployMutation.mutate()
+          onSubmitted?.()
+        })}
+      >
         <div className="flex items-start gap-2">
           <FormField
             control={form.control}

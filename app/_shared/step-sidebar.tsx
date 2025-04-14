@@ -12,6 +12,7 @@ export type StepId =
   | 'install-env'
   | 'select-model'
   | 'service-config'
+  | 'deploy-model'
   | 'finish'
   | 'performance-test'
 
@@ -23,7 +24,8 @@ const MODE: Record<string, { title: string; id: StepId }[]> = {
     { title: '配置主机信息', id: 'host-info' },
     { title: '安装环境', id: 'install-env' },
     { title: '选择模型', id: 'select-model' },
-    { title: '预置服务配置', id: 'service-config' },
+    // { title: '预置服务配置', id: 'service-config' },
+    { title: '部署模型', id: 'deploy-model' },
     { title: '完成部署', id: 'finish' },
     { title: '性能测试', id: 'performance-test' },
   ],
@@ -32,7 +34,8 @@ const MODE: Record<string, { title: string; id: StepId }[]> = {
     { title: '配置 SSH 连接信息', id: 'connect-info' },
     { title: '安装环境', id: 'install-env' },
     { title: '选择模型', id: 'select-model' },
-    { title: '预置服务配置', id: 'service-config' },
+    // { title: '预置服务配置', id: 'service-config' },
+    { title: '部署模型', id: 'deploy-model' },
     { title: '完成部署', id: 'finish' },
     { title: '性能测试', id: 'performance-test' },
   ],

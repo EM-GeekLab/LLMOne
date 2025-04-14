@@ -178,6 +178,16 @@ export const connectionRouter = createRouter({
     }
     return res.hosts
   }),
+  getHostInfo: baseProcedure.input(z.string()).query(async ({ input }) => {
+    const [res, status] = await mxc.getHostInfo(input)
+    if (!res.ok || status >= 400) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: `无法获取主机信息，状态码 ${status}`,
+      })
+    }
+    return res.info
+  }),
   // ssh: {
   //   check: baseProcedure
   //     .input(inputType<SshFinalConnectionInfo>)

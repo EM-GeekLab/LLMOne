@@ -57,6 +57,7 @@ local-test
 # store persistence
 .global-store.json
 .install-store.json
+.model-store.json
 
 # bin
 /bin

@@ -1,31 +1,37 @@
 'use client'
 
+import { ComponentProps } from 'react'
 import { ModelIcon } from '@lobehub/icons'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { cn } from '@/lib/utils'
 import { AppCardSection } from '@/components/app/app-card'
 import { Callout } from '@/components/base/callout'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { ManifestSelect } from '@/app/(connect-mode)/manifest-select'
-import { DeployButton } from '@/app/select-model/deploy-form'
 import { useGlobalStore } from '@/stores'
-import { useTRPC } from '@/trpc/client'
+import { useTRPC, useTRPCClient } from '@/trpc/client'
 import { AppRouter } from '@/trpc/router'
+
+import { DeployButton } from './deploy-form'
 
 export function ModelsListPage() {
   const manifestPath = useGlobalStore((s) => s.manifestPath)
   const trpc = useTRPC()
+  const trpcClient = useTRPCClient()
+  const queryClient = useQueryClient()
 
-  const { data, isPending, isError, error, refetch } = useQuery(
-    manifestPath
-      ? trpc.resource.getModels.queryOptions(manifestPath)
-      : {
-          queryKey: trpc.resource.getModelInfo.queryKey(),
-          queryFn: () => Promise.resolve([]),
-          enabled: false,
-        },
-  )
+  const { data, isPending, isError, error, refetch } = useQuery({
+    queryKey: trpc.resource.getModelInfo.queryKey(manifestPath),
+    queryFn: async ({ signal }) => {
+      if (!manifestPath) throw new Error('未选择模型配置文件')
+      const models = await trpcClient.resource.getModels.query(manifestPath, { signal })
+      models.map((model) => queryClient.setQueryData(trpc.resource.getModelInfo.queryKey(model.modelInfoPath), model))
+      return models
+    },
+    enabled: !!manifestPath,
+  })
 
   if (!manifestPath) {
     return <ManifestSelect />
@@ -33,10 +39,14 @@ export function ModelsListPage() {
 
   if (isPending) {
     return (
-      <div className="text-muted-foreground flex items-center gap-2 px-6 text-sm">
-        <Spinner className="size-4" />
-        加载中...
-      </div>
+      <AppCardSection>
+        <ModelTableBody>
+          <div className="text-muted-foreground col-span-full flex items-center justify-center gap-2 px-6 py-10 text-sm">
+            <Spinner className="size-4" />
+            加载中...
+          </div>
+        </ModelTableBody>
+      </AppCardSection>
     )
   }
 
@@ -62,11 +72,16 @@ export function ModelsListPage() {
   )
 }
 
-function ModelList({ data }: { data: Awaited<ReturnType<AppRouter['resource']['getModels']>> }) {
+function ModelTableBody({ className, children }: ComponentProps<'div'>) {
   return (
-    <div className="grid grid-cols-[auto_auto_minmax(200px,1fr)_auto_auto_auto_auto_auto] gap-x-4 overflow-auto rounded-md border">
+    <div
+      className={cn(
+        'grid grid-cols-[auto_auto_minmax(200px,1fr)_auto_auto_auto_auto_auto] gap-x-4 overflow-auto rounded-md border',
+        className,
+      )}
+    >
       <div className="text-muted-foreground col-span-full grid grid-cols-subgrid items-center border-b *:font-medium *:not-last:py-2.5">
-        <div></div>
+        <div />
         <div>名称</div>
         <div>描述</div>
         <div className="min-w-14">硬件需求</div>
@@ -75,6 +90,14 @@ function ModelList({ data }: { data: Awaited<ReturnType<AppRouter['resource']['g
         <div className="min-w-14">存储大小</div>
         <div>操作</div>
       </div>
+      {children}
+    </div>
+  )
+}
+
+function ModelList({ data }: { data: Awaited<ReturnType<AppRouter['resource']['getModels']>> }) {
+  return (
+    <ModelTableBody>
       {data.map((model) => (
         <div
           key={model.modelInfoPath}
@@ -96,6 +119,6 @@ function ModelList({ data }: { data: Awaited<ReturnType<AppRouter['resource']['g
           </div>
         </div>
       ))}
-    </div>
+    </ModelTableBody>
   )
 }

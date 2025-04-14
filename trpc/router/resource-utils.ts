@@ -5,7 +5,7 @@ import { TRPCError } from '@trpc/server'
 import { readFileToString } from '@/lib/file/server-file'
 import { addAbsolutePaths } from '@/lib/file/server-path'
 import { OsArchitecture } from '@/lib/os'
-import { resourceModelInfoSchema } from '@/app/select-model/rescource-schema'
+import { resourceModelInfoSchema } from '@/app/(model)/select-model/rescource-schema'
 import { resourceManifestSchema, resourceOsInfoSchema } from '@/app/select-os/rescource-schema'
 
 import { log } from './utils'
