@@ -2,10 +2,10 @@ import { dirname, join } from 'path'
 
 import { TRPCError } from '@trpc/server'
 
-import { readFileToString } from '@/lib/file/server-file'
+import { getSubDirs, readFileToString } from '@/lib/file/server-file'
 import { addAbsolutePaths } from '@/lib/file/server-path'
 import { OsArchitecture } from '@/lib/os'
-import { resourceModelInfoSchema } from '@/app/(model)/select-model/rescource-schema'
+import { resourceContainerInfoSchema, resourceModelInfoSchema } from '@/app/(model)/select-model/rescource-schema'
 import { resourceManifestSchema, resourceOsInfoSchema } from '@/app/select-os/rescource-schema'
 
 import { log } from './utils'
@@ -70,4 +70,37 @@ export async function readModelInfo(path: string) {
 
 export async function readModelInfoAbsolute(path: string) {
   return addAbsolutePaths(await readModelInfo(path), dirname(path), ['file', 'logoFile'])
+}
+
+export async function readContainerInfo(path: string) {
+  const fileContent = (await readFileToString({ path })) || '{}'
+  try {
+    return resourceContainerInfoSchema.parse(JSON.parse(fileContent))
+  } catch (err) {
+    log.error(err, '解析 containerInfo.json 失败')
+    throw new TRPCError({
+      message: `${path} 格式错误`,
+      code: 'BAD_REQUEST',
+      cause: err,
+    })
+  }
+}
+
+export async function readContainerInfoAbsolute(path: string) {
+  return addAbsolutePaths(await readContainerInfo(path), dirname(path), ['file'])
+}
+
+export async function getContainers(manifestPath: string) {
+  const containerPath = await readManifest(manifestPath).then(({ containerDir }) =>
+    join(dirname(manifestPath), containerDir),
+  )
+  return await Promise.all(
+    await getSubDirs(containerPath).then((models) =>
+      models.map(async (relativePath) => {
+        const infoPath = join(containerPath, relativePath, 'containerInfo.json')
+        const info = await readContainerInfoAbsolute(infoPath)
+        return { infoPath, ...info }
+      }),
+    ),
+  ).then((res) => res.filter((item) => item !== null))
 }

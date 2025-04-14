@@ -8,8 +8,10 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { createSafeContext } from '@/lib/react/create-safe-context'
 import { cn } from '@/lib/utils'
 import { AppCardSection, AppCardTitle } from '@/components/app/app-card'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { HostConfigType } from '@/app/host-info/schemas'
+import { useBmcLocalInstallContext } from '@/app/install-env/context'
 import { FormatProgress } from '@/app/install-env/install-page/format-progress'
 import { HostTabsList } from '@/app/install-env/install-page/host-tabs'
 import { useGlobalStore } from '@/stores'
@@ -48,6 +50,9 @@ export function HostInstallPage({ hostId }: { hostId: string }) {
       <AppCardSection>
         <AppCardTitle className="text-base">日志</AppCardTitle>
         <LogDisplay />
+        <div className="sr-only">
+          <RetryButton />
+        </div>
       </AppCardSection>
     </InstallPageContext.Provider>
   )
@@ -113,5 +118,20 @@ function LogDisplay() {
         ))}
       </div>
     </div>
+  )
+}
+
+function RetryButton() {
+  // Warning: this button is for debug only
+  const { hostId } = InstallPageContext.useContext()
+  const { retryMutation } = useBmcLocalInstallContext()
+  return (
+    <Button
+      onClick={() => {
+        retryMutation.mutate({ hostId, stage: 'system', step: 'complete' })
+      }}
+    >
+      重试安装
+    </Button>
   )
 }
