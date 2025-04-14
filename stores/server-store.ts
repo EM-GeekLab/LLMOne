@@ -6,7 +6,7 @@ import { ModelStoreState } from '@/stores/model-store'
 
 import { GlobalState } from './global-store'
 import { InstallStoreState } from './install-store'
-import { isPersistState, isWriteState } from './server-config'
+import { isPersistInstallState, isPersistModelState, isPersistState, isWriteState } from './server-config'
 
 function saveDataToFile<T>(file: string, data: T) {
   if (!isWriteState) return
@@ -14,8 +14,8 @@ function saveDataToFile<T>(file: string, data: T) {
   writeFileSync(file, text, 'utf-8')
 }
 
-function loadDataFromFile<T>(file: string) {
-  if (!isPersistState) return undefined
+function loadDataFromFile<T>(file: string, enabled = isPersistState) {
+  if (!enabled) return undefined
   try {
     const stringData = readFileSync(file, 'utf-8')
     return superjson.parse<T>(stringData)
@@ -45,7 +45,7 @@ export function setInstallData(data: InstallStoreState) {
 }
 
 export function loadInstallData() {
-  return installState ?? loadDataFromFile<InstallStoreState>(installStatePersistFile)
+  return installState ?? loadDataFromFile<InstallStoreState>(installStatePersistFile, isPersistInstallState)
 }
 
 let modelState: ModelStoreState | undefined = undefined
@@ -57,5 +57,5 @@ export function setModelData(data: ModelStoreState) {
 }
 
 export function loadModelData() {
-  return modelState ?? loadDataFromFile<ModelStoreState>(modelStatePersistFile)
+  return modelState ?? loadDataFromFile<ModelStoreState>(modelStatePersistFile, isPersistModelState)
 }
