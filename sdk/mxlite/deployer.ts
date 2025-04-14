@@ -295,7 +295,7 @@ EOF
   }
 
   public async applyModprobeConfigs() {
-    const script = `cat <<EOF > /etc/modprobe.d/blacklist.conf
+    const script = `cat <<EOF >> /etc/modprobe.d/blacklist.conf
 blacklist nouveau
 EOF
 `
@@ -318,21 +318,5 @@ cd / && rm -rf "$INSTALLER_TEMP"
 `
 
     await this.execScript(script)
-  }
-
-  public async applyDockerImage(imageUrl: string) {
-    const script = `curl -Ls "${imageUrl}" | zstd -d | docker load | sed -E 's/^.* (.*)$/\\1/'`
-    const { stdout } = await this.execScript(script)
-    const imageId = stdout.trim()
-    return imageId
-  }
-
-  public async fetchDockerImageList() {
-    const script = 'curl -s --unix-socket /run/docker.sock http://localhost/images/json'
-    const { stdout } = await this.execScript(script)
-    return JSON.parse(stdout.trim()) as {
-      RepoTags: string[]
-      Id: string
-    }[]
   }
 }
