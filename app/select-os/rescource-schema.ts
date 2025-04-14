@@ -8,6 +8,7 @@ export const resourceManifestSchema = z.object({
   systemDir: z.string(),
   bootstrap: z.record(architecturesEnum, z.string()),
   modelDir: z.string(),
+  containerDir: z.string(),
 })
 
 export type ResourceManifestType = z.infer<typeof resourceManifestSchema>

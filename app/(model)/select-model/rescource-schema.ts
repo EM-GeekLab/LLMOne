@@ -25,3 +25,14 @@ export const resourceModelInfoSchema = z.object({
 })
 
 export type ResourceModelInfoType = z.infer<typeof resourceModelInfoSchema>
+
+export const resourceContainerInfoSchema = z.object({
+  metaVersion: z.literal('v1-alpha1'),
+  repo: z.string(),
+  tag: z.array(z.string()),
+  arch: z.string(),
+  file: z.string(),
+  sha256: z.string(),
+})
+
+export type ResourceContainerInfoType = z.infer<typeof resourceContainerInfoSchema>
