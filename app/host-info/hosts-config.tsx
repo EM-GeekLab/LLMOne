@@ -53,6 +53,7 @@ function HostsConfigContent() {
       data.map((host) => queryClient.setQueryData(trpc.connection.bmc.getHostDiskInfo.queryKey(host.id), host.disks))
       return data
     },
+    enabled: bmcHosts.length > 0,
   })
 
   if (isPending) {
