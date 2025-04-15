@@ -54,11 +54,11 @@ export type HostExtraInfo = {
     remote_addr: string
   }
   controller_url: string
-  // TODO: hostname
   // TODO: 区别主系统是否已经安装完成
   system_info: {
     total_memory: number
     name: Option<string>
+    hostname: Option<string>
     kernel_version: Option<string>
     cpu: {
       names: string[]

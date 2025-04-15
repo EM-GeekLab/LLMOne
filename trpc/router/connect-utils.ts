@@ -10,6 +10,6 @@ export function findMatchedIp(info: HostExtraInfo) {
       })),
     )
     .flat()
-  const localAddress = new URL(info.controller_url).hostname
+  const localAddress = info.socket_info.local_addr.split(':')[0]
   return ipAddresses.find(({ address, prefix }) => isInSameSubnet(address, prefix, localAddress))
 }

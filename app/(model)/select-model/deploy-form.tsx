@@ -120,7 +120,7 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
       list.map(({ host, info, ip }) => ({
         id: host,
         ip: ip?.address,
-        hostname: info.system_info.name,
+        hostname: info.system_info.hostname,
       })),
   })
 
