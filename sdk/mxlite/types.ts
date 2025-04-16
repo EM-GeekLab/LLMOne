@@ -126,3 +126,21 @@ export type LsdirResponse =
       error: string
       result: null
     }
+
+export type AddFileMapRequest = {
+  maps: { path: string; name: string; isdir: Option<boolean> }[]
+}
+
+export type AddFileMapResponse = {
+  result: ((
+    | {
+        ok: true
+      }
+    | {
+        ok: false
+        err: string
+      }
+  ) & {
+    name: string
+  })[]
+}

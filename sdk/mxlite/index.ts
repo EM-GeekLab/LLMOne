@@ -1,6 +1,15 @@
 import { logger } from '@/lib/logger'
 
-import type { AddTaskResult, ApiResult, GetUrlSubResponse, HostExtraInfo, LsdirResponse, TaskResult } from './types'
+import type {
+  AddFileMapRequest,
+  AddFileMapResponse,
+  AddTaskResult,
+  ApiResult,
+  GetUrlSubResponse,
+  HostExtraInfo,
+  LsdirResponse,
+  TaskResult,
+} from './types'
 import { ERR_REASON_TASK_NOT_COMPLETED } from './types'
 
 const log = logger.child({ module: 'mxlite/controller' })
@@ -134,11 +143,28 @@ export class Mxc {
     })
   }
 
-  public async addFileMap(file: string, publishName: string): ApiResult<string> {
+  public async addFileMap(file: string, publishName: string): ApiResult<AddFileMapResponse> {
     return await this.request(`${this.endpoint}/api/file-map`, 'POST', {
-      path: file,
-      publish_name: publishName, // eslint-disable-line camelcase
-    })
+      maps: [
+        {
+          name: publishName,
+          path: file,
+          isdir: false,
+        },
+      ],
+    } as AddFileMapRequest)
+  }
+
+  public async addDirMap(dirname: string, publishName: string): ApiResult<AddFileMapResponse> {
+    return await this.request(`${this.endpoint}/api/file-map`, 'POST', {
+      maps: [
+        {
+          name: publishName,
+          path: dirname,
+          isdir: true,
+        },
+      ],
+    } as AddFileMapRequest)
   }
 
   public async removeFileMap(file: string): ApiResult<string> {
