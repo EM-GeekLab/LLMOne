@@ -17,19 +17,19 @@ export function ModelDeployProvider({ children }: { children: ReactNode }) {
   const manifestPath = useGlobalStore((s) => s.manifestPath)
   const storeApi = useModelStoreApi()
   const trpcClient = useTRPCClient()
-  const setDeployProgress = useModelStore((s) => s.setDeployProgress)
+  const setDeployProgress = useModelStore((s) => s.setModelDeployProgress)
 
   const deployMutation = useMutation({
     mutationFn: async () => {
       if (!manifestPath) throw new Error('未选择配置文件')
-      const entries = storeApi.getState().deployments.values()
+      const entries = storeApi.getState().modelDeploy.config.values()
       await Promise.all(
         entries.map(async (config) => {
-          setDeployProgress({ host: config.host, status: 'deploying' })
+          setDeployProgress({ host: config.host, status: 'deploying', progress: 0 })
           await trpcClient.model.deployModel
             .mutate({ ...config, manifestPath })
-            .then(() => setDeployProgress({ host: config.host, status: 'success' }))
-            .catch((error) => setDeployProgress({ host: config.host, status: 'failed', error }))
+            .then(() => setDeployProgress({ host: config.host, status: 'success', progress: 100 }))
+            .catch((error) => setDeployProgress({ host: config.host, status: 'failed', error, progress: 100 }))
         }),
       )
     },
@@ -38,13 +38,13 @@ export function ModelDeployProvider({ children }: { children: ReactNode }) {
   const deployOneMutation = useMutation({
     mutationFn: async ({ host }: { host: string }) => {
       if (!manifestPath) throw new Error('未选择配置文件')
-      const config = storeApi.getState().deployments.get(host)
+      const config = storeApi.getState().modelDeploy.config.get(host)
       if (!config) throw new Error('未找到主机')
-      setDeployProgress({ host, status: 'deploying' })
+      setDeployProgress({ host, status: 'deploying', progress: 0 })
       await trpcClient.model.deployModel
         .mutate({ ...config, manifestPath })
-        .then(() => setDeployProgress({ host, status: 'success' }))
-        .catch((error) => setDeployProgress({ host, status: 'failed', error }))
+        .then(() => setDeployProgress({ host, status: 'success', progress: 100 }))
+        .catch((error) => setDeployProgress({ host, status: 'failed', error, progress: 100 }))
     },
   })
 

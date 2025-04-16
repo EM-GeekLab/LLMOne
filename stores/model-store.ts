@@ -3,32 +3,62 @@ import { immer } from 'zustand/middleware/immer'
 import { createStore } from 'zustand/vanilla'
 
 import { ModelDeployConfigType } from '@/app/(model)/select-model/schemas'
+import { OpenWebuiConfigType } from '@/app/(model)/service-config/schemas'
 
 enableMapSet()
 
-type ModelDeployProgress = {
+type DeployProgress = {
   host: string
   status: 'idle' | 'deploying' | 'success' | 'failed'
+  progress: number
   error?: Error
 }
 
+export type StoreOpenWebuiConfig = { service: 'openWebui' } & OpenWebuiConfigType
+export type StoreOpenWebuiProgress = { service: 'openWebui' } & DeployProgress
+
+export type ServiceConfigType = StoreOpenWebuiConfig
+export type ServiceDeployProgress = StoreOpenWebuiProgress
+
+export type DeployService = ServiceDeployProgress['service']
+
 export type ModelStoreState = {
-  deployments: Map<string, ModelDeployConfigType>
-  deployProgress: Map<string, ModelDeployProgress>
+  modelDeploy: {
+    config: Map<string, ModelDeployConfigType>
+    progress: Map<string, DeployProgress>
+  }
+  serviceDeploy: {
+    config: {
+      openWebui: Map<string, StoreOpenWebuiConfig>
+    }
+    progress: {
+      openWebui: Map<string, StoreOpenWebuiProgress>
+    }
+  }
 }
 
 export type ModelStoreActions = {
-  addDeployment: (config: ModelDeployConfigType) => void
-  removeDeployment: (hostId: string) => void
-  setDeployProgress: (progress: ModelDeployProgress) => void
-  clearDeployProgress: (hostId: string) => void
+  addModelDeployment: (config: ModelDeployConfigType) => void
+  removeModelDeployment: (hostId: string) => void
+  setModelDeployProgress: (progress: DeployProgress) => void
+  clearModelDeployProgress: (hostId: string) => void
+  addServiceDeployment: (config: ServiceConfigType) => void
+  removeServiceDeployment: (hostId: string, service: DeployService) => void
+  setServiceDeployProgress: (progress: ServiceDeployProgress) => void
+  clearServiceDeployProgress: (hostId: string, service: DeployService) => void
 }
 
 export type ModelStore = ModelStoreState & ModelStoreActions
 
 export const defaultModelStoreState: ModelStoreState = {
-  deployments: new Map(),
-  deployProgress: new Map(),
+  modelDeploy: {
+    config: new Map(),
+    progress: new Map(),
+  },
+  serviceDeploy: {
+    config: { openWebui: new Map() },
+    progress: { openWebui: new Map() },
+  },
 }
 
 export const createModelStore = (
@@ -38,21 +68,43 @@ export const createModelStore = (
   const store = createStore<ModelStore>()(
     immer((set) => ({
       ...initState,
-      addDeployment: (config) =>
+      addModelDeployment: (config) =>
         set((state) => {
-          state.deployments.set(config.host, config)
+          state.modelDeploy.config.set(config.host, config)
         }),
-      removeDeployment: (hostId) =>
+      removeModelDeployment: (hostId) =>
         set((state) => {
-          state.deployments.delete(hostId)
+          state.modelDeploy.config.delete(hostId)
         }),
-      setDeployProgress: (progress) =>
+      setModelDeployProgress: (progress) =>
         set((state) => {
-          state.deployProgress.set(progress.host, progress)
+          state.modelDeploy.progress.set(progress.host, progress)
         }),
-      clearDeployProgress: (hostId) =>
+      clearModelDeployProgress: (hostId) =>
         set((state) => {
-          state.deployProgress.delete(hostId)
+          state.modelDeploy.progress.delete(hostId)
+        }),
+      addServiceDeployment: (config) =>
+        set((state) => {
+          const { host, service } = config
+          const serviceConfig = state.serviceDeploy.config[service]
+          serviceConfig.set(host, config)
+        }),
+      removeServiceDeployment: (hostId, service) =>
+        set((state) => {
+          const serviceConfig = state.serviceDeploy.config[service]
+          serviceConfig.delete(hostId)
+        }),
+      setServiceDeployProgress: (progress) =>
+        set((state) => {
+          const { host, service } = progress
+          const serviceProgress = state.serviceDeploy.progress[service]
+          serviceProgress.set(host, progress)
+        }),
+      clearServiceDeployProgress: (hostId, service) =>
+        set((state) => {
+          const serviceProgress = state.serviceDeploy.progress[service]
+          serviceProgress.delete(hostId)
         }),
     })),
   )

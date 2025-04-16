@@ -9,7 +9,7 @@ import { useModelDeployContext } from '../model-deploy-provider'
 
 export function Footer() {
   const { deployMutation } = useModelDeployContext()
-  const isSuccess = useModelStore((s) => s.deployProgress.values().every((v) => v.status === 'success'))
+  const isSuccess = useModelStore((s) => s.modelDeploy.progress.values().every((v) => v.status === 'success'))
 
   return (
     <AppCardFooter>
@@ -17,7 +17,7 @@ export function Footer() {
         上一步
       </NavButton>
       <NavButtonGuard pass={isSuccess} message="等待部署完成">
-        <NavButton to="/finish">下一步</NavButton>
+        <NavButton to="/service-config">下一步</NavButton>
       </NavButtonGuard>
     </AppCardFooter>
   )

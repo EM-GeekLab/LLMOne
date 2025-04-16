@@ -6,7 +6,7 @@ import { Footer } from './footer'
 
 export default function Page() {
   return (
-    <AppFrame title="模型部署" current="deploy-model">
+    <AppFrame title="模型部署" current="select-model">
       <AppCardHeader>
         <AppCardTitle>部署模型</AppCardTitle>
       </AppCardHeader>
