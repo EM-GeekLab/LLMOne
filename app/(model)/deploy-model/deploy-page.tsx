@@ -14,10 +14,11 @@ import { useModelStore } from '@/stores/model-store-provider'
 import { useTRPC } from '@/trpc/client'
 
 import { useModelDeployContext } from '../model-deploy-provider'
+import { useHostInfo } from '../use-host-info'
 
 export function DeployPage() {
   const { deployMutation } = useModelDeployContext()
-  const isSuccess = useModelStore((s) => s.deployProgress.values().every((v) => v.status === 'success'))
+  const isSuccess = useModelStore((s) => s.modelDeploy.progress.values().every((v) => v.status === 'success'))
 
   if (deployMutation.isError) {
     return (
@@ -45,7 +46,7 @@ export function DeployPage() {
 }
 
 function HostsList() {
-  const configs = useModelStore((s) => s.deployments)
+  const configs = useModelStore((s) => s.modelDeploy.config)
   const hosts = Array.from(configs.values())
   return (
     <div className="grid gap-4">
@@ -58,12 +59,12 @@ function HostsList() {
 
 function HostStatusCard({ hostId }: { hostId: string }) {
   const trpc = useTRPC()
-  const { data: host } = useQuery(trpc.connection.getHostInfo.queryOptions(hostId))
-  const deployment = useModelStore((s) => s.deployments.get(hostId))
+  const { data: host } = useHostInfo({ hostId })
+  const deployment = useModelStore((s) => s.modelDeploy.config.get(hostId))
   const { data: model } = useQuery(
     trpc.resource.getModelInfo.queryOptions(deployment!.modelPath, { enabled: !!deployment }),
   )
-  const progress = useModelStore((s) => s.deployProgress.get(hostId))
+  const progress = useModelStore((s) => s.modelDeploy.progress.get(hostId))
 
   const { deployOneMutation } = useModelDeployContext()
 
@@ -117,7 +118,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
 function DeploySuccessCallout() {
   return (
     <Callout size="card" variant="success" icon={<CheckCircle2Icon />}>
-      模型部署完成
+      Open WebUI 部署完成
     </Callout>
   )
 }
