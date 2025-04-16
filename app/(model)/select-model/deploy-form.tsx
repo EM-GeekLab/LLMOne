@@ -3,9 +3,9 @@ import { ReactNode, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ModelIcon } from '@lobehub/icons'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 
+import { DescriptionsList } from '@/components/base/descriptions-list'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -19,12 +19,12 @@ import {
 } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CredentialType, useGlobalStoreNoUpdate } from '@/stores'
+import { Select, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { CredentialType } from '@/stores'
 import { useModelStore } from '@/stores/model-store-provider'
-import { useTRPC, useTRPCClient } from '@/trpc/client'
 import { AppRouter } from '@/trpc/router'
 
+import { HostSelectContent } from '../host-select-content'
 import { useModelDeployContext } from '../model-deploy-provider'
 import { modelDeployConfigSchema, ModelDeployConfigType } from './schemas'
 
@@ -92,39 +92,13 @@ function ModelInfo({ model }: { model: ModelInfo }) {
         <ModelIcon type="color" model={model.logoKey} size={32} />
         <div className="min-w-0 text-sm font-medium">{model.displayName}</div>
       </div>
-      <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 px-4 py-3">
-        {entries.map(({ id, key, value }) => (
-          <div key={id} className="contents text-sm">
-            <div className="text-muted-foreground text-right font-medium">{key}</div>
-            {typeof value !== 'object' ? <div>{value}</div> : value}
-          </div>
-        ))}
-      </div>
+      <DescriptionsList className="px-4 py-3" entries={entries} />
     </div>
   )
 }
 
 function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted?: () => void }) {
-  const initHosts = useGlobalStoreNoUpdate((s) => s.finalHosts)
-  const trpc = useTRPC()
-  const trpcClient = useTRPCClient()
-  const queryClient = useQueryClient()
-  const { data: hosts = initHosts } = useQuery({
-    queryKey: trpc.connection.getHosts.queryKey(),
-    queryFn: async ({ signal }) => {
-      const hosts = await trpcClient.connection.getHosts.query(undefined, { signal })
-      hosts.map(({ host, ...rest }) => queryClient.setQueryData(trpc.connection.getHostInfo.queryKey(host), rest))
-      return hosts
-    },
-    select: (list) =>
-      list.map(({ host, info, ip }) => ({
-        id: host,
-        ip: ip?.address,
-        hostname: info.system_info.hostname,
-      })),
-  })
-
-  const addDeployment = useModelStore((s) => s.addDeployment)
+  const addDeployment = useModelStore((s) => s.addModelDeployment)
   const { deployMutation } = useModelDeployContext()
 
   const form = useForm<ModelDeployConfigType>({
@@ -155,18 +129,7 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
                       <SelectValue placeholder="选择主机" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
-                    {hosts.length > 0 ? (
-                      hosts.map((host) => (
-                        <SelectItem value={host.id} key={host.id}>
-                          {host.hostname}
-                          {host.ip && ` (${host.ip})`}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <div className="text-muted-foreground py-2 text-center text-sm">暂无在线主机</div>
-                    )}
-                  </SelectContent>
+                  <HostSelectContent />
                 </Select>
                 <FormMessage />
               </FormItem>
