@@ -21,9 +21,10 @@ export function ServiceDeployProvider({ children }: { children: ReactNode }) {
   const setDeployProgress = useModelStore((s) => s.setServiceDeployProgress)
 
   const updateProgress = async (config: ServiceConfigType) => {
+    const modelConfig = storeApi.getState().modelDeploy.config.get(config.host)
     setDeployProgress({ service: config.service, host: config.host, status: 'deploying', progress: 0 })
     await trpcClient.model.deployService[config.service]
-      .mutate({ ...config })
+      .mutate({ ...config, modelConfig })
       .then(() =>
         setDeployProgress({
           service: config.service,

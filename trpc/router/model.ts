@@ -7,7 +7,7 @@ import { openWebuiConfigSchema } from '@/app/(model)/service-config/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
 import { applyDockerImage } from './docker-utils'
-import { addFileMap, executeCommand, makeEnvs } from './mxc-utils'
+import { addDirMap, addFileMap, executeCommand, makeEnvs } from './mxc-utils'
 import { getContainers, readModelInfoAbsolute } from './resource-utils'
 
 const MODEL_WORK_DIR = '/srv/models'
@@ -30,13 +30,15 @@ export const modelRouter = createRouter({
       const containerUrl = await addFileMap(host, matchedContainer.file)
       await applyDockerImage(host, containerUrl)
 
-      const modelUrl = await addFileMap(host, config.file)
+      const modelUrl = await addDirMap(host, config.modelDir)
 
       const initCommands = [`mkdir -p ${MODEL_WORK_DIR}`]
       const envCommands = makeEnvs({
         IMAGE_ID: config.docker.image,
         WORK_DIR: MODEL_WORK_DIR,
         MODEL_NAME: config.repo,
+        SERVED_MODEL_NAME: config.modelId,
+        GPU_COUNT: 1,
         MODEL_PORT: port,
       })
       const postCommands = [`curl -Ls ${JSON.stringify(modelUrl)} | tar x -C "$WORK_DIR"`]
@@ -44,9 +46,11 @@ export const modelRouter = createRouter({
       return await executeCommand(host, command)
     }),
   deployService: {
-    openWebui: baseProcedure.input(openWebuiConfigSchema).mutation(async function ({ input }) {
-      await sleep(5000)
-      return input
-    }),
+    openWebui: baseProcedure
+      .input(openWebuiConfigSchema.extend({ modelConfig: modelDeployConfigSchema.optional() }))
+      .mutation(async function ({ input }) {
+        await sleep(5000)
+        return input
+      }),
   },
 })

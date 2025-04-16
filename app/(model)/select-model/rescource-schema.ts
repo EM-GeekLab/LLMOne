@@ -5,6 +5,7 @@ export const resourceModelInfoSchema = z.object({
   repo: z.string(),
   displayName: z.string(),
   description: z.string(),
+  modelId: z.string(),
   logoKey: z.string(),
   logoFile: z.string().optional(),
   requirements: z.object({
@@ -15,8 +16,8 @@ export const resourceModelInfoSchema = z.object({
   parameters: z.number(),
   weightType: z.enum(['fp16', 'bf16', 'fp8', 'int8', 'int4']),
   storageSize: z.number(),
-  file: z.string(),
-  sha256: z.string(),
+  modelDir: z.string(),
+  filesSha256: z.array(z.object({ file: z.string(), sha256: z.string() })),
   docker: z.object({
     image: z.string().default('vllm/vllm-openai'),
     tag: z.string().default('latest'),
