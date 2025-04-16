@@ -1,12 +1,16 @@
 import { TRPCError } from '@trpc/server'
 
+import { sleep } from '@/lib/utils'
 import { z } from '@/lib/zod'
 import { modelDeployConfigSchema } from '@/app/(model)/select-model/schemas'
+import { openWebuiConfigSchema } from '@/app/(model)/service-config/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
-import { applyDockerImage } from './model-utils'
+import { applyDockerImage } from './docker-utils'
 import { addFileMap, executeCommand, makeEnvs } from './mxc-utils'
 import { getContainers, readModelInfoAbsolute } from './resource-utils'
+
+const MODEL_WORK_DIR = '/srv/models'
 
 export const modelRouter = createRouter({
   deployModel: baseProcedure
@@ -28,16 +32,21 @@ export const modelRouter = createRouter({
 
       const modelUrl = await addFileMap(host, config.file)
 
-      const initCommands = ['mkdir -p /srv/models']
+      const initCommands = [`mkdir -p ${MODEL_WORK_DIR}`]
       const envCommands = makeEnvs({
-        DATA_BACKUP_URL: modelUrl,
         IMAGE_ID: config.docker.image,
-        WORK_DIR: '/srv/models',
+        WORK_DIR: MODEL_WORK_DIR,
         MODEL_NAME: config.repo,
         MODEL_PORT: port,
       })
-      const postCommands = ['curl -Ls "$DATA_BACKUP_URL" | tar x -C "$WORK_DIR"']
+      const postCommands = [`curl -Ls ${JSON.stringify(modelUrl)} | tar x -C "$WORK_DIR"`]
       const command = [...initCommands, ...envCommands, ...postCommands, config.docker.command].join('\n')
       return await executeCommand(host, command)
     }),
+  deployService: {
+    openWebui: baseProcedure.input(openWebuiConfigSchema).mutation(async function ({ input }) {
+      await sleep(5000)
+      return input
+    }),
+  },
 })
