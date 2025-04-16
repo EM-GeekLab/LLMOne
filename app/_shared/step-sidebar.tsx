@@ -11,31 +11,30 @@ export type StepId =
   | 'host-info'
   | 'install-env'
   | 'select-model'
-  | 'service-config'
   | 'deploy-model'
+  | 'service-config'
+  | 'deploy-service'
   | 'finish'
   | 'performance-test'
 
 const MODE: Record<string, { title: string; id: StepId }[]> = {
   bmc: [
     { title: '部署准备', id: 'connect-mode' },
-    { title: '配置 BMC 连接信息', id: 'connect-info' },
-    { title: '选择操作系统', id: 'select-os' },
-    { title: '配置主机信息', id: 'host-info' },
-    { title: '安装环境', id: 'install-env' },
-    { title: '选择模型', id: 'select-model' },
-    // { title: '预置服务配置', id: 'service-config' },
-    { title: '部署模型', id: 'deploy-model' },
+    { title: 'BMC 连接信息配置', id: 'connect-info' },
+    { title: '操作系统选择', id: 'select-os' },
+    { title: '主机信息配置', id: 'host-info' },
+    { title: '环境安装', id: 'install-env' },
+    { title: '模型选择', id: 'select-model' },
+    { title: '预置服务配置', id: 'service-config' },
     { title: '完成部署', id: 'finish' },
     { title: '性能测试', id: 'performance-test' },
   ],
   ssh: [
     { title: '部署准备', id: 'connect-mode' },
-    { title: '配置 SSH 连接信息', id: 'connect-info' },
-    { title: '安装环境', id: 'install-env' },
-    { title: '选择模型', id: 'select-model' },
-    // { title: '预置服务配置', id: 'service-config' },
-    { title: '部署模型', id: 'deploy-model' },
+    { title: 'SSH 连接信息配置', id: 'connect-info' },
+    { title: '环境安装', id: 'install-env' },
+    { title: '模型选择', id: 'select-model' },
+    { title: '预置服务配置', id: 'service-config' },
     { title: '完成部署', id: 'finish' },
     { title: '性能测试', id: 'performance-test' },
   ],
