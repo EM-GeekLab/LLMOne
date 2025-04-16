@@ -3,13 +3,13 @@ import { TRPCError } from '@trpc/server'
 import { z } from '@/lib/zod'
 import { modelDeployConfigSchema } from '@/app/(model)/select-model/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
-import { applyDockerImage } from '@/trpc/router/model-utils'
-import { addFileMap, executeCommand, makeEnvs } from '@/trpc/router/mxc-utils'
 
+import { applyDockerImage } from './model-utils'
+import { addFileMap, executeCommand, makeEnvs } from './mxc-utils'
 import { getContainers, readModelInfoAbsolute } from './resource-utils'
 
 export const modelRouter = createRouter({
-  deploy: baseProcedure
+  deployModel: baseProcedure
     .input(modelDeployConfigSchema.extend({ manifestPath: z.string() }))
     .mutation(async ({ input: { host, modelPath, port, manifestPath } }) => {
       const config = await readModelInfoAbsolute(modelPath)

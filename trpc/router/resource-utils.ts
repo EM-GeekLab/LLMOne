@@ -42,6 +42,19 @@ export async function readOsInfoAbsolute(path: string) {
   return addAbsolutePaths(await readOsInfo(path), dirname(path), ['file', 'packagesDir'])
 }
 
+export async function getOperatingSystems(manifestPath: string) {
+  const systemsPath = await readManifest(manifestPath).then(({ systemDir }) => join(dirname(manifestPath), systemDir))
+  return await Promise.all(
+    await getSubDirs(systemsPath).then((systems) =>
+      systems.map(async (relativePath) => {
+        const osInfoPath = join(systemsPath, relativePath, 'osInfo.json')
+        const info = await readOsInfoAbsolute(osInfoPath)
+        return { osInfoPath, ...info }
+      }),
+    ),
+  ).then((res) => res.filter((item) => item !== null))
+}
+
 export async function getBootstrapPath(path: string, arch: OsArchitecture) {
   const manifest = await readManifest(path)
   const relativePath = manifest.bootstrap[arch]
@@ -70,6 +83,19 @@ export async function readModelInfo(path: string) {
 
 export async function readModelInfoAbsolute(path: string) {
   return addAbsolutePaths(await readModelInfo(path), dirname(path), ['file', 'logoFile'])
+}
+
+export async function getModels(manifestPath: string) {
+  const modelPath = await readManifest(manifestPath).then(({ modelDir }) => join(dirname(manifestPath), modelDir))
+  return await Promise.all(
+    await getSubDirs(modelPath).then((models) =>
+      models.map(async (relativePath) => {
+        const modelInfoPath = join(modelPath, relativePath, 'modelInfo.json')
+        const info = await readModelInfoAbsolute(modelInfoPath)
+        return { modelInfoPath, ...info }
+      }),
+    ),
+  ).then((res) => res.filter((item) => item !== null))
 }
 
 export async function readContainerInfo(path: string) {

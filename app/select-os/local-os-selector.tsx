@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { group } from 'radash'
 
 import { OsDistribution } from '@/lib/os'
@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Spinner } from '@/components/ui/spinner'
 import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
-import { useTRPC } from '@/trpc/client'
+import { useTRPC, useTRPCClient } from '@/trpc/client'
 import { AppRouter } from '@/trpc/router'
 
 import { OsDistroSelector } from './os-distro-selector'
@@ -27,21 +27,24 @@ export function LocalOsSelector() {
 
 function OsSelectorContainer() {
   const trpc = useTRPC()
+  const trpcClient = useTRPCClient()
+  const queryClient = useQueryClient()
   const bmcHosts = useGlobalStore((s) => s.finalBmcHosts)
 
   const manifestPath = useGlobalStore((s) => s.manifestPath)
   const defaultArch = useQuery(
     trpc.connection.bmc.getDefaultArchitecture.queryOptions(bmcHosts, { enabled: !!manifestPath }),
   )
-  const distros = useQuery(
-    manifestPath
-      ? trpc.resource.getDistributions.queryOptions(manifestPath)
-      : {
-          queryKey: trpc.resource.getDistributions.queryKey(manifestPath),
-          queryFn: () => Promise.resolve([]),
-          enabled: false,
-        },
-  )
+  const distros = useQuery({
+    queryKey: trpc.resource.getDistributions.queryKey(manifestPath),
+    queryFn: async ({ signal }) => {
+      if (!manifestPath) throw new Error('未选择配置文件')
+      const result = await trpcClient.resource.getDistributions.query(manifestPath, { signal })
+      result.map((info) => queryClient.setQueryData(trpc.resource.getOsInfo.queryKey(info.osInfoPath), info))
+      return result
+    },
+    enabled: !!manifestPath,
+  })
 
   if (distros.isPending || defaultArch.isPending)
     return (
