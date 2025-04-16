@@ -77,3 +77,17 @@ export async function addFileMap(host: string, path: string) {
   }
   return res2.urls[0]
 }
+
+export async function addDirMap(host: string, path: string) {
+  const dirName = basename(path)
+  const [res1, status1] = await mxc.addDirMap(path, dirName)
+  const [res2] = await mxc.urlSubByHost(`/srv/file/_/${dirName}`, host)
+  if (status1 >= 400) {
+    log.error({ path, status: status1, message: res1 }, '添加目录失败')
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: `目录服务失败，状态码 ${status1}`,
+    })
+  }
+  return res2.urls[0]
+}
