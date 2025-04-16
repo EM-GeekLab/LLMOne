@@ -118,7 +118,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
 function DeploySuccessCallout() {
   return (
     <Callout size="card" variant="success" icon={<CheckCircle2Icon />}>
-      Open WebUI 部署完成
+      模型部署完成
     </Callout>
   )
 }
