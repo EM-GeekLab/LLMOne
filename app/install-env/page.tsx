@@ -1,4 +1,10 @@
-import { AppCardDescription, AppCardHeader, AppCardSection, AppCardTitle } from '@/components/app/app-card'
+import {
+  AppCardContent,
+  AppCardDescription,
+  AppCardHeader,
+  AppCardSection,
+  AppCardTitle,
+} from '@/components/app/app-card'
 import { AppFrame } from '@/components/app/app-frame'
 import { ConnectModeIf, DeployModeIf } from '@/app/_shared/condition'
 import { InstallStoreProvider } from '@/stores/install-store-provider'
@@ -6,6 +12,7 @@ import { InstallStoreProvider } from '@/stores/install-store-provider'
 import { BmcLocalInstallStatusIf } from './condition'
 import { ConfirmCard, ConfirmCardPlaceholder } from './confirm-card'
 import { BmcLocalInstallProvider } from './context'
+import { Footer } from './footer'
 import { InstallPage } from './install-page'
 
 export default function Page() {
@@ -31,7 +38,10 @@ export default function Page() {
                 </AppCardSection>
               </BmcLocalInstallStatusIf>
               <BmcLocalInstallStatusIf status="pending" or={['success', 'hasProgress']}>
-                <InstallPage />
+                <AppCardContent>
+                  <InstallPage />
+                  <Footer />
+                </AppCardContent>
               </BmcLocalInstallStatusIf>
             </BmcLocalInstallProvider>
           </DeployModeIf>
