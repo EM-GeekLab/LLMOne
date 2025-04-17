@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
 import { CheckIcon, XIcon } from 'lucide-react'
 
-import { useFakeProgress } from '@/lib/progress'
+import { useFakeProgress } from '@/lib/progress/fake'
 import { Progress } from '@/components/ui/progress'
 import { RingProgress } from '@/components/ui/ring-progress'
 
