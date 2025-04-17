@@ -8,7 +8,6 @@ import { PlusIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
 import { DescriptionsList } from '@/components/base/descriptions-list'
-import { PasswordInput } from '@/components/base/password-input'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -85,7 +84,7 @@ export function OpenWebuiConfigs() {
 }
 
 function ConfiguredOpenWebui({ config }: { config: StoreOpenWebuiConfig }) {
-  const { port, password, host } = config
+  const { port, name, host } = config
   const remove = useModelStore((s) => s.removeServiceDeployment)
 
   return (
@@ -94,14 +93,14 @@ function ConfiguredOpenWebui({ config }: { config: StoreOpenWebuiConfig }) {
       <DescriptionsList
         entries={[
           {
-            id: 'port',
-            key: '服务端口',
-            value: port,
+            id: 'name',
+            key: '名称',
+            value: name,
           },
           {
-            id: 'password',
-            key: '管理员密码',
-            value: password ? '已设置' : '未设置',
+            id: 'port',
+            key: '端口',
+            value: port,
           },
         ]}
       />
@@ -205,12 +204,12 @@ function ConfigForm({ hostId, onSubmitted }: { hostId?: string; onSubmitted?: ()
         </div>
         <FormField
           control={form.control}
-          name="password"
+          name="name"
           render={({ field: { value = '', ...rest } }) => (
             <FormItem>
-              <FormLabel>管理员密码</FormLabel>
+              <FormLabel>WebUI 名称</FormLabel>
               <FormControl>
-                <PasswordInput value={value} {...rest} />
+                <Input autoComplete="off" value={value} {...rest} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -10,7 +10,7 @@ export function Hostname({ hostId }: { hostId: string }) {
   return (
     <div className="flex items-baseline gap-3">
       <h4 className="text-sm font-medium">{host?.info.system_info.hostname ?? <Skeleton className="h-5 w-32" />}</h4>
-      <div className="text-muted-foreground text-sm">{host?.ip?.address}</div>
+      <div className="text-muted-foreground text-sm">{host?.ip[0]?.addr}</div>
     </div>
   )
 }

@@ -21,10 +21,12 @@ export function ServiceDeployProvider({ children }: { children: ReactNode }) {
   const setDeployProgress = useModelStore((s) => s.setServiceDeployProgress)
 
   const updateProgress = async (config: ServiceConfigType) => {
+    if (!manifestPath) throw new Error('未选择配置文件')
     const modelConfig = storeApi.getState().modelDeploy.config.get(config.host)
+    if (!modelConfig) throw new Error('请先在主机上部署模型')
     setDeployProgress({ service: config.service, host: config.host, status: 'deploying', progress: 0 })
     await trpcClient.model.deployService[config.service]
-      .mutate({ ...config, modelConfig })
+      .mutate({ ...config, modelConfig, manifestPath })
       .then(() =>
         setDeployProgress({
           service: config.service,
