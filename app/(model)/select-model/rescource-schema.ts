@@ -1,4 +1,5 @@
 import { z } from '@/lib/zod'
+import { architecturesEnum } from '@/app/select-os/rescource-schema'
 
 export const resourceModelInfoSchema = z.object({
   metaVersion: z.literal('v1'),
@@ -31,9 +32,10 @@ export const resourceContainerInfoSchema = z.object({
   metaVersion: z.literal('v1-alpha1'),
   repo: z.string(),
   tag: z.array(z.string()),
-  arch: z.string(),
+  arch: architecturesEnum,
   file: z.string(),
   sha256: z.string(),
+  command: z.string().optional(),
 })
 
 export type ResourceContainerInfoType = z.infer<typeof resourceContainerInfoSchema>

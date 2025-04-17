@@ -1,7 +1,7 @@
 import { architectures, distributions } from '@/lib/os'
 import { z } from '@/lib/zod'
 
-const architecturesEnum = z.enum(architectures)
+export const architecturesEnum = z.enum(architectures)
 
 export const resourceManifestSchema = z.object({
   metaVersion: z.literal('v1-alpha1'),
