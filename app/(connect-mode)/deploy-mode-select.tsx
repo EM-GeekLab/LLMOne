@@ -6,8 +6,8 @@ import { Slot } from '@radix-ui/react-slot'
 import { cn } from '@/lib/utils'
 import { CardSelectGroup, CardSelectIndicator, CardSelectItem } from '@/components/base/card-select'
 import { Badge } from '@/components/ui/badge'
-import LocalIcon from '@/icons/computer.svg'
-import OnlineIcon from '@/icons/online-update.svg'
+import LocalIcon from '@/public/icons/computer.svg'
+import OnlineIcon from '@/public/icons/online-update.svg'
 import { DeployMode, useGlobalStore } from '@/stores'
 
 export function DeployModeSelect({ ...props }: ComponentProps<typeof CardSelectGroup>) {
