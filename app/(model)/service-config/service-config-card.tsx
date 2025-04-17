@@ -38,7 +38,7 @@ export function AddedConfigsTitle({ className, ...props }: ComponentProps<'h3'>)
 export function ConfiguredCard({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
-      className={cn('grid grid-cols-[1fr_auto] items-start gap-1 rounded-lg border px-3.5 py-2.5', className)}
+      className={cn('grid grid-cols-[1fr_auto] items-start gap-y-1.5 rounded-lg border px-3.5 py-2.5', className)}
       {...props}
     />
   )
