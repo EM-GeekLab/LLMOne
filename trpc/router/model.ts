@@ -15,7 +15,7 @@ const MODEL_WORK_DIR = '/srv/models'
 export const modelRouter = createRouter({
   deployModel: baseProcedure
     .input(modelDeployConfigSchema.extend({ manifestPath: z.string() }))
-    .mutation(async ({ input: { host, modelPath, port, manifestPath } }) => {
+    .mutation(async ({ input: { host, modelPath, port, apiKey, manifestPath } }) => {
       const config = await readModelInfoAbsolute(modelPath)
 
       const containers = await getContainers(manifestPath)
@@ -40,6 +40,7 @@ export const modelRouter = createRouter({
         SERVED_MODEL_NAME: config.modelId,
         GPU_COUNT: 1,
         MODEL_PORT: port,
+        MODEL_API_KEY: apiKey,
       })
       const postCommands = [`curl -Ls ${JSON.stringify(modelUrl)} | tar x -C "$WORK_DIR"`]
       const command = [...initCommands, ...envCommands, ...postCommands, config.docker.command].join('\n')

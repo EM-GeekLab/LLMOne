@@ -3,9 +3,15 @@ import { ReactNode, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ModelIcon } from '@lobehub/icons'
+import { useClipboard } from '@mantine/hooks'
+import { AlertCircleIcon, CheckIcon, CopyIcon, DicesIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 
+import { generateApiKey } from '@/lib/id'
+import { cn } from '@/lib/utils'
 import { DescriptionsList } from '@/components/base/descriptions-list'
+import { EasyTooltip } from '@/components/base/easy-tooltip'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -39,7 +45,7 @@ export function DeployButton({ model }: { model: ModelInfo }) {
       <DialogTrigger asChild>
         <Button size="sm">部署模型</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="sm:max-w-105">
         <DialogHeader>
           <DialogTitle>模型配置</DialogTitle>
         </DialogHeader>
@@ -103,7 +109,7 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
 
   const form = useForm<ModelDeployConfigType>({
     resolver: zodResolver(modelDeployConfigSchema),
-    defaultValues: { modelPath },
+    defaultValues: { modelPath, apiKey: generateApiKey() },
   })
 
   return (
@@ -156,6 +162,27 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
             )}
           />
         </div>
+        <FormField
+          control={form.control}
+          name="apiKey"
+          render={({ field: { value = '', ...rest } }) => (
+            <FormItem className="basis-[92px]">
+              <FormLabel>API Key</FormLabel>
+              <div className="join join-with-input flex">
+                <FormControl>
+                  <Input className="pr-0" readOnly value={value} {...rest} />
+                </FormControl>
+                <EasyTooltip content="随机生成" asChild>
+                  <Button variant="outline" size="icon" onClick={() => form.setValue('apiKey', generateApiKey())}>
+                    <DicesIcon />
+                  </Button>
+                </EasyTooltip>
+                <CopyButton value={value} />
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">取消</Button>
@@ -164,5 +191,25 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
         </DialogFooter>
       </form>
     </Form>
+  )
+}
+
+function CopyButton({ value }: { value: string }) {
+  const { copy, copied, error } = useClipboard()
+
+  return (
+    <EasyTooltip content={error ? error.message : '复制'} asChild>
+      <Button
+        variant="outline"
+        size="icon"
+        className={cn(error && '!text-destructive', copied && '!text-success')}
+        onClick={() => {
+          copy(value)
+          toast.success('已复制 API Key')
+        }}
+      >
+        {copied ? <CheckIcon /> : error ? <AlertCircleIcon /> : <CopyIcon />}
+      </Button>
+    </EasyTooltip>
   )
 }
