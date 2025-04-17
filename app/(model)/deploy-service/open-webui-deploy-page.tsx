@@ -72,12 +72,12 @@ function HostStatusCard({ hostId }: { hostId: string }) {
         <h4 className="text-base font-medium">
           {host?.info.system_info.hostname ?? <Skeleton className="h-6 w-32" />}
         </h4>
-        <div className="text-muted-foreground text-sm">{host?.ip?.address}</div>
+        <div className="text-muted-foreground text-sm">{host?.ip[0]?.addr}</div>
       </div>
       <div className="col-start-2 row-span-3 pt-1">
         <OpenWebUI.Text size={18} />
       </div>
-      <div className="text-muted-foreground flex items-center gap-2 [&_svg]:size-4">
+      <div className="text-muted-foreground flex items-center gap-2 [&_svg]:size-4 [&_svg]:shrink-0">
         {match(progress.status)
           .with('success', () => (
             <>
@@ -96,7 +96,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
               <AlertCircleIcon className="text-destructive" />
               <div className="text-destructive">部署时发生错误：{progress.error?.message}</div>
               <button
-                className="text-primary hover:text-primary/90 font-medium"
+                className="text-primary hover:text-primary/90 shrink-0 font-medium whitespace-nowrap"
                 onClick={() => deployOneMutation.mutate({ host: hostId, service: 'openWebui' })}
               >
                 重试

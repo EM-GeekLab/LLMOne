@@ -82,7 +82,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
         {model && <ModelIcon type="color" model={model.logoKey} size={32} />}
       </div>
       <div>{model?.displayName ?? <Skeleton className="h-5 w-48" />}</div>
-      <div className="text-muted-foreground flex items-center gap-2 [&_svg]:size-4">
+      <div className="text-muted-foreground flex items-center gap-2 [&_svg]:size-4 [&_svg]:shrink-0">
         {match(progress.status)
           .with('success', () => (
             <>
@@ -101,7 +101,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
               <AlertCircleIcon className="text-destructive" />
               <div className="text-destructive">部署时发生错误：{progress.error?.message}</div>
               <button
-                className="text-primary hover:text-primary/90 font-medium"
+                className="text-primary hover:text-primary/90 shrink-0 font-medium whitespace-nowrap"
                 onClick={() => deployOneMutation.mutate({ host: hostId })}
               >
                 重试
