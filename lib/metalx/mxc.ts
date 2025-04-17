@@ -41,7 +41,7 @@ export function runMxc(staticPath?: string) {
   const childProcess = execFile(
     join('bin', executable),
     [
-      ...(token ? ['-a', token] : []),
+      ...(token ? ['-k', token] : []),
       ...(staticPath ? ['-s', staticPath] : []),
       ...['-p', port],
       ...(process.env.NODE_ENV === 'development' ? ['-v'] : []),
