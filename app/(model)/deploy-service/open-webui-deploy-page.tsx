@@ -60,11 +60,15 @@ function HostsList() {
 
 function HostStatusCard({ hostId }: { hostId: string }) {
   const { data: host } = useHostInfo({ hostId })
+  const config = useModelStore((s) => s.serviceDeploy.config.openWebui.get(hostId))
   const progress = useModelStore((s) => s.serviceDeploy.progress.openWebui.get(hostId))
 
   const { deployOneMutation } = useServiceDeployContext()
 
-  if (!progress) return null
+  if (!progress || !config) return null
+
+  const ipAddr = host?.ip[0]?.addr
+  const url = ipAddr ? `http://${ipAddr}:${config.port}` : undefined
 
   return (
     <div className="grid grid-cols-[1fr_auto] gap-y-1 rounded-xl border px-4 py-3">
@@ -77,12 +81,22 @@ function HostStatusCard({ hostId }: { hostId: string }) {
       <div className="col-start-2 row-span-3 pt-1">
         <OpenWebUI.Text size={18} />
       </div>
-      <div className="text-muted-foreground flex items-center gap-2 [&_svg]:size-4 [&_svg]:shrink-0">
+      <div className="text-muted-foreground flex gap-2 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:translate-y-0.5">
         {match(progress.status)
           .with('success', () => (
             <>
               <CheckIcon className="text-success" />
-              <div className="text-success">部署完成</div>
+              <div className="text-success">
+                <div>部署完成</div>
+                {url && (
+                  <div className="text-foreground mt-1">
+                    服务访问地址：
+                    <a href={url} target="_blank" className="text-primary font-medium hover:underline">
+                      {url}
+                    </a>
+                  </div>
+                )}
+              </div>
             </>
           ))
           .with('deploying', () => (
