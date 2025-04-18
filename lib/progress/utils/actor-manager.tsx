@@ -99,6 +99,7 @@ export class ActorManager {
       const ratio = input.ratio ?? rest / restCount
 
       const controller = PartialProgressController.create({
+        index,
         name,
         ratio,
         completed,

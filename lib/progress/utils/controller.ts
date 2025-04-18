@@ -8,12 +8,14 @@ export class PartialProgressController {
   }
 
   static create({
+    index,
     name,
     ratio,
     completed,
     type,
     initMessage,
   }: {
+    index: number
     name: string
     ratio: number
     completed: number
@@ -21,6 +23,7 @@ export class PartialProgressController {
     initMessage?: string
   }) {
     return new PartialProgressController({
+      index,
       name,
       ratio,
       completed,
@@ -100,9 +103,9 @@ export function registerProgress<Name extends string = string>(inputs: RegisterP
       return result
     })
     .reduce(
-      (acc, input) => {
+      (acc, input, index) => {
         const { name, ratio, completed, type, initMessage } = input
-        acc[name] = PartialProgressController.create({ name, ratio, completed, type, initMessage })
+        acc[name] = PartialProgressController.create({ index, name, ratio, completed, type, initMessage })
         return acc
       },
       {} as Record<Name, PartialProgressController>,

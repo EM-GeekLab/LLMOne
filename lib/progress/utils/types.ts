@@ -1,4 +1,5 @@
 export type PartialProgress = {
+  index: number
   name: string
   ratio: number
   completed: number
