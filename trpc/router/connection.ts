@@ -47,7 +47,7 @@ export const connectionRouter = createRouter({
           const [res] = await mxc.addFileMap(bootstrapPath, bootstrapFile)
           if (!res.result[0].ok) {
             log.error({ bootstrapFile, message: res.result[0].err }, '添加引导文件失败')
-            return new TRPCError({
+            throw new TRPCError({
               code: 'INTERNAL_SERVER_ERROR',
               message: `添加引导文件失败：${res.result[0].err}`,
             })
