@@ -45,6 +45,7 @@
         "cors": "^2.8.5",
         "date-fns": "^4.1.0",
         "embla-carousel-react": "^8.6.0",
+        "event-iterator": "^2.0.0",
         "filesize": "^10.1.6",
         "get-port": "^7.1.0",
         "immer": "^10.1.1",
@@ -1350,6 +1351,8 @@
     "estree-walker": ["estree-walker@3.0.3", "https://registry.npmmirror.com/estree-walker/-/estree-walker-3.0.3.tgz", { "dependencies": { "@types/estree": "^1.0.0" } }, "sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g=="],
 
     "esutils": ["esutils@2.0.3", "https://registry.npmmirror.com/esutils/-/esutils-2.0.3.tgz", {}, "sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g=="],
+
+    "event-iterator": ["event-iterator@2.0.0", "https://registry.npmmirror.com/event-iterator/-/event-iterator-2.0.0.tgz", {}, "sha512-KGft0ldl31BZVV//jj+IAIGCxkvvUkkON+ScH6zfoX+l+omX6001ggyRSpI0Io2Hlro0ThXotswCtfzS8UkIiQ=="],
 
     "eventemitter3": ["eventemitter3@4.0.7", "https://registry.npmmirror.com/eventemitter3/-/eventemitter3-4.0.7.tgz", {}, "sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw=="],
 

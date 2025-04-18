@@ -52,6 +52,7 @@
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
+    "event-iterator": "^2.0.0",
     "filesize": "^10.1.6",
     "get-port": "^7.1.0",
     "immer": "^10.1.1",
