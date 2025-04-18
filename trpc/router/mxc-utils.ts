@@ -67,13 +67,13 @@ export async function executeCommand(host: string, command: string, interval = 2
 
 export async function addFileMap(host: string, path: string) {
   const fileName = basename(path)
-  const [res1, status1] = await mxc.addFileMap(path, fileName)
+  const [res1] = await mxc.addFileMap(path, fileName)
   const [res2] = await mxc.urlSubByHost(`/srv/file/${fileName}`, host)
-  if (status1 >= 400) {
-    log.error({ path, status: status1, message: res1 }, '添加文件失败')
+  if (!res1.result[0].ok) {
+    log.error({ path, message: res1.result[0].err }, '添加文件失败')
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: `文件服务失败，状态码 ${status1}`,
+      message: `文件服务失败：${res1.result[0].err}`,
     })
   }
   return res2.urls[0]
@@ -81,10 +81,10 @@ export async function addFileMap(host: string, path: string) {
 
 export async function addDirMap(host: string, path: string) {
   const dirName = basename(path)
-  const [res1, status1] = await mxc.addDirMap(path, dirName)
+  const [res1] = await mxc.addDirMap(path, dirName)
   const [res2] = await mxc.urlSubByHost(`/srv/file/_/${dirName}`, host)
   if (!res1.result[0].ok) {
-    log.error({ path, status: status1, message: res1 }, '添加目录失败')
+    log.error({ path, message: res1.result[0].err }, '添加目录失败')
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
       message: `目录服务失败：${res1.result[0].err}`,

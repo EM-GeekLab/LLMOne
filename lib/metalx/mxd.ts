@@ -43,9 +43,9 @@ export class MxdManager {
 
   static async create({ hosts, account, network, systemImagePath, packages }: CreateMxdParams) {
     const systemImageFile = basename(systemImagePath)
-    const [, status] = await mxc.addFileMap(systemImagePath, systemImageFile)
-    if (status >= 400) {
-      throw new Error(`系统镜像文件服务失败，状态码 ${status}`)
+    const [res] = await mxc.addFileMap(systemImagePath, systemImageFile)
+    if (!res.result[0].ok) {
+      throw new Error(`系统镜像文件服务失败：${res.result[0].err}`)
     }
     const deployerList = await Promise.all(
       hosts.map(async (host) => {

@@ -15,11 +15,11 @@ export async function generateDriverInstallStepConfig(
   const urls = await Promise.all(
     packages.map(async ({ file }) => {
       const fileName = basename(file)
-      const [res1, status1] = await mxc.addFileMap(file, fileName)
+      const [res1] = await mxc.addFileMap(file, fileName)
       const [res2] = await mxc.urlSubByHost(`/srv/file/${fileName}`, hostId)
-      if (status1 >= 400) {
-        log.error({ file, status: status1, message: res1 }, '添加文件失败')
-        throw new Error(`软件包文件服务失败，状态码 ${status1}`)
+      if (!res1.result[0].ok) {
+        log.error({ file, message: res1.result[0].err }, '添加文件失败')
+        throw new Error(`软件包文件服务失败：${res1.result[0].err}`)
       }
       return res2.urls[0]
     }),

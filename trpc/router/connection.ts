@@ -44,7 +44,14 @@ export const connectionRouter = createRouter({
           const bootstrapPath = await getBootstrapPath(manifestPath, architecture)
           const bootstrapFile = basename(bootstrapPath)
 
-          await mxc.addFileMap(bootstrapPath, bootstrapFile)
+          const [res] = await mxc.addFileMap(bootstrapPath, bootstrapFile)
+          if (!res.result[0].ok) {
+            log.error({ bootstrapFile, message: res.result[0].err }, '添加引导文件失败')
+            return new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: `添加引导文件失败：${res.result[0].err}`,
+            })
+          }
 
           const errors = await bmcClients.map(async ({ defaultId, ip, client }) => {
             const [res, status] = await mxc.urlSubByIp(`srv/file/${bootstrapFile}`, ip)
@@ -59,6 +66,7 @@ export const connectionRouter = createRouter({
 
             try {
               const { status } = await client.bootVirtualMedia(urls[0], defaultId)
+              log.error({ ip, status }, `${ip} 引导失败`)
               if (!status)
                 return new TRPCError({
                   code: 'INTERNAL_SERVER_ERROR',
