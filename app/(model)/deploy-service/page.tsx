@@ -6,7 +6,7 @@ import { OpenWebuiDeployPage } from './open-webui-deploy-page'
 
 export default function Page() {
   return (
-    <AppFrame title="预置服务部署" current="deploy-service">
+    <AppFrame title="预置服务部署" current="service-config">
       <AppCardHeader>
         <AppCardTitle>部署预置服务</AppCardTitle>
       </AppCardHeader>

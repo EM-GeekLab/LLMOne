@@ -20,30 +20,22 @@ export function ServiceDeployProvider({ children }: { children: ReactNode }) {
   const trpcClient = useTRPCClient()
   const setDeployProgress = useModelStore((s) => s.setServiceDeployProgress)
 
-  const updateProgress = async (config: ServiceConfigType) => {
+  const updateProgress = async (config: ServiceConfigType, from?: number) => {
     if (!manifestPath) throw new Error('未选择配置文件')
     const modelConfig = storeApi.getState().modelDeploy.config.get(config.host)
     if (!modelConfig) throw new Error('请先在主机上部署模型')
-    setDeployProgress({ service: config.service, host: config.host, status: 'deploying', progress: 0 })
-    await trpcClient.model.deployService[config.service]
-      .mutate({ ...config, modelConfig, manifestPath })
-      .then(() =>
-        setDeployProgress({
-          service: config.service,
-          host: config.host,
-          status: 'success',
-          progress: 100,
-        }),
-      )
-      .catch((error) =>
-        setDeployProgress({
-          service: config.service,
-          host: config.host,
-          status: 'failed',
-          error,
-          progress: 100,
-        }),
-      )
+    const iter = await trpcClient.model.deployService[config.service].mutate(
+      {
+        ...config,
+        modelConfig,
+        manifestPath,
+        from,
+      },
+      { context: { stream: true } },
+    )
+    for await (const progress of iter) {
+      setDeployProgress({ host: config.host, service: config.service, ...progress })
+    }
   }
 
   const deployMutation = useMutation({
@@ -63,7 +55,8 @@ export function ServiceDeployProvider({ children }: { children: ReactNode }) {
       if (!manifestPath) throw new Error('未选择配置文件')
       const config = storeApi.getState().serviceDeploy.config[service].get(host)
       if (!config) throw new Error('未找到主机')
-      await updateProgress(config)
+      const progress = storeApi.getState().serviceDeploy.progress[service].get(host)
+      await updateProgress(config, progress?.index)
     },
   })
 

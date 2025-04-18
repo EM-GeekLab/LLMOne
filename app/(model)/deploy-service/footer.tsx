@@ -1,5 +1,6 @@
 'use client'
 
+import { isCompleted } from '@/lib/progress/utils'
 import { AppCardFooter } from '@/components/app/app-card'
 import { NavButton } from '@/components/base/nav-button'
 import { NavButtonGuard } from '@/components/base/nav-button-guard'
@@ -10,7 +11,7 @@ import { useServiceDeployContext } from '../service-deploy-provider'
 export function Footer() {
   const { deployMutation } = useServiceDeployContext()
   const isSuccess = useModelStore((s) =>
-    Object.values(s.serviceDeploy.progress).every((progress) => progress.values().every((v) => v.status === 'success')),
+    Object.values(s.serviceDeploy.progress).every((progress) => progress.values().every(isCompleted)),
   )
 
   return (

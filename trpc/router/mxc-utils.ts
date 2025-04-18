@@ -3,6 +3,7 @@ import { basename } from 'path'
 import { TRPCError } from '@trpc/server'
 
 import { mxc } from '@/lib/metalx'
+import { findMatchedIp } from '@/trpc/router/connect-utils'
 
 import { log } from './utils'
 
@@ -15,7 +16,7 @@ export function makeEnvs(envs: Record<string, string | number>) {
   return Object.entries(envs).map(([key, value]) => `export ${key}=${JSON.stringify(value)}`)
 }
 
-export async function executeCommand(host: string, command: string) {
+export async function executeCommand(host: string, command: string, interval = 2000) {
   const [res, status] = await mxc.commandExec(host, command)
   if (!res.ok) {
     throw new TRPCError({
@@ -24,7 +25,7 @@ export async function executeCommand(host: string, command: string) {
     })
   }
 
-  const task = await mxc.blockUntilTaskComplete(host, res.task_id, 2000)
+  const task = await mxc.blockUntilTaskComplete(host, res.task_id, interval)
   if (!task.ok) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
@@ -102,4 +103,17 @@ export async function getHostInfo(host: string) {
     })
   }
   return res.info
+}
+
+export async function getHostIp(host: string) {
+  const hostInfo = await getHostInfo(host)
+  const matchIps = findMatchedIp(hostInfo)
+  const matchedAddr = matchIps[0]?.addr
+  if (!matchedAddr) {
+    throw new TRPCError({
+      message: '无法获取主机的 IP 地址',
+      code: 'BAD_REQUEST',
+    })
+  }
+  return matchedAddr
 }

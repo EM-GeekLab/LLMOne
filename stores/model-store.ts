@@ -2,6 +2,7 @@ import { enableMapSet } from 'immer'
 import { immer } from 'zustand/middleware/immer'
 import { createStore } from 'zustand/vanilla'
 
+import { PartialProgress } from '@/lib/progress/utils'
 import { ModelDeployConfigType } from '@/app/(model)/select-model/schemas'
 import { OpenWebuiConfigType } from '@/app/(model)/service-config/schemas'
 
@@ -9,10 +10,7 @@ enableMapSet()
 
 type DeployProgress = {
   host: string
-  status: 'idle' | 'deploying' | 'success' | 'failed'
-  progress: number
-  error?: Error
-}
+} & PartialProgress
 
 export type StoreOpenWebuiConfig = { service: 'openWebui' } & OpenWebuiConfigType
 export type StoreOpenWebuiProgress = { service: 'openWebui' } & DeployProgress

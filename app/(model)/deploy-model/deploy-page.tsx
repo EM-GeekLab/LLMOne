@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { AlertCircleIcon, CheckCircle2Icon, CheckIcon } from 'lucide-react'
 import { match } from 'ts-pattern'
 
+import { isCompleted, useProgress } from '@/lib/progress/utils'
 import { AppCardSection } from '@/components/app/app-card'
 import { Callout } from '@/components/base/callout'
 import { Button } from '@/components/ui/button'
@@ -18,7 +19,7 @@ import { useHostInfo } from '../use-host-info'
 
 export function DeployPage() {
   const { deployMutation } = useModelDeployContext()
-  const isSuccess = useModelStore((s) => s.modelDeploy.progress.values().every((v) => v.status === 'success'))
+  const isSuccess = useModelStore((s) => s.modelDeploy.progress.values().every(isCompleted))
 
   if (deployMutation.isError) {
     return (
@@ -64,7 +65,8 @@ function HostStatusCard({ hostId }: { hostId: string }) {
   const { data: model } = useQuery(
     trpc.resource.getModelInfo.queryOptions(deployment!.modelPath, { enabled: !!deployment }),
   )
-  const progress = useModelStore((s) => s.modelDeploy.progress.get(hostId))
+  const deployProgress = useModelStore((s) => s.modelDeploy.progress.get(hostId))
+  const progress = useProgress(deployProgress)
 
   const { deployOneMutation } = useModelDeployContext()
 
@@ -84,22 +86,22 @@ function HostStatusCard({ hostId }: { hostId: string }) {
       <div>{model?.displayName ?? <Skeleton className="h-5 w-48" />}</div>
       <div className="text-muted-foreground flex items-center gap-2 [&_svg]:size-4 [&_svg]:shrink-0">
         {match(progress.status)
-          .with('success', () => (
+          .with('done', () => (
             <>
               <CheckIcon className="text-success" />
-              <div className="text-success">部署完成</div>
+              <div className="text-success">{progress.message}</div>
             </>
           ))
-          .with('deploying', () => (
+          .with('running', () => (
             <>
               <Spinner />
-              <div>模型部署中，这可能需要几十分钟到几个小时，取决于模型大小和网速</div>
+              <div>{progress.message}</div>
             </>
           ))
-          .with('failed', () => (
+          .with('error', () => (
             <>
               <AlertCircleIcon className="text-destructive" />
-              <div className="text-destructive">部署时发生错误：{progress.error?.message}</div>
+              <div className="text-destructive">{progress.message}</div>
               <button
                 className="text-primary hover:text-primary/90 shrink-0 font-medium whitespace-nowrap"
                 onClick={() => deployOneMutation.mutate({ host: hostId })}

@@ -25,11 +25,13 @@ export function ModelDeployProvider({ children }: { children: ReactNode }) {
       const entries = storeApi.getState().modelDeploy.config.values()
       await Promise.all(
         entries.map(async (config) => {
-          setDeployProgress({ host: config.host, status: 'deploying', progress: 0 })
-          await trpcClient.model.deployModel
-            .mutate({ ...config, manifestPath })
-            .then(() => setDeployProgress({ host: config.host, status: 'success', progress: 100 }))
-            .catch((error) => setDeployProgress({ host: config.host, status: 'failed', error, progress: 100 }))
+          const iter = await trpcClient.model.deployModel.mutate(
+            { ...config, manifestPath },
+            { context: { stream: true } },
+          )
+          for await (const progress of iter) {
+            setDeployProgress({ host: config.host, ...progress })
+          }
         }),
       )
     },
@@ -39,12 +41,15 @@ export function ModelDeployProvider({ children }: { children: ReactNode }) {
     mutationFn: async ({ host }: { host: string }) => {
       if (!manifestPath) throw new Error('未选择配置文件')
       const config = storeApi.getState().modelDeploy.config.get(host)
+      const progress = storeApi.getState().modelDeploy.progress.get(host)
       if (!config) throw new Error('未找到主机')
-      setDeployProgress({ host, status: 'deploying', progress: 0 })
-      await trpcClient.model.deployModel
-        .mutate({ ...config, manifestPath })
-        .then(() => setDeployProgress({ host, status: 'success', progress: 100 }))
-        .catch((error) => setDeployProgress({ host, status: 'failed', error, progress: 100 }))
+      const iter = await trpcClient.model.deployModel.mutate(
+        { ...config, manifestPath, from: progress?.index },
+        { context: { stream: true } },
+      )
+      for await (const progress of iter) {
+        setDeployProgress({ host, ...progress })
+      }
     },
   })
 

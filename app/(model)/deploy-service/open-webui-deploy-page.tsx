@@ -4,22 +4,20 @@ import { OpenWebUI } from '@lobehub/icons'
 import { AlertCircleIcon, CheckCircle2Icon, CheckIcon } from 'lucide-react'
 import { match } from 'ts-pattern'
 
+import { isCompleted, useProgress } from '@/lib/progress/utils'
 import { AppCardSection } from '@/components/app/app-card'
 import { Callout } from '@/components/base/callout'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
-import { useServiceDeployContext } from '@/app/(model)/service-deploy-provider'
 import { useModelStore } from '@/stores/model-store-provider'
 
-import { useModelDeployContext } from '../model-deploy-provider'
+import { useServiceDeployContext } from '../service-deploy-provider'
 import { useHostInfo } from '../use-host-info'
 
 export function OpenWebuiDeployPage() {
-  const { deployMutation } = useModelDeployContext()
-  const isSuccess = useModelStore((s) =>
-    s.serviceDeploy.progress.openWebui.values().every((v) => v.status === 'success'),
-  )
+  const { deployMutation } = useServiceDeployContext()
+  const isSuccess = useModelStore((s) => s.serviceDeploy.progress.openWebui.values().every(isCompleted))
 
   if (deployMutation.isError) {
     return (
@@ -61,7 +59,8 @@ function HostsList() {
 function HostStatusCard({ hostId }: { hostId: string }) {
   const { data: host } = useHostInfo({ hostId })
   const config = useModelStore((s) => s.serviceDeploy.config.openWebui.get(hostId))
-  const progress = useModelStore((s) => s.serviceDeploy.progress.openWebui.get(hostId))
+  const deployProgress = useModelStore((s) => s.serviceDeploy.progress.openWebui.get(hostId))
+  const progress = useProgress(deployProgress)
 
   const { deployOneMutation } = useServiceDeployContext()
 
@@ -83,11 +82,11 @@ function HostStatusCard({ hostId }: { hostId: string }) {
       </div>
       <div className="text-muted-foreground flex gap-2 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:translate-y-0.5">
         {match(progress.status)
-          .with('success', () => (
+          .with('done', () => (
             <>
               <CheckIcon className="text-success" />
               <div className="text-success">
-                <div>部署完成</div>
+                <div>{progress.message}</div>
                 {url && (
                   <div className="text-foreground mt-1">
                     服务访问地址：
@@ -99,16 +98,16 @@ function HostStatusCard({ hostId }: { hostId: string }) {
               </div>
             </>
           ))
-          .with('deploying', () => (
+          .with('running', () => (
             <>
               <Spinner />
-              <div>正在部署 Open WebUI</div>
+              <div>{progress.message}</div>
             </>
           ))
-          .with('failed', () => (
+          .with('error', () => (
             <>
               <AlertCircleIcon className="text-destructive" />
-              <div className="text-destructive">部署时发生错误：{progress.error?.message}</div>
+              <div className="text-destructive">{progress.message}</div>
               <button
                 className="text-primary hover:text-primary/90 shrink-0 font-medium whitespace-nowrap"
                 onClick={() => deployOneMutation.mutate({ host: hostId, service: 'openWebui' })}
@@ -117,7 +116,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
               </button>
             </>
           ))
-          .with('idle', () => <div>等待部署</div>)
+          .with('idle', () => <div>{progress.message}</div>)
           .exhaustive()}
       </div>
     </div>
