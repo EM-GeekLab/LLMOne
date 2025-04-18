@@ -82,7 +82,7 @@ export async function readModelInfo(path: string) {
 }
 
 export async function readModelInfoAbsolute(path: string) {
-  return addAbsolutePaths(await readModelInfo(path), dirname(path), ['modelDir', 'logoFile'])
+  return addAbsolutePaths(await readModelInfo(path), dirname(path), ['metaLinkFile', 'logoFile'])
 }
 
 export async function getModels(manifestPath: string) {

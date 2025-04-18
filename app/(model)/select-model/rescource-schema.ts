@@ -17,8 +17,8 @@ export const resourceModelInfoSchema = z.object({
   parameters: z.number(),
   weightType: z.enum(['fp16', 'bf16', 'fp8', 'int8', 'int4']),
   storageSize: z.number(),
-  modelDir: z.string(),
-  filesSha256: z.array(z.object({ file: z.string(), sha256: z.string() })),
+  metaLinkFile: z.string(),
+  sha256: z.string(),
   docker: z.object({
     image: z.string().default('vllm/vllm-openai'),
     tag: z.string().default('latest'),
