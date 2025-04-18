@@ -52,6 +52,7 @@
         "input-otp": "^1.4.2",
         "jotai": "^2.12.3",
         "lucide-react": "^0.487.0",
+        "maria2": "^0.4.0",
         "nanoid": "^5.1.5",
         "next": "15.3.0",
         "next-themes": "^0.4.6",
@@ -1709,6 +1710,8 @@
     "lucide-react": ["lucide-react@0.487.0", "https://registry.npmmirror.com/lucide-react/-/lucide-react-0.487.0.tgz", { "peerDependencies": { "react": "^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-aKqhOQ+YmFnwq8dWgGjOuLc8V1R9/c/yOd+zDY4+ohsR2Jo05lSGc3WsstYPIzcTpeosN7LoCkLReUUITvaIvw=="],
 
     "make-dir": ["make-dir@3.1.0", "https://registry.npmmirror.com/make-dir/-/make-dir-3.1.0.tgz", { "dependencies": { "semver": "^6.0.0" } }, "sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw=="],
+
+    "maria2": ["maria2@0.4.0", "https://registry.npmmirror.com/maria2/-/maria2-0.4.0.tgz", {}, "sha512-jQ9yezKDaSeiy7SZRA8zMAYkFyfx3yoeB/lhcOSQsoGf4YyVaPDopP+dEU6HWNJwK2Oo/rmgqTb5Na1gJcLtrg=="],
 
     "markdown-extensions": ["markdown-extensions@2.0.0", "https://registry.npmmirror.com/markdown-extensions/-/markdown-extensions-2.0.0.tgz", {}, "sha512-o5vL7aDWatOTX8LzaS1WMoaoxIiLRQJuIKKe2wAw6IeULDHaqbiqiggmx+pKvZDb1Sj+pE46Sn1T7lCqfFtg1Q=="],
 
