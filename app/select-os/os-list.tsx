@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { OsArchitecture, OsDistribution } from '@/lib/os'
+import { OsDistribution, OsFullArchitecture } from '@/lib/os'
 import { DistroLogo } from '@/components/base/distro-logo'
 
 export type OsDistributionInfo = {
@@ -47,7 +47,7 @@ export type OsVersionInfo = {
   value: string
   description?: string
   tags?: string[]
-  architectures?: OsArchitecture[]
+  architectures?: OsFullArchitecture[]
   releaseDate?: Date
   endOfLife?: Date
   recommended?: boolean
