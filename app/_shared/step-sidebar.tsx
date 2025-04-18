@@ -27,7 +27,7 @@ const MODE: Record<string, { title: string; id: StepId }[]> = {
     { title: '模型选择', id: 'select-model' },
     { title: '预置服务配置', id: 'service-config' },
     { title: '完成部署', id: 'finish' },
-    { title: '性能测试', id: 'performance-test' },
+    // { title: '性能测试', id: 'performance-test' },
   ],
   ssh: [
     { title: '部署准备', id: 'connect-mode' },
@@ -36,7 +36,7 @@ const MODE: Record<string, { title: string; id: StepId }[]> = {
     { title: '模型选择', id: 'select-model' },
     { title: '预置服务配置', id: 'service-config' },
     { title: '完成部署', id: 'finish' },
-    { title: '性能测试', id: 'performance-test' },
+    // { title: '性能测试', id: 'performance-test' },
   ],
 }
 
