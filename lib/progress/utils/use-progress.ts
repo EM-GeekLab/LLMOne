@@ -10,19 +10,24 @@ export type UseProgressResult = {
   progress: number
 }
 
-export function useProgress(progress: PartialProgress): UseProgressResult {
+export function useProgress(progress?: PartialProgress): UseProgressResult | undefined {
   const extracted = extractProgress(progress)
-  const { message, status, min, max, enableFake, ratio, progress: progressValue } = extracted
 
-  const progressFakeValue = useInternalFakeProgress({
-    min,
-    max,
-    enabled: enableFake,
-    isDone: status === 'done',
-    isError: status === 'error',
-    k: ratio,
-  })
+  const progressFakeValue = useInternalFakeProgress(
+    extracted
+      ? {
+          min: extracted.min,
+          max: extracted.max,
+          enabled: extracted.enableFake,
+          isDone: extracted.status === 'done',
+          isError: extracted.status === 'error',
+          k: extracted.ratio,
+        }
+      : undefined,
+  )
 
+  if (!extracted) return undefined
+  const { message, status, enableFake, progress: progressValue } = extracted
   return {
     status,
     message,
@@ -51,7 +56,9 @@ export type ExtractProgressResult = {
     }
 )
 
-export function extractProgress(progress: PartialProgress): ExtractProgressResult {
+export function extractProgress(progress?: PartialProgress): ExtractProgressResult | undefined {
+  if (!progress) return undefined
+
   const { message, status, ratio, completed } = progress
 
   if (progress.type === 'real') {
@@ -93,13 +100,14 @@ export function extractProgress(progress: PartialProgress): ExtractProgressResul
 type UseFakeProgressParams = {
   min?: number
   max?: number
-  enabled: boolean
+  enabled?: boolean
   k?: number
-  isError: boolean
-  isDone: boolean
+  isError?: boolean
+  isDone?: boolean
 }
 
-function useInternalFakeProgress({ min = 0, max, k, enabled, isError, isDone }: UseFakeProgressParams) {
+function useInternalFakeProgress(params: UseFakeProgressParams = {}) {
+  const { min = 0, max, k, enabled = false, isError = false, isDone = false } = params
   const [fakeValue, setFakeValue] = useState(min)
 
   const fakeProgress = useMemo(
