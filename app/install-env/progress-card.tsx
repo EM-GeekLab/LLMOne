@@ -22,7 +22,7 @@ export function ProgressCardTitle({ className, children, ...props }: ComponentPr
 
 export function ProgressCardDescription({ className, children, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('text-muted-foreground text-sm', className)} {...props}>
+    <div className={cn('text-muted-foreground flex gap-2 text-sm', className)} {...props}>
       {children}
     </div>
   )

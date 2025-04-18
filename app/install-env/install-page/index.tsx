@@ -5,10 +5,10 @@ import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
+import { DriverInstallStep, SystemInstallStep } from '@/lib/metalx'
 import { createSafeContext } from '@/lib/react/create-safe-context'
 import { cn } from '@/lib/utils'
 import { AppCardSection, AppCardTitle } from '@/components/app/app-card'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { HostConfigType } from '@/app/host-info/schemas'
 import { useBmcLocalInstallContext } from '@/app/install-env/context'
@@ -50,9 +50,6 @@ export function HostInstallPage({ hostId }: { hostId: string }) {
       <AppCardSection>
         <AppCardTitle className="text-base">日志</AppCardTitle>
         <LogDisplay />
-        <div className="sr-only">
-          <RetryButton />
-        </div>
       </AppCardSection>
     </InstallPageContext.Provider>
   )
@@ -74,6 +71,7 @@ function SystemInstallCard() {
       <FakeProgressBar progress={progress} />
       <ProgressCardDescription>
         <FormatProgress stage="system" progress={progress} />
+        {progress && !progress?.ok && <RetryButton stage="system" step={progress.step} />}
       </ProgressCardDescription>
     </ProgressCard>
   )
@@ -94,6 +92,7 @@ function DriverInstallCard() {
         ) : (
           <FormatProgress stage="driver" progress={progress} />
         )}
+        {progress && !progress?.ok && <RetryButton stage="driver" step={progress.step} />}
       </ProgressCardDescription>
     </ProgressCard>
   )
@@ -121,17 +120,20 @@ function LogDisplay() {
   )
 }
 
-function RetryButton() {
-  // Warning: this button is for debug only
+function RetryButton({
+  stage,
+  step,
+}: { stage: 'system'; step?: SystemInstallStep } | { stage: 'driver'; step?: DriverInstallStep }) {
   const { hostId } = InstallPageContext.useContext()
-  const { retryMutation } = useBmcLocalInstallContext()
+  const { retry } = useBmcLocalInstallContext()
   return (
-    <Button
-      onClick={() => {
-        retryMutation.mutate({ hostId, stage: 'system', step: 'complete' })
-      }}
+    <button
+      className="text-primary hover:text-primary/90 shrink-0 font-medium whitespace-nowrap"
+      onClick={() =>
+        step ? (stage === 'driver' ? retry({ hostId, stage, step }) : retry({ hostId, stage, step })) : undefined
+      }
     >
-      重试安装
-    </Button>
+      重试
+    </button>
   )
 }
