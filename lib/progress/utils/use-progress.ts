@@ -10,6 +10,10 @@ export type UseProgressResult = {
   progress: number
 }
 
+export function isCompleted(progress: PartialProgress) {
+  return progress.completed + progress.ratio >= 100 && progress.status === 'done'
+}
+
 export function useProgress(progress?: PartialProgress): UseProgressResult | undefined {
   const extracted = extractProgress(progress)
 
