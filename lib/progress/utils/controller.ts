@@ -7,12 +7,25 @@ export class PartialProgressController {
     this.value = value
   }
 
-  static create(ratio: number, completed: number, type: 'fake' | 'real', initMessage?: string) {
+  static create({
+    name,
+    ratio,
+    completed,
+    type,
+    initMessage,
+  }: {
+    name: string
+    ratio: number
+    completed: number
+    type: 'fake' | 'real'
+    initMessage?: string
+  }) {
     return new PartialProgressController({
+      name,
       ratio,
       completed,
       status: 'idle',
-      idleMessage: initMessage,
+      message: initMessage,
       type,
       progress: type === 'real' ? 0 : undefined,
     })
@@ -20,7 +33,7 @@ export class PartialProgressController {
 
   trigger(message: string, progress?: number) {
     this.value.status = 'running'
-    this.value.runningMessage = message
+    this.value.message = message
     if (this.value.type === 'real') {
       this.value.progress = progress
     }
@@ -29,7 +42,7 @@ export class PartialProgressController {
 
   done(message: string) {
     this.value.status = 'done'
-    this.value.doneMessage = message
+    this.value.message = message
     if (this.value.type === 'real') {
       this.value.progress = 100
     }
@@ -38,7 +51,7 @@ export class PartialProgressController {
 
   error(message: string) {
     this.value.status = 'error'
-    this.value.errorMessage = message
+    this.value.message = message
     return this.toSerializable()
   }
 
@@ -78,16 +91,18 @@ export function registerProgress<Name extends string = string>(inputs: RegisterP
   return inputs
     .map((input) => {
       const ratio = input.ratio ?? rest / restCount
-      return {
+      const result = {
         ...input,
         ratio,
-        completed: (completed += ratio),
+        completed,
       }
+      completed += ratio
+      return result
     })
     .reduce(
       (acc, input) => {
         const { name, ratio, completed, type, initMessage } = input
-        acc[name] = PartialProgressController.create(ratio, completed, type, initMessage)
+        acc[name] = PartialProgressController.create({ name, ratio, completed, type, initMessage })
         return acc
       },
       {} as Record<Name, PartialProgressController>,

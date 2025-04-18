@@ -18,8 +18,9 @@ export type ActorManagerCreateOptions = {
   errorMessage?: string
 }
 
-export type ActorCreateParams<Name extends string = string, Result = unknown> = {
-  name: Name
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ActorCreateParams<Result = any> = {
+  name: string
   ratio?: number
   initMessage?: string
   runningMessage?: string
@@ -29,7 +30,11 @@ export type ActorCreateParams<Name extends string = string, Result = unknown> = 
   formatError?: (error: Error) => string
 }
 
-type Actor<Name extends string = string, Result = unknown> = ActorCreateParams<Name, Result> & {
+export function createActor<Result>(params: ActorCreateParams<Result>): ActorCreateParams<Result> {
+  return params
+}
+
+type Actor = ActorCreateParams & {
   ratio: number
   index: number
   completed: number
@@ -89,29 +94,36 @@ export class ActorManager {
 
     let completed = 0
     this.actors = actors.map((input, index) => {
-      const { type, initMessage } = input
+      const { name, type, initMessage } = input
       const ratio = input.ratio ?? rest / restCount
-      completed += ratio
-      const controller = PartialProgressController.create(
+
+      const controller = PartialProgressController.create({
+        name,
         ratio,
         completed,
         type,
-        initMessage ?? this.messages.init ?? '等待执行',
-      )
-      return {
+        initMessage: initMessage ?? this.messages.init ?? '等待执行',
+      })
+      const result = {
         ...input,
         ratio,
         completed,
         index,
         controller,
       }
+      completed += ratio
+      return result
     })
   }
 
-  private async *runActor(actor: Actor): AsyncGenerator<PartialProgress> {
-    return new EventIterator<PartialProgress>((queue) => {
-      const { push, stop, fail } = queue
-      push(actor.controller.trigger(actor.runningMessage ?? this.messages.running ?? '正在执行'))
+  private runActor(actor: Actor): EventIterator<PartialProgress> {
+    return new EventIterator<PartialProgress>(({ push, stop, fail }) => {
+      push(
+        actor.controller.trigger(
+          actor.runningMessage ?? this.messages.running ?? '正在执行',
+          actor.type === 'real' ? 0 : undefined,
+        ),
+      )
       actor
         .execute({
           onProgress: (message, progress) => {

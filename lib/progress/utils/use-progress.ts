@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { match } from 'ts-pattern'
 
 import { FakeProgress } from '@/lib/progress/fake'
 
@@ -13,9 +12,7 @@ export type UseProgressResult = {
 
 export function useProgress(progress: PartialProgress): UseProgressResult {
   const extracted = extractProgress(progress)
-  const { message, status, min, max, enableFake, ratio, completed, progress: partialProgressValue = 0 } = extracted
-
-  const progressValue = completed + (ratio / 100) * partialProgressValue
+  const { message, status, min, max, enableFake, ratio, progress: progressValue } = extracted
 
   const progressFakeValue = useInternalFakeProgress({
     min,
@@ -54,34 +51,29 @@ export type ExtractProgressResult = {
     }
 )
 
-function extractProgress(progress: PartialProgress): ExtractProgressResult {
-  const message = match(progress)
-    .with({ status: 'idle' }, (p) => p.idleMessage)
-    .with({ status: 'running' }, (p) => p.runningMessage)
-    .with({ status: 'done' }, (p) => p.doneMessage)
-    .with({ status: 'error' }, (p) => p.errorMessage)
-    .exhaustive()
+export function extractProgress(progress: PartialProgress): ExtractProgressResult {
+  const { message, status, ratio, completed } = progress
 
   if (progress.type === 'real') {
     return {
       type: 'real',
       message,
-      status: progress.status,
-      progress: progress.progress ?? 0,
-      ratio: progress.ratio,
-      completed: progress.completed,
+      status,
+      progress: progress.progress ? completed + (ratio / 100) * progress.progress : 0,
+      ratio,
+      completed,
       enableFake: false,
     }
   }
 
-  if (progress.status === 'idle' || progress.status === 'done') {
+  if (status === 'idle' || status === 'done') {
     return {
       type: 'fake',
       message,
-      status: progress.status,
-      progress: progress.status === 'done' ? 100 : 0,
-      ratio: progress.ratio,
-      completed: progress.completed,
+      status,
+      progress: status === 'done' ? completed + ratio : completed,
+      ratio,
+      completed,
       enableFake: false,
     }
   }
@@ -89,11 +81,11 @@ function extractProgress(progress: PartialProgress): ExtractProgressResult {
   return {
     type: 'fake',
     message,
-    status: progress.status,
-    min: progress.completed,
-    max: progress.completed + progress.ratio,
-    ratio: progress.ratio,
-    completed: progress.completed,
+    status,
+    min: completed,
+    max: completed + ratio,
+    ratio,
+    completed,
     enableFake: true,
   }
 }
