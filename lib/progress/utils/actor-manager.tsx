@@ -7,15 +7,15 @@ import { PartialProgressController } from './controller'
 import { PartialProgress } from './types'
 
 export type ActorParams = {
-  onProgress: (message: string, progress?: number) => void
+  onProgress: (progress?: number, message?: string) => void
 }
 
 export type ActorManagerCreateOptions = {
   module?: string
-  initMessage?: string
-  runningMessage?: string
-  completedMessage?: string
-  errorMessage?: string
+  formatInit?: (name: string) => string
+  formatRunning?: (name: string, progress?: number) => string
+  formatCompleted?: (name: string) => string
+  formatError?: (name: string, error: Error) => string
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,6 +26,7 @@ export type ActorCreateParams<Result = any> = {
   runningMessage?: string
   type: 'fake' | 'real'
   execute: (params: ActorParams) => Promise<Result>
+  formatProgress?: (progress: number) => string
   formatResult?: (result: Result) => string
   formatError?: (error: Error) => string
 }
@@ -61,21 +62,21 @@ export class ActorManager {
   readonly actors: Actor[] = []
   readonly log: Logger
   readonly messages: {
-    init?: string
-    running?: string
-    completed?: string
-    error?: string
+    init?: (name: string) => string
+    running?: (name: string, progress?: number) => string
+    completed?: (name: string) => string
+    error?: (name: string, error: Error) => string
   }
 
   constructor(actors: ActorCreateParams[], options: ActorManagerCreateOptions = {}) {
-    const { module = 'actor-manager', initMessage, runningMessage, completedMessage, errorMessage } = options
+    const { module = 'actor-manager', formatInit, formatRunning, formatCompleted, formatError } = options
     this.log = logger.child({ module })
 
     this.messages = {
-      init: initMessage,
-      running: runningMessage,
-      completed: completedMessage,
-      error: errorMessage,
+      init: formatInit,
+      running: formatRunning,
+      completed: formatCompleted,
+      error: formatError,
     }
 
     const [ratiosSum, hasRatiosCount] = actors.reduce(
@@ -102,7 +103,7 @@ export class ActorManager {
         ratio,
         completed,
         type,
-        initMessage: initMessage ?? this.messages.init ?? '等待执行',
+        initMessage: initMessage ?? this.messages.init?.(name) ?? '等待执行',
       })
       const result = {
         ...input,
@@ -120,18 +121,30 @@ export class ActorManager {
     return new EventIterator<PartialProgress>(({ push, stop, fail }) => {
       push(
         actor.controller.trigger(
-          actor.runningMessage ?? this.messages.running ?? '正在执行',
+          actor.runningMessage ?? this.messages.running?.(actor.name) ?? '正在执行',
           actor.type === 'real' ? 0 : undefined,
         ),
       )
       actor
         .execute({
-          onProgress: (message, progress) => {
-            push(actor.controller.trigger(message, progress))
+          onProgress: (progress, message) => {
+            if (actor.type === 'real') {
+              push(
+                actor.controller.trigger(
+                  message ??
+                    (progress ? actor.formatProgress?.(progress) : undefined) ??
+                    this.messages.running?.(actor.name, progress) ??
+                    '正在执行',
+                  progress,
+                ),
+              )
+              return
+            }
+            push(actor.controller.trigger(message ?? this.messages.running?.(actor.name) ?? '正在执行'))
           },
         })
         .then((res) => {
-          push(actor.controller.done(actor.formatResult?.(res) ?? this.messages.completed ?? '完成'))
+          push(actor.controller.done(actor.formatResult?.(res) ?? this.messages.completed?.(actor.name) ?? '完成'))
           stop()
         })
         .catch((err) => {
@@ -141,7 +154,7 @@ export class ActorManager {
               : typeof err === 'string'
                 ? new Error(err)
                 : new Error('执行失败', { cause: err })
-          push(actor.controller.error(actor.formatError?.(error) ?? this.messages.error ?? '失败'))
+          push(actor.controller.error(actor.formatError?.(error) ?? this.messages.error?.(actor.name, error) ?? '失败'))
           fail(new ActorError(error, actor.name))
         })
     })
