@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   logging: {
     incomingRequests: false,
   },
+  trailingSlash: true,
   serverExternalPackages: ['pino', 'pino-pretty'],
   webpack: (config) => {
     // Grab the existing rule that handles SVG imports
