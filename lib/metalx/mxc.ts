@@ -68,7 +68,7 @@ export function runMxc(staticPath?: string) {
       .map((v: string) => log.error(v))
   })
   childProcess.on('spawn', () => {
-    log.info(`Starting mxc${staticPath ? ` with static path ${staticPath}` : ''}, port ${port}`)
+    log.info({ endpoint, token }, `Starting mxc${staticPath ? ` with static path ${staticPath}` : ''}, port ${port}`)
   })
   childProcess.on('exit', (code) => {
     log.info(`Process exited with code: ${code}`)
