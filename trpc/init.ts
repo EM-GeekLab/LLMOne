@@ -27,9 +27,9 @@ const baseProcedure = t.procedure.use(async ({ getRawInput, type, path, next }) 
 
   if (result.ok) {
     if (type === 'query') {
-      log.info(info, text)
+      log.debug(info, text)
     } else {
-      log.info(text)
+      log.debug(text)
     }
   } else {
     const { code, message } = result.error
