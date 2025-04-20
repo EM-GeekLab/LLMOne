@@ -39,11 +39,6 @@ export interface DownloadStatus {
 
 /**
  * 使用aria2下载指定URL的文件
- * @param fileUrl 要下载的文件的URL
- * @param rpcUrl Aria2 RPC服务器的HTTP(S)地址
- * @param downloadDir 可选的下载目录
- * @param options 可选的下载选项，包括进度回调和检查间隔
- * @returns Promise<DownloadStatus> 下载结果状态
  */
 export async function downloadFile(
   fileUrl: string,
@@ -52,7 +47,7 @@ export async function downloadFile(
   options: DownloadOptions = {},
 ): Promise<DownloadStatus> {
   const { checkInterval = 3000, onProgress = async () => undefined } = options
-  const config: Required<DownloadOptions> = { checkInterval, onProgress };
+  const config: Required<DownloadOptions> = { checkInterval, onProgress }
   const conn = await open(createHTTP(rpcUrl))
   try {
     const gid = await aria2.addUri(conn, [fileUrl], {
@@ -65,13 +60,10 @@ export async function downloadFile(
 }
 
 /**
- * 获取单个任务的状态 (这个函数在原始代码中已提供签名，这里提供实现)
- * @param conn Maria2 连接对象
- * @param gid 任务的 GID
- * @returns Promise<TaskStatus> 任务状态信息
+ * 获取单个任务的状态
  */
 export async function getTaskStatus(conn: Conn, gid: string): Promise<TaskStatus> {
-  return await aria2.tellStatus(conn, gid);
+  return await aria2.tellStatus(conn, gid)
 }
 
 /**
