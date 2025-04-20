@@ -1,8 +1,10 @@
 import { basename } from 'path'
 
 import { TRPCError } from '@trpc/server'
+import { match } from 'ts-pattern'
 
 import { mxc } from '@/lib/metalx'
+import { HostExtraInfo } from '@/sdk/mxlite/types'
 import { findMatchedIp } from '@/trpc/router/connect-utils'
 
 import { log } from './utils'
@@ -105,8 +107,8 @@ export async function getHostInfo(host: string) {
   return res.info
 }
 
-export async function getHostIp(host: string) {
-  const hostInfo = await getHostInfo(host)
+export async function getHostIp(host: string | HostExtraInfo) {
+  const hostInfo = typeof host === 'string' ? await getHostInfo(host) : host
   const matchIps = findMatchedIp(hostInfo)
   const matchedAddr = matchIps[0]?.addr
   if (!matchedAddr) {
@@ -116,4 +118,12 @@ export async function getHostIp(host: string) {
     })
   }
   return matchedAddr
+}
+
+export async function getHostArch(host: string | HostExtraInfo) {
+  const hostInfo = typeof host === 'string' ? await getHostInfo(host) : host
+  return match(hostInfo.system_info.uts.machine.toLowerCase())
+    .with('x86_64', () => 'x86_64')
+    .with('aarch64', 'arm64', () => 'ARM64')
+    .otherwise((v) => v)
 }

@@ -10,7 +10,7 @@ import { openWebuiConfigSchema } from '@/app/(model)/service-config/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
 import { applyDockerImage } from './docker-utils'
-import { addDirMap, addFileMap, executeCommand, getHostIp, makeEnvs } from './mxc-utils'
+import { addDirMap, addFileMap, executeCommand, getHostArch, getHostInfo, getHostIp, makeEnvs } from './mxc-utils'
 import { getContainers, readModelInfo, readModelInfoAbsolute } from './resource-utils'
 
 const MODEL_WORK_DIR = '/srv/models'
@@ -22,7 +22,9 @@ export const modelRouter = createRouter({
       const config = await readModelInfoAbsolute(modelPath)
 
       const containers = await getContainers(manifestPath)
-      const matchedContainer = containers.find((c) => c.repo === config.docker.image)
+      const hostInfo = await getHostInfo(host)
+      const hostArch = await getHostArch(hostInfo)
+      const matchedContainer = containers.find((c) => c.repo === config.docker.image && c.arch === hostArch)
       if (!matchedContainer) {
         throw new TRPCError({
           message: `没有找到 ${config.docker.image} 的镜像`,
@@ -31,7 +33,7 @@ export const modelRouter = createRouter({
       }
 
       const metalinkUrl = await addDirMap(host, dirname(config.metaLinkFile))
-      const hostAddr = await getHostIp(host)
+      const hostAddr = await getHostIp(hostInfo)
 
       const actorDocker = createActor({
         name: '传输 Docker 镜像',
@@ -105,7 +107,9 @@ export const modelRouter = createRouter({
       )
       .mutation(async function* ({ input: { host, manifestPath, modelConfig, name, port, from } }) {
         const containers = await getContainers(manifestPath)
-        const openWebuiContainer = containers.find((c) => c.repo === 'open-webui' && c.arch === 'x86_64')
+        const hostInfo = await getHostInfo(host)
+        const hostArch = await getHostArch(hostInfo)
+        const openWebuiContainer = containers.find((c) => c.repo === 'open-webui' && c.arch === hostArch)
         if (!openWebuiContainer) {
           throw new TRPCError({
             message: '没有找到 open-webui 的镜像',
@@ -119,7 +123,7 @@ export const modelRouter = createRouter({
           })
         }
 
-        const matchedAddr = await getHostIp(host)
+        const matchedAddr = await getHostIp(hostInfo)
         const modelInfo = await readModelInfo(modelConfig.modelPath)
 
         const actorDocker = createActor({
