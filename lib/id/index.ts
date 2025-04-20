@@ -6,4 +6,6 @@ export function findById<T extends { id: string }>(id: string, list: T[]) {
   return list.find((item) => item.id === id)
 }
 
-export const generateApiKey = () => 'sk-' + customAlphabet('0123456789abcdef', 32)()
+export const generateHex: (size?: number) => string = customAlphabet('0123456789abcdef', 32)
+
+export const generateApiKey = () => 'sk-' + generateHex()

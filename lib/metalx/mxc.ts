@@ -1,17 +1,11 @@
 import { ChildProcess, execFile } from 'node:child_process'
 import { join } from 'path'
 
-import getPort from 'get-port'
-import { customAlphabet } from 'nanoid'
-
+import { endpoint, executable, token } from '@/lib/env/mxc'
 import { logger } from '@/lib/logger'
 import { Mxc } from '@/sdk/mxlite'
 
 const log = logger.child({ module: 'mxc' })
-
-const endpoint = process.env.MXC_ENDPOINT || `http://localhost:${await getPort()}`
-const token = process.env.MXC_APIKEY || customAlphabet('1234567890abcdef', 32)()
-const executable = process.env.MXC_EXECUTABLE
 
 export const mxc = new Mxc(endpoint, token)
 

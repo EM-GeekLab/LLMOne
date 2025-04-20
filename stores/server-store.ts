@@ -2,11 +2,11 @@ import { readFileSync, writeFileSync } from 'node:fs'
 
 import superjson from 'superjson'
 
+import { isPersistInstallState, isPersistModelState, isPersistState, isWriteState } from '@/lib/env/store'
 import { ModelStoreState } from '@/stores/model-store'
 
 import { GlobalState } from './global-store'
 import { InstallStoreState } from './install-store'
-import { isPersistInstallState, isPersistModelState, isPersistState, isWriteState } from './server-config'
 
 function saveDataToFile<T>(file: string, data: T) {
   if (!isWriteState) return
