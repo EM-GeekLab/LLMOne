@@ -52,16 +52,18 @@ export function ModelsListPage() {
 
   if (isError) {
     return (
-      <Callout
-        size="card"
-        action={
-          <Button variant="outline" size="xs" onClick={() => refetch()}>
-            重试
-          </Button>
-        }
-      >
-        {error.message}
-      </Callout>
+      <AppCardSection>
+        <Callout
+          size="card"
+          action={
+            <Button variant="outline" size="xs" onClick={() => refetch()}>
+              重试
+            </Button>
+          }
+        >
+          {error.message}
+        </Callout>
+      </AppCardSection>
     )
   }
 
