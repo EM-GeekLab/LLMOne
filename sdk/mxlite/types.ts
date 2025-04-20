@@ -96,6 +96,14 @@ export type HostExtraInfo = {
       readonly: boolean
       path: Option<string>
     }[]
+    uts: {
+      sysname: string
+      nodename: string
+      release: string
+      version: string
+      machine: string // can be used as arch, usually x86_64 or aarch64
+      domainname: string
+    }
   }
   envs: string[]
   session_id: string
