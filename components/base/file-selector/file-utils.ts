@@ -1,6 +1,6 @@
 function sep() {
   if (typeof window !== 'undefined') {
-    const platform = window.backendPlatform
+    const platform = typeof window.env !== 'undefined' ? window.env.platform : window.backendPlatform
     return platform === 'win32' ? '\\' : '/'
   }
   return '/'

@@ -2,13 +2,19 @@
   "name": "model-machine",
   "version": "0.1.0",
   "private": true,
+  "author": {
+    "name": "GeekTech EM"
+  },
+  "main": "dist-electron/main.mjs",
+  "type": "module",
   "scripts": {
-    "dev": "concurrently \"next dev --turbopack\" \"bun run --hot trpc/index.ts\"",
-    "dev:next": "next dev --turbopack",
-    "dev:trpc": "bun run --hot trpc/index.ts",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "next:dev": "next dev --turbopack",
+    "next:build": "next build",
+    "trpc:dev": "bun run --hot trpc/index.ts",
+    "trpc:build": "bun build trpc/index.ts --target node --outdir build",
+    "electron:build-dev": "node electron/build.mjs dev",
+    "electron:build-prod": "node electron/build.mjs",
+    "electron:dev": "node electron/build.mjs dev && electron ."
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -51,6 +57,7 @@
     "cmdk": "1.1.1",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
     "embla-carousel-react": "^8.6.0",
     "event-iterator": "^2.0.0",
     "filesize": "^10.1.6",
@@ -72,6 +79,7 @@
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.55.0",
     "react-resizable-panels": "^2.1.7",
+    "react-scan": "^0.3.3",
     "recharts": "^2.15.2",
     "redfish-client": "^0.4.0",
     "server-only": "^0.0.1",
@@ -99,6 +107,10 @@
     "@types/react-dom": "^19.1.2",
     "@types/ssh2": "^1.15.5",
     "concurrently": "^9.1.2",
+    "electron": "^35.1.5",
+    "electron-serve": "^2.1.1",
+    "esbuild": "^0.25.2",
+    "esbuild-node-externals": "^1.18.0",
     "eslint": "^9.24.0",
     "eslint-config-next": "15.2.4",
     "nextjs-node-loader": "^1.1.9",

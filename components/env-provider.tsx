@@ -30,7 +30,7 @@ export function EnvProvider({ children }: { children: ReactNode }) {
     queryKey: trpc.environment.platform.queryKey(),
     queryFn: async ({ signal }) => {
       const result = await trpcClient.environment.platform.query(undefined, { signal })
-      if (window) window.backendPlatform = result
+      if (typeof window !== 'undefined') window.backendPlatform = result
       return result
     },
     staleTime: Infinity,
