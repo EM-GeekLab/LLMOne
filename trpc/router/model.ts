@@ -5,7 +5,7 @@ import type { Aria2RpcHTTPUrl } from 'maria2'
 
 import { downloadFile, downloadWithMetalink } from '@/lib/aria2'
 import { mxc } from '@/lib/metalx'
-import { createActor, createActorManager } from '@/lib/progress/utils'
+import { createActor, createActorManager } from '@/lib/progress/utils/server'
 import { z } from '@/lib/zod'
 import { modelDeployConfigSchema } from '@/app/(model)/select-model/schemas'
 import { openWebuiConfigSchema } from '@/app/(model)/service-config/schemas'
