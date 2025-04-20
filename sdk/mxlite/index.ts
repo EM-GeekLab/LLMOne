@@ -12,7 +12,7 @@ import type {
 } from './types'
 import { ERR_REASON_TASK_NOT_COMPLETED } from './types'
 
-const log = logger.child({ module: 'mxlite/controller' })
+const log = logger.child({ module: 'mxlite-sdk' })
 
 export class Mxc {
   readonly endpoint: string
@@ -209,5 +209,22 @@ export class Mxc {
     }
     const respText = await resp.text()
     return [respText, resp.status]
+  }
+
+  public async getFileHash(
+    file: string,
+    algorithm: 'sha1' | 'sha256' | 'sha512' | 'md5' | 'xxh3',
+  ): Promise<string | undefined> {
+    const res = await fetch(`${this.endpoint}/srv/file/${file}?${algorithm}=true`, {
+      method: 'HEAD',
+    }).catch((err) => {
+      log.error({ err, file, algorithm }, 'Request failed')
+      throw err
+    })
+    if (!res.ok) {
+      log.error({ file, algorithm, status: res.status }, 'Failed to get file map hash')
+      return
+    }
+    return res.headers.get(`x-hash-${algorithm}`) ?? undefined
   }
 }
