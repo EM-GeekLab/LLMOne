@@ -20,7 +20,7 @@
 # production
 /build
 /dist
-/dist-electron
+/dist-*
 
 # misc
 .DS_Store
