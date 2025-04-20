@@ -94,34 +94,12 @@ function HostStatusCard({ hostId }: { hostId: string }) {
       </div>
       <div>{model?.displayName ?? <Skeleton className="h-5 w-48" />}</div>
       <ProgressIndicator progress={progress} />
-      <div className="text-muted-foreground flex gap-2 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:translate-y-0.5">
+      <div className="text-muted-foreground flex gap-2 [&_svg]:size-4 [&_svg]:shrink-0 [&>svg]:translate-y-0.5">
         {match(progress.status)
           .with('done', () => (
             <>
               <CheckIcon className="text-success" />
-              <div className="text-success">
-                <div>{progress.message}</div>
-                {url && (
-                  <div className="text-foreground mt-1 grid grid-cols-[auto_auto] gap-x-2.5 gap-y-0.5">
-                    <dl className="contents">
-                      <dt className="text-muted-foreground">API 端点</dt>
-                      <dd>
-                        <CopyButton value={url} message="已复制 API 端点">
-                          {url}
-                        </CopyButton>
-                      </dd>
-                    </dl>
-                    <dl className="contents">
-                      <dt className="text-muted-foreground">API key</dt>
-                      <dd>
-                        <CopyButton value={deployment.apiKey} message="已复制 API key">
-                          {deployment.apiKey}
-                        </CopyButton>
-                      </dd>
-                    </dl>
-                  </div>
-                )}
-              </div>
+              <div className="text-success">{progress.message}</div>
             </>
           ))
           .with('running', () => (
@@ -145,6 +123,28 @@ function HostStatusCard({ hostId }: { hostId: string }) {
           .with('idle', () => <div>等待部署</div>)
           .exhaustive()}
       </div>
+      {url && progress.status === 'done' && (
+        <div className="col-span-full flex">
+          <div className="text-foreground border-border/50 grid grid-cols-[auto_auto] gap-x-2.5 gap-y-1 rounded-md border px-3 py-2.5">
+            <dl className="contents">
+              <dt className="text-muted-foreground">API 端点</dt>
+              <dd>
+                <CopyButton value={url} message="已复制 API 端点">
+                  {url}
+                </CopyButton>
+              </dd>
+            </dl>
+            <dl className="contents">
+              <dt className="text-muted-foreground">API key</dt>
+              <dd>
+                <CopyButton value={deployment.apiKey} message="已复制 API key">
+                  {deployment.apiKey}
+                </CopyButton>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -163,7 +163,7 @@ function CopyButton({ value, message, children }: { value: string; message: stri
   return (
     <button
       className={cn(
-        '[&>svg]:text-primary hover:[&_svg]:text-primary/90 hover:text-foreground/90 inline-flex items-baseline gap-2 [&>svg]:size-3.5',
+        '[&>svg]:text-primary hover:[&_svg]:text-primary/90 hover:text-foreground/90 inline-flex items-center gap-2 [&>svg]:size-3.5',
         error && '[&>svg]:text-destructive',
         copied && '[&>svg]:text-success',
       )}
@@ -174,6 +174,7 @@ function CopyButton({ value, message, children }: { value: string; message: stri
     >
       {children}
       {copied ? <CheckIcon /> : error ? <AlertCircleIcon /> : <CopyIcon />}
+      <span className="sr-only">复制</span>
     </button>
   )
 }
