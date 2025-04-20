@@ -47,15 +47,15 @@ export async function downloadFile(
   sha1?: string,
   options: DownloadOptions = {},
 ): Promise<DownloadStatus> {
-  const { checkInterval = 3000, onProgress = async () => undefined } = options
+  const { checkInterval = 1000, onProgress = async () => undefined } = options
   const config: Required<DownloadOptions> = { checkInterval, onProgress }
   const conn = await open(createHTTP(rpcUrl))
   try {
     const gid = await aria2.addUri(conn, [fileUrl], {
       dir: downloadDir,
-      checksum: sha1? `sha-1=${sha1}`: undefined,
+      checksum: sha1 ? `sha-1=${sha1}` : undefined,
       continue: true,
-      "check-integrity": true,
+      'check-integrity': true,
     })
     return await waitForAllSubtasksToComplete(conn, [gid], config)
   } finally {
