@@ -133,7 +133,7 @@ export class ActorManager {
               push(
                 actor.controller.trigger(
                   message ??
-                    (progress ? actor.formatProgress?.(progress) : undefined) ??
+                    (progress != undefined ? actor.formatProgress?.(progress) : undefined) ??
                     this.messages.running?.(actor.name, progress) ??
                     '正在执行',
                   progress,
