@@ -32,7 +32,6 @@ async function createWindow() {
 
   if (app.isPackaged) {
     await loadUrl?.(win)
-    await win.loadURL('app://-')
   } else {
     await win.loadURL('http://localhost:3000')
     win.webContents.openDevTools({
