@@ -1,11 +1,16 @@
 'use client'
 
+import * as React from 'react'
+import { ReactNode } from 'react'
 import { ModelIcon } from '@lobehub/icons'
+import { useClipboard } from '@mantine/hooks'
 import { useQuery } from '@tanstack/react-query'
-import { AlertCircleIcon, CheckCircle2Icon, CheckIcon } from 'lucide-react'
+import { AlertCircleIcon, CheckCircle2Icon, CheckIcon, CopyIcon } from 'lucide-react'
+import { toast } from 'sonner'
 import { match } from 'ts-pattern'
 
 import { isCompleted, useProgress } from '@/lib/progress/utils'
+import { cn } from '@/lib/utils'
 import { AppCardSection } from '@/components/app/app-card'
 import { Callout } from '@/components/base/callout'
 import { Button } from '@/components/ui/button'
@@ -70,7 +75,10 @@ function HostStatusCard({ hostId }: { hostId: string }) {
 
   const { deployOneMutation } = useModelDeployContext()
 
-  if (!progress) return null
+  if (!progress || !deployment) return null
+
+  const ipAddr = host?.ip[0]
+  const url = ipAddr ? `http://${ipAddr}:${deployment.port}` : undefined
 
   return (
     <div className="grid grid-cols-[1fr_auto] gap-y-1 rounded-xl border px-4 py-3">
@@ -78,18 +86,40 @@ function HostStatusCard({ hostId }: { hostId: string }) {
         <h4 className="text-base font-medium">
           {host?.info.system_info.hostname ?? <Skeleton className="h-6 w-32" />}
         </h4>
-        <div className="text-muted-foreground text-sm">{host?.ip[0]?.addr}</div>
+        <div className="text-muted-foreground text-sm">{ipAddr}</div>
       </div>
       <div className="col-start-2 row-span-3">
         {model && <ModelIcon type="color" model={model.logoKey} size={32} />}
       </div>
       <div>{model?.displayName ?? <Skeleton className="h-5 w-48" />}</div>
-      <div className="text-muted-foreground flex items-center gap-2 [&_svg]:size-4 [&_svg]:shrink-0">
+      <div className="text-muted-foreground flex gap-2 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:translate-y-0.5">
         {match(progress.status)
           .with('done', () => (
             <>
               <CheckIcon className="text-success" />
-              <div className="text-success">{progress.message}</div>
+              <div className="text-success">
+                <div>{progress.message}</div>
+                {url && (
+                  <div className="text-foreground mt-1 grid grid-cols-[auto_auto] gap-x-2.5 gap-y-0.5">
+                    <dl className="contents">
+                      <dt className="text-muted-foreground">API 端点</dt>
+                      <dd>
+                        <CopyButton value={url} message="已复制 API 端点">
+                          {url}
+                        </CopyButton>
+                      </dd>
+                    </dl>
+                    <dl className="contents">
+                      <dt className="text-muted-foreground">API key</dt>
+                      <dd>
+                        <CopyButton value={deployment.apiKey} message="已复制 API key">
+                          {deployment.apiKey}
+                        </CopyButton>
+                      </dd>
+                    </dl>
+                  </div>
+                )}
+              </div>
             </>
           ))
           .with('running', () => (
@@ -122,5 +152,26 @@ function DeploySuccessCallout() {
     <Callout size="card" variant="success" icon={<CheckCircle2Icon />}>
       模型部署完成
     </Callout>
+  )
+}
+
+function CopyButton({ value, message, children }: { value: string; message: string; children?: ReactNode }) {
+  const { copy, copied, error } = useClipboard()
+
+  return (
+    <button
+      className={cn(
+        '[&>svg]:text-primary hover:[&_svg]:text-primary/90 hover:text-foreground/90 inline-flex items-baseline gap-2 [&>svg]:size-3.5',
+        error && '[&>svg]:text-destructive',
+        copied && '[&>svg]:text-success',
+      )}
+      onClick={() => {
+        copy(value)
+        toast.success(message)
+      }}
+    >
+      {children}
+      {copied ? <CheckIcon /> : error ? <AlertCircleIcon /> : <CopyIcon />}
+    </button>
   )
 }
