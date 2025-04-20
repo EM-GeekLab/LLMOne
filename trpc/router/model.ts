@@ -1,6 +1,7 @@
 import { basename, dirname } from 'path'
 
 import { TRPCError } from '@trpc/server'
+import type { Aria2RpcHTTPUrl } from 'maria2'
 
 import { downloadFile, downloadWithMetalink } from '@/lib/aria2'
 import { createActor, createActorManager } from '@/lib/progress/utils'
@@ -14,6 +15,7 @@ import { addDirMap, addFileMap, executeCommand, getHostArch, getHostInfo, getHos
 import { getContainers, readModelInfo, readModelInfoAbsolute } from './resource-utils'
 
 const MODEL_WORK_DIR = '/srv/models'
+const DOCKER_IMAGES_DIR = '/srv/images'
 
 export const modelRouter = createRouter({
   deployModel: baseProcedure
@@ -34,26 +36,23 @@ export const modelRouter = createRouter({
 
       const metalinkUrl = await addDirMap(host, dirname(config.metaLinkFile))
       const hostAddr = await getHostIp(hostInfo)
+      const aria2RpcUrl: Aria2RpcHTTPUrl = `http://${hostAddr}:6800/jsonrpc`
 
       const actorDocker = createActor({
         name: '传输 Docker 镜像',
         type: 'fake',
         ratio: 30,
         runningMessage: '正在传输 Docker 镜像',
+        formatProgress: (progress) => `正在传输 Docker 镜像 ${progress.toFixed(1)}%`,
         formatResult: () => 'Docker 镜像传输完成',
         formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
         execute: async ({ onProgress }) => {
           const containerUrl = await addFileMap(host, matchedContainer.file)
-          await executeCommand(host, `mkdir -p /srv/images`)
-          await downloadFile(
-            containerUrl,
-            `http://${hostAddr}:6800/jsonrpc`,
-            '/srv/images',
-            {
-              onProgress: async ({ overallProgress }) => onProgress(overallProgress),
-            }
-          )
-          await applyLocalDockerImage(host, `/srv/images/${basename(matchedContainer.file)}`)
+          await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`)
+          await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, {
+            onProgress: async ({ overallProgress }) => onProgress(overallProgress),
+          })
+          await applyLocalDockerImage(host, `${DOCKER_IMAGES_DIR}/${basename(matchedContainer.file)}`)
         },
       })
 
@@ -68,14 +67,9 @@ export const modelRouter = createRouter({
         execute: async ({ onProgress }) => {
           const modelTargetPath = `${MODEL_WORK_DIR}/${config.modelId}`
           await executeCommand(host, `mkdir -p ${modelTargetPath}`, 100)
-          await downloadWithMetalink(
-            `${metalinkUrl}/${basename(config.metaLinkFile)}`,
-            `http://${hostAddr}:6800/jsonrpc`,
-            modelTargetPath,
-            {
-              onProgress: async ({ overallProgress }) => onProgress(overallProgress),
-            },
-          )
+          await downloadWithMetalink(`${metalinkUrl}/${basename(config.metaLinkFile)}`, aria2RpcUrl, modelTargetPath, {
+            onProgress: async ({ overallProgress }) => onProgress(overallProgress),
+          })
         },
       })
 
@@ -134,25 +128,22 @@ export const modelRouter = createRouter({
 
         const matchedAddr = await getHostIp(hostInfo)
         const modelInfo = await readModelInfo(modelConfig.modelPath)
+        const aria2RpcUrl: Aria2RpcHTTPUrl = `http://${matchedAddr}:6800/jsonrpc`
 
         const actorDocker = createActor({
           name: '传输 Docker 镜像',
           type: 'fake',
           ratio: 30,
           runningMessage: '正在传输 Docker 镜像',
+          formatProgress: (progress) => `正在传输 Docker 镜像 ${progress.toFixed(1)}%`,
           formatResult: () => 'Docker 镜像传输完成',
           formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
           execute: async ({ onProgress }) => {
             const containerUrl = await addFileMap(host, openWebuiContainer.file)
             await executeCommand(host, `mkdir -p /srv/images`)
-            await downloadFile(
-              containerUrl,
-              `http://${matchedAddr}:6800/jsonrpc`,
-              '/srv/images',
-              {
-                onProgress: async ({ overallProgress }) => onProgress(overallProgress),
-              }
-            )
+            await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, {
+              onProgress: async ({ overallProgress }) => onProgress(overallProgress),
+            })
             await applyLocalDockerImage(host, `/srv/images/${basename(openWebuiContainer.file)}`)
           },
         })
