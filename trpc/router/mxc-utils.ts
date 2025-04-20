@@ -81,6 +81,23 @@ export async function addFileMap(host: string, path: string) {
   return res2.urls[0]
 }
 
+export async function getFileHash(
+  url: string,
+  algorithm: 'sha1' | 'sha256' | 'sha512' | 'md5' | 'xxh3',
+): Promise<string | undefined> {
+  const res = await fetch(`${url}?${algorithm}=true`, {
+    method: 'HEAD',
+  }).catch((err) => {
+    log.error({ err, url }, 'Request failed')
+    throw err
+  })
+  if (!res.ok) {
+    log.error({ url, status: res.status }, 'Failed to get file map hash')
+    return
+  }
+  return res.headers.get(`x-hash-${algorithm}`) ?? undefined
+}
+
 export async function addDirMap(host: string, path: string) {
   const dirName = basename(path)
   const [res1] = await mxc.addDirMap(path, dirName)
