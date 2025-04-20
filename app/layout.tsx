@@ -1,5 +1,7 @@
 import './globals.css'
 
+import * as process from 'node:process'
+
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
@@ -43,7 +45,7 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning lang="zh">
-      <ReactScan />
+      {process.env.NODE_ENV === 'development' && <ReactScan />}
       <body className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TrpcReactProvider>

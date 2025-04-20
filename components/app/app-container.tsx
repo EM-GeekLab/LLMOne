@@ -14,7 +14,7 @@ export function AppInset({ children, className, ...props }: ComponentProps<'div'
   return (
     <div
       className={cn(
-        'bg-sidebar flex-1 shrink-0 overflow-auto p-4 max-xl:p-0 md:flex md:flex-col md:items-center md:justify-center',
+        'bg-sidebar 3xl:p-4 flex-1 shrink-0 overflow-auto p-0 md:flex md:flex-col md:items-center md:justify-center',
         className,
       )}
       {...props}
