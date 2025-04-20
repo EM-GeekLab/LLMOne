@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
+import { ReactScan } from '@/lib/react-scan'
 import { cn } from '@/lib/utils'
 import { EnvProvider } from '@/components/env-provider'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -42,6 +43,7 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning lang="zh">
+      <ReactScan />
       <body className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TrpcReactProvider>
