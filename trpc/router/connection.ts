@@ -66,14 +66,14 @@ export const connectionRouter = createRouter({
 
             try {
               const { status } = await client.bootVirtualMedia(urls[0], defaultId)
-              log.error({ ip, status }, `${ip} 引导失败`)
+              log.error({ ip, url: urls[0], status }, `${ip} 引导失败`)
               if (!status)
                 return new TRPCError({
                   code: 'INTERNAL_SERVER_ERROR',
                   message: `${ip} 引导失败`,
                 })
             } catch (err) {
-              log.error(err, `${ip} 引导失败`)
+              log.error({ ip, url: urls[0], err }, `${ip} 引导失败`)
               return new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
                 message: `${ip} 引导失败`,
@@ -121,7 +121,6 @@ export const connectionRouter = createRouter({
           if (signal?.aborted) break
 
           const [{ hosts }, status] = await mxc.getHostListInfo()
-
           if (status >= 400) {
             throw new TRPCError({
               code: 'INTERNAL_SERVER_ERROR',

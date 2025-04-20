@@ -7,4 +7,4 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const rootDir = dirname(__dirname)
 
-dotenv.config({ path: [join(rootDir, '.env'), join(rootDir, '.env.local')] })
+dotenv.config({ path: ['.env', '.env.local', join(rootDir, '.env'), join(rootDir, '.env.local')] })
