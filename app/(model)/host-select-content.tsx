@@ -20,7 +20,7 @@ export function HostSelectContent() {
     select: (list) =>
       list.map(({ host, info, ip }) => ({
         id: host,
-        ip: ip[0]?.addr,
+        ip: ip[0],
         hostname: info.system_info.hostname,
       })),
   })

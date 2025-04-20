@@ -10,13 +10,18 @@ import { z } from '@/lib/zod'
 import { BmcFinalConnectionInfo, bmcHostsListSchema } from '@/app/connect-info/schemas'
 import { HostExtraInfo } from '@/sdk/mxlite/types'
 import { baseProcedure, createRouter } from '@/trpc/init'
-import { findMatchedIp } from '@/trpc/router/connect-utils'
 
 import { getDefaultArchitecture } from './bmc-utils'
 import { getBootstrapPath } from './resource-utils'
 import { inputType, log } from './utils'
 
 export type DiskInfo = (NonNullable<HostExtraInfo['system_info']>['blks'][number] & { path: string })[]
+
+const getHostIp = async (host: string) => {
+  const [res] = await mxc.remoteIpByHostIp(host)
+  if (!res.ok) return []
+  return res.urls
+}
 
 export const connectionRouter = createRouter({
   bmc: {
@@ -184,7 +189,7 @@ export const connectionRouter = createRouter({
         message: `无法获取主机列表，状态码 ${status}`,
       })
     }
-    return res.hosts.map(({ host, info }) => ({ host, info, ip: findMatchedIp(info) }))
+    return Promise.all(res.hosts.map(async ({ host, info }) => ({ host, info, ip: await getHostIp(host) })))
   }),
   getHostInfo: baseProcedure.input(z.string()).query(async ({ input }) => {
     const [res, status] = await mxc.getHostInfo(input)
@@ -194,7 +199,7 @@ export const connectionRouter = createRouter({
         message: `无法获取主机信息，状态码 ${status}`,
       })
     }
-    return { info: res.info, ip: findMatchedIp(res.info) }
+    return { info: res.info, ip: await getHostIp(input) }
   }),
   // ssh: {
   //   check: baseProcedure

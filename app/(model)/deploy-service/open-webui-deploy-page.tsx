@@ -66,7 +66,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
 
   if (!progress || !config) return null
 
-  const ipAddr = host?.ip[0]?.addr
+  const ipAddr = host?.ip[0]
   const url = ipAddr ? `http://${ipAddr}:${config.port}` : undefined
 
   return (
@@ -75,7 +75,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
         <h4 className="text-base font-medium">
           {host?.info.system_info.hostname ?? <Skeleton className="h-6 w-32" />}
         </h4>
-        <div className="text-muted-foreground text-sm">{host?.ip[0]?.addr}</div>
+        <div className="text-muted-foreground text-sm">{host?.ip[0]}</div>
       </div>
       <div className="col-start-2 row-span-3 pt-1">
         <OpenWebUI.Text size={18} />
