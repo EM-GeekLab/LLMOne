@@ -48,7 +48,7 @@ export const modelRouter = createRouter({
         formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
         execute: async ({ onProgress }) => {
           const containerUrl = await addFileMap(host, matchedContainer.file)
-          const fileSha1 = await mxc.getFileHash(matchedContainer.file, 'sha1')
+          const fileSha1 = await mxc.getFileHash(basename(matchedContainer.file), 'sha1')
           await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`)
           await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
             onProgress: async ({ overallProgress }) => onProgress(overallProgress),
@@ -151,7 +151,7 @@ export const modelRouter = createRouter({
           formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
           execute: async ({ onProgress }) => {
             const containerUrl = await addFileMap(host, openWebuiContainer.file)
-            const fileSha1 = await mxc.getFileHash(openWebuiContainer.file, 'sha1')
+            const fileSha1 = await mxc.getFileHash(basename(openWebuiContainer.file), 'sha1')
             await executeCommand(host, `mkdir -p /srv/images`)
             await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
               onProgress: async ({ overallProgress }) => onProgress(overallProgress),
