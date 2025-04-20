@@ -41,7 +41,7 @@ export const modelRouter = createRouter({
       const actorDockerTrans = createActor({
         name: '传输 Docker 镜像',
         type: 'real',
-        ratio: 25,
+        ratio: 30,
         runningMessage: '正在传输 Docker 镜像',
         formatProgress: (progress) => `正在传输 Docker 镜像 ${progress.toFixed(1)}%`,
         formatResult: () => 'Docker 镜像传输完成',
@@ -59,7 +59,7 @@ export const modelRouter = createRouter({
       const actorDockerLoad = createActor({
         name: '载入 Docker 镜像',
         type: 'fake',
-        ratio: 5,
+        ratio: 15,
         runningMessage: '正在读取载入 Docker 镜像',
         formatResult: () => 'Docker 镜像载入完成',
         formatError: (error) => `Docker 镜像载入失败: ${error.message}`,
@@ -71,7 +71,7 @@ export const modelRouter = createRouter({
       const actorModel = createActor({
         name: '传输模型文件',
         type: 'real',
-        ratio: 60,
+        ratio: 50,
         runningMessage: '正在传输模型文件',
         formatProgress: (progress) => `正在传输模型文件 ${progress.toFixed(1)}%`,
         formatResult: () => '模型文件传输完成',
@@ -88,7 +88,7 @@ export const modelRouter = createRouter({
       const actorRun = createActor({
         name: '启动模型服务',
         type: 'fake',
-        ratio: 10,
+        ratio: 5,
         runningMessage: '正在部署模型服务',
         formatResult: () => '模型服务已启动',
         formatError: (error) => `模型服务启动失败: ${error.message}`,
