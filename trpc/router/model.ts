@@ -39,10 +39,10 @@ export const modelRouter = createRouter({
       const hostAddr = await getHostIp(hostInfo)
       const aria2RpcUrl: Aria2RpcHTTPUrl = `http://${hostAddr}:6800/jsonrpc`
 
-      const actorDocker = createActor({
+      const actorDockerTrans = createActor({
         name: '传输 Docker 镜像',
-        type: 'fake',
-        ratio: 30,
+        type: 'real',
+        ratio: 25,
         runningMessage: '正在传输 Docker 镜像',
         formatProgress: (progress) => `正在传输 Docker 镜像 ${progress.toFixed(1)}%`,
         formatResult: () => 'Docker 镜像传输完成',
@@ -54,6 +54,17 @@ export const modelRouter = createRouter({
           await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
             onProgress: async ({ overallProgress }) => onProgress(overallProgress),
           })
+        },
+      })
+
+      const actorDockerLoad = createActor({
+        name: '载入 Docker 镜像',
+        type: 'fake',
+        ratio: 5,
+        runningMessage: '正在读取载入 Docker 镜像',
+        formatResult: () => 'Docker 镜像载入完成',
+        formatError: (error) => `Docker 镜像载入失败: ${error.message}`,
+        execute: async () => {
           await applyLocalDockerImage(host, `${DOCKER_IMAGES_DIR}/${basename(matchedContainer.file)}`)
         },
       })
@@ -97,7 +108,7 @@ export const modelRouter = createRouter({
         },
       })
 
-      yield* createActorManager([actorDocker, actorModel, actorRun], {
+      yield* createActorManager([actorDockerTrans, actorDockerLoad, actorModel, actorRun], {
         formatInit: () => '等待部署',
       }).runFromIndex(from)
     }),
@@ -132,10 +143,10 @@ export const modelRouter = createRouter({
         const modelInfo = await readModelInfo(modelConfig.modelPath)
         const aria2RpcUrl: Aria2RpcHTTPUrl = `http://${matchedAddr}:6800/jsonrpc`
 
-        const actorDocker = createActor({
+        const actorDockerTrans = createActor({
           name: '传输 Docker 镜像',
-          type: 'fake',
-          ratio: 30,
+          type: 'real',
+          ratio: 75,
           runningMessage: '正在传输 Docker 镜像',
           formatProgress: (progress) => `正在传输 Docker 镜像 ${progress.toFixed(1)}%`,
           formatResult: () => 'Docker 镜像传输完成',
@@ -147,14 +158,25 @@ export const modelRouter = createRouter({
             await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
               onProgress: async ({ overallProgress }) => onProgress(overallProgress),
             })
-            await applyLocalDockerImage(host, `/srv/images/${basename(openWebuiContainer.file)}`)
+          },
+        })
+
+        const actorDockerLoad = createActor({
+          name: '载入 Docker 镜像',
+          type: 'fake',
+          ratio: 15,
+          runningMessage: '正在读取载入 Docker 镜像',
+          formatResult: () => 'Docker 镜像载入完成',
+          formatError: (error) => `Docker 镜像载入失败: ${error.message}`,
+          execute: async () => {
+            await applyLocalDockerImage(host, `${DOCKER_IMAGES_DIR}/${basename(openWebuiContainer.file)}`)
           },
         })
 
         const actorRun = createActor({
           name: '启动 Open WebUI 服务',
           type: 'fake',
-          ratio: 70,
+          ratio: 10,
           runningMessage: '正在部署 Open WebUI 服务',
           formatResult: () => 'Open WebUI 服务已启动',
           formatError: (error) => `Open WebUI 服务启动失败: ${error.message}`,
@@ -174,7 +196,7 @@ export const modelRouter = createRouter({
           },
         })
 
-        yield* createActorManager([actorDocker, actorRun], {
+        yield* createActorManager([actorDockerTrans, actorDockerLoad, actorRun], {
           formatInit: () => '等待部署',
         }).runFromIndex(from)
       }),
