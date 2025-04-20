@@ -1,9 +1,21 @@
+import type { ListenOptions } from 'net'
+
+import { trpcPort } from '@/lib/env/trpc'
 import { logger } from '@/lib/logger'
 import { createTRPCServer } from '@/trpc/create-server'
 
-const portConfig = Number(process.env.TRPC_SERVER_PORT)
-const port = isNaN(portConfig) ? 3008 : portConfig
+export async function createServer() {
+  const config = {
+    host: '127.0.0.1',
+    port: trpcPort,
+  } satisfies ListenOptions
+  createTRPCServer().listen(config)
 
-const srv = createTRPCServer().listen(port)
+  logger.info(config, 'trpc server started')
 
-logger.info(srv.address(), 'trpc server started')
+  return config
+}
+
+if (import.meta.main) {
+  await createServer()
+}
