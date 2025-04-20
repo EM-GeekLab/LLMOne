@@ -5,7 +5,6 @@ import { match } from 'ts-pattern'
 
 import { mxc } from '@/lib/metalx'
 import { HostExtraInfo } from '@/sdk/mxlite/types'
-import { findMatchedIp } from '@/trpc/router/connect-utils'
 
 import { log } from './utils'
 
@@ -107,17 +106,16 @@ export async function getHostInfo(host: string) {
   return res.info
 }
 
-export async function getHostIp(host: string | HostExtraInfo) {
-  const hostInfo = typeof host === 'string' ? await getHostInfo(host) : host
-  const matchIps = findMatchedIp(hostInfo)
-  const matchedAddr = matchIps[0]?.addr
-  if (!matchedAddr) {
+export async function getHostIp(host: string) {
+  const [res, status] = await mxc.remoteIpByHostIp(host)
+  if (!res.ok || status >= 400 || !res.urls[0]) {
+    log.error({ host, status, message: res }, '无法获取主机的 IP 地址')
     throw new TRPCError({
-      message: '无法获取主机的 IP 地址',
-      code: 'BAD_REQUEST',
+      code: 'INTERNAL_SERVER_ERROR',
+      message: `无法获取主机的 IP 地址`,
     })
   }
-  return matchedAddr
+  return res.urls[0]
 }
 
 export async function getHostArch(host: string | HostExtraInfo) {

@@ -185,6 +185,10 @@ export class Mxc {
     return await this.request(`${this.endpoint}/srv/url-sub/by-host?host=${hostId}&path=${path}`, 'GET')
   }
 
+  public async remoteIpByHostIp(hostId: string): ApiResult<GetUrlSubResponse> {
+    return await this.request(`${this.endpoint}/srv/url-sub/remote-ip-by-host-ip?host=${hostId}`, 'GET')
+  }
+
   public async lsdir(path: string): ApiResult<LsdirResponse> {
     return await this.request(`${this.endpoint}/srv/fs/lsdir?path=${path}`, 'GET')
   }

@@ -12,7 +12,7 @@ import { openWebuiConfigSchema } from '@/app/(model)/service-config/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
 import { applyLocalDockerImage } from './docker-utils'
-import { addDirMap, addFileMap, executeCommand, getHostArch, getHostInfo, getHostIp, makeEnvs } from './mxc-utils'
+import { addDirMap, addFileMap, executeCommand, getHostArch, getHostIp, makeEnvs } from './mxc-utils'
 import { getContainers, readModelInfo, readModelInfoAbsolute } from './resource-utils'
 
 const MODEL_WORK_DIR = '/srv/models'
@@ -25,8 +25,7 @@ export const modelRouter = createRouter({
       const config = await readModelInfoAbsolute(modelPath)
 
       const containers = await getContainers(manifestPath)
-      const hostInfo = await getHostInfo(host)
-      const hostArch = await getHostArch(hostInfo)
+      const hostArch = await getHostArch(host)
       const matchedContainer = containers.find((c) => c.repo === config.docker.image && c.arch === hostArch)
       if (!matchedContainer) {
         throw new TRPCError({
@@ -36,7 +35,7 @@ export const modelRouter = createRouter({
       }
 
       const metalinkUrl = await addDirMap(host, dirname(config.metaLinkFile))
-      const hostAddr = await getHostIp(hostInfo)
+      const hostAddr = await getHostIp(host)
       const aria2RpcUrl: Aria2RpcHTTPUrl = `http://${hostAddr}:6800/jsonrpc`
 
       const actorDockerTrans = createActor({
@@ -123,8 +122,7 @@ export const modelRouter = createRouter({
       )
       .mutation(async function* ({ input: { host, manifestPath, modelConfig, name, port, from } }) {
         const containers = await getContainers(manifestPath)
-        const hostInfo = await getHostInfo(host)
-        const hostArch = await getHostArch(hostInfo)
+        const hostArch = await getHostArch(host)
         const openWebuiContainer = containers.find((c) => c.repo === 'open-webui' && c.arch === hostArch)
         if (!openWebuiContainer) {
           throw new TRPCError({
@@ -139,7 +137,7 @@ export const modelRouter = createRouter({
           })
         }
 
-        const matchedAddr = await getHostIp(hostInfo)
+        const matchedAddr = await getHostIp(host)
         const modelInfo = await readModelInfo(modelConfig.modelPath)
         const aria2RpcUrl: Aria2RpcHTTPUrl = `http://${matchedAddr}:6800/jsonrpc`
 
