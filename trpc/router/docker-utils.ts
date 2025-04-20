@@ -9,6 +9,12 @@ export async function applyDockerImage(host: string, imageUrl: string) {
   return stdout.trim()
 }
 
+export async function applyLocalDockerImage(host: string, imagePath: string) {
+  const script = `docker load -i "${imagePath}" | sed -E 's/^.* (.*)$/\\1/'`
+  const { stdout } = await executeCommand(host, script)
+  return stdout.trim()
+}
+
 export async function fetchDockerImageList(host: string) {
   const script = 'curl -s --unix-socket /run/docker.sock http://localhost/images/json'
   const { stdout } = await executeCommand(host, script)

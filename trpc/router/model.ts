@@ -2,14 +2,14 @@ import { basename, dirname } from 'path'
 
 import { TRPCError } from '@trpc/server'
 
-import { downloadWithMetalink } from '@/lib/aria2'
+import { downloadFile, downloadWithMetalink } from '@/lib/aria2'
 import { createActor, createActorManager } from '@/lib/progress/utils'
 import { z } from '@/lib/zod'
 import { modelDeployConfigSchema } from '@/app/(model)/select-model/schemas'
 import { openWebuiConfigSchema } from '@/app/(model)/service-config/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
-import { applyDockerImage } from './docker-utils'
+import { applyLocalDockerImage } from './docker-utils'
 import { addDirMap, addFileMap, executeCommand, getHostArch, getHostInfo, getHostIp, makeEnvs } from './mxc-utils'
 import { getContainers, readModelInfo, readModelInfoAbsolute } from './resource-utils'
 
@@ -42,9 +42,18 @@ export const modelRouter = createRouter({
         runningMessage: '正在传输 Docker 镜像',
         formatResult: () => 'Docker 镜像传输完成',
         formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
-        execute: async () => {
+        execute: async ({ onProgress }) => {
           const containerUrl = await addFileMap(host, matchedContainer.file)
-          await applyDockerImage(host, containerUrl)
+          await executeCommand(host, `mkdir -p /srv/images`)
+          await downloadFile(
+            containerUrl,
+            `http://${hostAddr}:6800/jsonrpc`,
+            '/srv/images',
+            {
+              onProgress: async ({ overallProgress }) => onProgress(overallProgress),
+            }
+          )
+          await applyLocalDockerImage(host, `/srv/images/${basename(matchedContainer.file)}`)
         },
       })
 
@@ -133,9 +142,18 @@ export const modelRouter = createRouter({
           runningMessage: '正在传输 Docker 镜像',
           formatResult: () => 'Docker 镜像传输完成',
           formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
-          execute: async () => {
+          execute: async ({ onProgress }) => {
             const containerUrl = await addFileMap(host, openWebuiContainer.file)
-            await applyDockerImage(host, containerUrl)
+            await executeCommand(host, `mkdir -p /srv/images`)
+            await downloadFile(
+              containerUrl,
+              `http://${matchedAddr}:6800/jsonrpc`,
+              '/srv/images',
+              {
+                onProgress: async ({ overallProgress }) => onProgress(overallProgress),
+              }
+            )
+            await applyLocalDockerImage(host, `/srv/images/${basename(openWebuiContainer.file)}`)
           },
         })
 
