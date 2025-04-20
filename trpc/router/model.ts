@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server'
 import type { Aria2RpcHTTPUrl } from 'maria2'
 
 import { downloadFile, downloadWithMetalink } from '@/lib/aria2'
+import { mxc } from '@/lib/metalx'
 import { createActor, createActorManager } from '@/lib/progress/utils'
 import { z } from '@/lib/zod'
 import { modelDeployConfigSchema } from '@/app/(model)/select-model/schemas'
@@ -48,8 +49,9 @@ export const modelRouter = createRouter({
         formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
         execute: async ({ onProgress }) => {
           const containerUrl = await addFileMap(host, matchedContainer.file)
+          const fileSha1 = await mxc.getFileHash(matchedContainer.file, 'sha1')
           await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`)
-          await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, {
+          await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
             onProgress: async ({ overallProgress }) => onProgress(overallProgress),
           })
           await applyLocalDockerImage(host, `${DOCKER_IMAGES_DIR}/${basename(matchedContainer.file)}`)
@@ -140,8 +142,9 @@ export const modelRouter = createRouter({
           formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
           execute: async ({ onProgress }) => {
             const containerUrl = await addFileMap(host, openWebuiContainer.file)
+            const fileSha1 = await mxc.getFileHash(openWebuiContainer.file, 'sha1')
             await executeCommand(host, `mkdir -p /srv/images`)
-            await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, {
+            await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
               onProgress: async ({ overallProgress }) => onProgress(overallProgress),
             })
             await applyLocalDockerImage(host, `/srv/images/${basename(openWebuiContainer.file)}`)
