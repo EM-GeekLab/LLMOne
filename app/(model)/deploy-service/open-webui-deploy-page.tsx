@@ -1,5 +1,6 @@
 'use client'
 
+import * as React from 'react'
 import { OpenWebUI } from '@lobehub/icons'
 import { AlertCircleIcon, CheckCircle2Icon, CheckIcon } from 'lucide-react'
 import { match } from 'ts-pattern'
@@ -12,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { useModelStore } from '@/stores/model-store-provider'
 
+import { ProgressIndicator } from '../progress-indicator'
 import { useServiceDeployContext } from '../service-deploy-provider'
 import { useHostInfo } from '../use-host-info'
 
@@ -77,9 +79,11 @@ function HostStatusCard({ hostId }: { hostId: string }) {
         </h4>
         <div className="text-muted-foreground text-sm">{host?.ip[0]}</div>
       </div>
-      <div className="col-start-2 row-span-3 pt-1">
-        <OpenWebUI.Text size={18} />
+      <div className="col-start-2 row-span-2 pt-1">
+        <OpenWebUI size={28} />
       </div>
+      <div>Open WebUI</div>
+      <ProgressIndicator progress={progress} />
       <div className="text-muted-foreground flex gap-2 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:translate-y-0.5">
         {match(progress.status)
           .with('done', () => (

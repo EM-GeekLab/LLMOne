@@ -20,6 +20,7 @@ import { useModelStore } from '@/stores/model-store-provider'
 import { useTRPC } from '@/trpc/client'
 
 import { useModelDeployContext } from '../model-deploy-provider'
+import { ProgressIndicator } from '../progress-indicator'
 import { useHostInfo } from '../use-host-info'
 
 export function DeployPage() {
@@ -88,10 +89,11 @@ function HostStatusCard({ hostId }: { hostId: string }) {
         </h4>
         <div className="text-muted-foreground text-sm">{ipAddr}</div>
       </div>
-      <div className="col-start-2 row-span-3">
+      <div className="col-start-2 row-span-2">
         {model && <ModelIcon type="color" model={model.logoKey} size={32} />}
       </div>
       <div>{model?.displayName ?? <Skeleton className="h-5 w-48" />}</div>
+      <ProgressIndicator progress={progress} />
       <div className="text-muted-foreground flex gap-2 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:translate-y-0.5">
         {match(progress.status)
           .with('done', () => (
