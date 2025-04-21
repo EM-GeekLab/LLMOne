@@ -103,6 +103,7 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
           setEnvProgress(hostId, result)
           addLog(hostId, formatProgress({ stage: 'driver', progress: result }))
         }
+        return
       }
 
       if (stage === 'driver') {
@@ -114,6 +115,7 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
           setEnvProgress(hostId, result)
           addLog(hostId, formatProgress({ stage: 'driver', progress: result }))
         }
+        return
       }
     },
     onError: (error) => {
