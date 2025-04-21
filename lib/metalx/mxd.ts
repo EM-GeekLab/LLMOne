@@ -18,6 +18,7 @@ import {
   SystemInstallProgress,
   SystemInstallStep,
   systemInstallStepConfig,
+  SystemMeta,
 } from './stages'
 
 const log = logger.child({ module: 'mxd manager' })
@@ -28,20 +29,27 @@ export type CreateMxdParams = {
   network: NetworkConfigType
   systemImagePath: string
   packages: ResourcePackage[]
+  grubArch: string
 }
 
 export class MxdManager {
   readonly list: MxdItem[]
   readonly shared: SharedConfig
-  readonly packages: ResourcePackage[]
+  readonly system: SystemMeta
 
-  constructor(list: MxdItem[], account: AccountConfigType, network: NetworkConfigType, packages: ResourcePackage[]) {
+  constructor(
+    list: MxdItem[],
+    account: AccountConfigType,
+    network: NetworkConfigType,
+    packages: ResourcePackage[],
+    grubArch: string,
+  ) {
     this.list = list
     this.shared = { account, network }
-    this.packages = packages
+    this.system = { packages, grubArch }
   }
 
-  static async create({ hosts, account, network, systemImagePath, packages }: CreateMxdParams) {
+  static async create({ hosts, account, network, systemImagePath, packages, grubArch }: CreateMxdParams) {
     const systemImageFile = basename(systemImagePath)
     const [res] = await mxc.addFileMap(systemImagePath, systemImageFile)
     if (!res.result[0].ok) {
@@ -71,7 +79,7 @@ export class MxdManager {
         }
       }),
     )
-    return new MxdManager(deployerList, account, network, packages)
+    return new MxdManager(deployerList, account, network, packages, grubArch)
   }
 
   async *installOsOneFromStep(index: number, from?: SystemInstallStep | null) {
@@ -94,7 +102,7 @@ export class MxdManager {
   }
 
   private async getDriverInstallStepConfig(index: number) {
-    return await generateDriverInstallStepConfig(this.list[index].host.id, this.packages)
+    return await generateDriverInstallStepConfig(this.list[index].host.id, this.system.packages)
   }
 
   async *installEnvOneFromStep(index: number, from?: DriverInstallStep | null): AsyncGenerator<DriverInstallProgress> {
@@ -135,7 +143,7 @@ export class MxdManager {
         to = progress
         const completed = i === 0 ? null : config[i - 1].step
         yield { ok: true, host, stage, from, to, completed, started }
-        await executor(this.list[index], this.shared)
+        await executor(this.list[index], this.shared, this.system)
       }
     } catch (err) {
       const error = err as Error

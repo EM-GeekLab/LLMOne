@@ -52,6 +52,7 @@ export const deployRouter = createRouter({
             name,
             file: join(osInfo.packagesDir, file),
           })),
+          grubArch: osInfo.grubArch,
         })
       } catch (err) {
         log.error(err, '初始化部署器失败')

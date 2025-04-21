@@ -42,7 +42,7 @@ mount "$ROOTFS_PATH" /mnt -t ext4 || exit 1
 mkdir -p /mnt/boot/efi 
 mount "$EFI_PATH" /mnt/boot/efi -t vfat || exit 1
 `
-const POSTINSTALL_SCRIPT = `
+const POSTINSTALL_SCRIPT = (grubArch: string) => `
 # Prepare chroot envrionment mount special filesystems
 mkdir -p /mnt/tmp /mnt/proc /mnt/sys /mnt/dev /mnt/dev/pts
 mount -t tmpfs tmpfs /mnt/tmp
@@ -61,7 +61,7 @@ PARTUUID=$ROOTFS_PARTUUID / ext4 defaults 0 1
 PARTUUID=$EFI_PARTUUID /boot/efi vfat defaults 0 2
 EOF
 
-chroot /mnt sh -c 'update-initramfs -c -k all && grub-install --target=x86_64-efi --efi-directory=/boot/efi --recheck && update-grub' || exit 1
+chroot /mnt sh -c 'update-initramfs -c -k all && grub-install --target=${grubArch}-efi --efi-directory=/boot/efi --recheck && update-grub' || exit 1
 chroot /mnt sh -c 'ln -frs /usr/lib/systemd/systemd /sbin/init' || exit 1`
 
 class DeployError extends Error {
@@ -216,9 +216,9 @@ ${PREINSTALL_SCRIPT}`
     await this.execScript(script)
   }
 
-  public async postinstall() {
+  public async postinstall(grubArch: string) {
     const script = `export DISK="${this.diskName}";
-${POSTINSTALL_SCRIPT}
+${POSTINSTALL_SCRIPT(grubArch)}
 `
     await this.execScript(script)
   }
@@ -239,7 +239,7 @@ chmod 400 /mnt/etc/netplan/${confName}`
     await this.execScript('shutdown').catch(() => undefined)
   }
 
-  private async execScriptChroot(inner: string) {
+  public async execScriptChroot(inner: string) {
     const script = `chroot /mnt bash << EOFEOFEOF
 ${inner}
 EOFEOFEOF`
