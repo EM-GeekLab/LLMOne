@@ -1,4 +1,4 @@
-import { join } from 'path'
+import { join } from 'node:path'
 
 /**
  * Add absolute paths to the specified fields in the object, without modifying the original object.

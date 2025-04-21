@@ -1,4 +1,4 @@
-import { dirname, join } from 'path'
+import { dirname, join } from 'node:path'
 
 import { TRPCError } from '@trpc/server'
 

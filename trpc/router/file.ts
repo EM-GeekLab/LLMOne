@@ -1,4 +1,4 @@
-import { dirname } from 'path'
+import { dirname } from 'node:path'
 
 import { checkPath, readDir, readFileToString, ReadFileToStringOptions } from '@/lib/file/server-file'
 import { baseProcedure, createRouter } from '@/trpc/init'

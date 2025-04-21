@@ -1,5 +1,5 @@
 import { ChildProcess, execFile } from 'node:child_process'
-import { join } from 'path'
+import { join } from 'node:path'
 
 import { endpoint, executable, token } from '@/lib/env/mxc'
 import { logger } from '@/lib/logger'

@@ -1,4 +1,4 @@
-import { basename } from 'path'
+import { basename } from 'node:path'
 
 import { TRPCError } from '@trpc/server'
 import { match } from 'ts-pattern'
