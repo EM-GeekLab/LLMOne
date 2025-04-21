@@ -1,8 +1,6 @@
-import { ComponentProps, useEffect, useState } from 'react'
-import { useInterval } from '@mantine/hooks'
+import { ComponentProps } from 'react'
 
 import { cn } from '@/lib/utils'
-import { formatSeconds } from '@/app/install-env/utils'
 
 export function ProgressCard({ className, children, ...props }: ComponentProps<'div'>) {
   return (
@@ -25,21 +23,5 @@ export function ProgressCardDescription({ className, children, ...props }: Compo
     <div className={cn('text-muted-foreground flex gap-2 text-sm', className)} {...props}>
       {children}
     </div>
-  )
-}
-
-export function TimeCounter({ stopped = false, className, ...props }: { stopped?: boolean } & ComponentProps<'time'>) {
-  const [duration, setDuration] = useState(0)
-  const { stop, start } = useInterval(() => setDuration((prev) => prev + 1), 1000)
-
-  useEffect(() => {
-    if (!stopped) start()
-    else stop()
-  }, [start, stop, stopped])
-
-  return (
-    <time className={cn('text-muted-foreground ml-auto text-sm font-normal', className)} {...props}>
-      {formatSeconds(duration)}
-    </time>
   )
 }
