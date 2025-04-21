@@ -34,7 +34,7 @@ export function progressText(params: { stage: InstallStage; step: InstallStepTyp
   return match(params)
     .with({ step: P.nullish }, () => '准备安装')
     .with({ step: 'preinstall' }, () => '分配磁盘空间')
-    .with({ step: 'downloadRootfs' }, () => '获取系统镜像')
+    .with({ step: 'downloadRootfs' }, () => '传输系统镜像')
     .with({ step: 'install' }, () => '安装系统')
     .with({ step: 'postinstall' }, () => '配置系统')
     .with({ step: 'configNetwork' }, () => '配置网络')
