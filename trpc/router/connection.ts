@@ -118,8 +118,8 @@ export const connectionRouter = createRouter({
       const bmcClients = await BmcClients.create(input)
       try {
         const networkInterface = await bmcClients.map(async ({ defaultId, ip, client }) => {
-          const nic = await client.getNetworkInterfaceInfo(defaultId)
-          return { ip, mac: nic[0].ports.map((p) => p.macAddress.toLowerCase()) }
+          const nics = await client.getNetworkInterfaceInfo(defaultId)
+          return { ip, mac: nics.flatMap((nic) => nic.ports.map((p) => p.macAddress.toLowerCase())) }
         })
 
         let count = 0
