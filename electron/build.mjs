@@ -23,6 +23,7 @@ const toDefineObject = (obj) => {
 
 await esbuild.build({
   entryPoints: ['./electron/main.ts', './electron/preload.ts'],
+  inject: ['./electron/cjs-shim.ts'],
   bundle: true,
   platform: 'node',
   target: ['node22'],
@@ -33,10 +34,4 @@ await esbuild.build({
   outExtension: { '.js': '.mjs' },
   external: ['electron'],
   define: toDefineObject(isDev ? environments.development : environments.production),
-  banner: {
-    js: `
-      import { createRequire } from 'module';
-      const require = createRequire(import.meta.url);
-    `,
-  },
 })
