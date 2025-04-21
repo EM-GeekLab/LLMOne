@@ -177,12 +177,12 @@ export class Mxc {
     return await this.request(`${this.endpoint}/api/file-map`, 'GET')
   }
 
-  public async urlSubByIp(path: string, ip: string): ApiResult<GetUrlSubResponse> {
-    return await this.request(`${this.endpoint}/srv/url-sub/by-ip?ip=${ip}&path=${path}`, 'GET')
+  public async urlSubByIp(path: string, ip: string, https = false): ApiResult<GetUrlSubResponse> {
+    return await this.request(`${this.endpoint}/srv/url-sub/by-ip?ip=${ip}&path=${path}&https=${https}`, 'GET')
   }
 
-  public async urlSubByHost(path: string, hostId: string): ApiResult<GetUrlSubResponse> {
-    return await this.request(`${this.endpoint}/srv/url-sub/by-host?host=${hostId}&path=${path}`, 'GET')
+  public async urlSubByHost(path: string, hostId: string, https = false): ApiResult<GetUrlSubResponse> {
+    return await this.request(`${this.endpoint}/srv/url-sub/by-host?host=${hostId}&path=${path}&https=${https}`, 'GET')
   }
 
   public async remoteIpByHostIp(hostId: string): ApiResult<GetUrlSubResponse> {

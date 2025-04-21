@@ -59,7 +59,11 @@ export const connectionRouter = createRouter({
           }
 
           const errors = await bmcClients.map(async ({ defaultId, ip, client }) => {
-            const [res, status] = await mxc.urlSubByIp(`srv/file/${bootstrapFile}`, ip)
+            const [res, status] = await mxc.urlSubByIp(
+              `srv/file/${bootstrapFile}`,
+              ip,
+              client.name === 'iBMCRedfishClient',
+            )
             if (status >= 400 || !res.ok) {
               return new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
