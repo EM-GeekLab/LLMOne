@@ -9,6 +9,7 @@ import { DriverInstallStep, SystemInstallStep } from '@/lib/metalx'
 import { createSafeContext } from '@/lib/react/create-safe-context'
 import { cn } from '@/lib/utils'
 import { AppCardSection, AppCardTitle } from '@/components/app/app-card'
+import { useCountdown } from '@/components/base/countdown'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { HostConfigType } from '@/app/host-info/schemas'
 import { useBmcLocalInstallContext } from '@/app/install-env/context'
@@ -88,7 +89,10 @@ function DriverInstallCard() {
       <FakeProgressBar progress={progress} />
       <ProgressCardDescription>
         {stage === 'reboot' ? (
-          <p>主机重启中，这可能需要几分钟</p>
+          <p>
+            主机重启中，这可能需要几分钟。
+            <WaitingForBootTimer />
+          </p>
         ) : (
           <FormatProgress stage="driver" progress={progress} />
         )}
@@ -136,4 +140,9 @@ function RetryButton({
       重试
     </button>
   )
+}
+
+function WaitingForBootTimer() {
+  const { duration, isTimeout } = useCountdown({ minutes: 20 })
+  return isTimeout ? <>等待主机启动超时，请检查主机状态。</> : <>最多还需等待 {duration}。</>
 }

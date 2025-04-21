@@ -14,6 +14,7 @@ import {
   AppCardSectionTitle,
 } from '@/components/app/app-card'
 import { Callout } from '@/components/base/callout'
+import { useCountdown } from '@/components/base/countdown'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -60,7 +61,10 @@ function HostsConfigContent() {
     return (
       <div className="text-muted-foreground flex items-center gap-2 text-sm">
         <Spinner className="size-4" />
-        正在等待主机启动，这可能需要几分钟。
+        <div>
+          正在等待主机启动，这可能需要几分钟。
+          <WaitingForBootTimer />
+        </div>
       </div>
     )
   }
@@ -201,4 +205,9 @@ function HostConfigForm({ id, bmcIp, disks }: { id: string; bmcIp: string; disks
       </form>
     </Form>
   )
+}
+
+function WaitingForBootTimer() {
+  const { duration, isTimeout } = useCountdown({ minutes: 20 })
+  return isTimeout ? <>等待主机启动超时，请检查主机状态。</> : <>最多还需等待 {duration}。</>
 }
