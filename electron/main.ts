@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow } from 'electron'
 import electronServe from 'electron-serve'
 
+import { killMxd } from '@/lib/metalx/mxc'
 import { createServer } from '@/trpc'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -54,4 +55,8 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('will-quit', () => {
+  killMxd()
 })

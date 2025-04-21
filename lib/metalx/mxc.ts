@@ -6,7 +6,7 @@ import { certificatesDir, executable, httpEndpoint, httpsEndpoint, rootDir, toke
 import { logger } from '@/lib/logger'
 import { Mxc } from '@/sdk/mxlite'
 
-const log = logger.child({ module: 'mxc' })
+const log = logger.child({ module: 'mxd' })
 
 export const mxc = new Mxc(httpEndpoint, token)
 
@@ -19,16 +19,16 @@ let abortController: AbortController | null = null
 if (executable && !globalMxdProcess.mxdProcess) {
   log.info(`Root directory: ${rootDir}`)
   log.info(`Using mxd executable: ${executable}`)
-  globalMxdProcess.mxdProcess = runMxc()
+  globalMxdProcess.mxdProcess = runMxd()
 }
 
-export function runMxc(staticPath?: string) {
+export function runMxd(staticPath?: string) {
   if (!executable) {
-    log.warn(`No mxd executable found, skipping mxc`)
+    log.warn(`No mxd executable found, skipping mxd`)
     return
   }
 
-  if (abortController) killMxc()
+  if (abortController) killMxd()
 
   abortController = new AbortController()
   const httpUrl = new URL(httpEndpoint)
@@ -56,7 +56,7 @@ export function runMxc(staticPath?: string) {
     { signal: abortController.signal },
     (error) => {
       if (error) {
-        log.error(error, `Error executing mxc`)
+        log.error(error, `Error executing mxd`)
       }
     },
   )
@@ -77,7 +77,7 @@ export function runMxc(staticPath?: string) {
   childProcess.on('spawn', () => {
     log.info(
       { httpEndpoint, httpsEndpoint, token, certsDir },
-      `Starting mxc${staticPath ? ` with static path ${staticPath}` : ''}, http port ${httpUrl.port}, https port ${httpsUrl.port}`,
+      `Starting mxd${staticPath ? ` with static path ${staticPath}` : ''}, http port ${httpUrl.port}, https port ${httpsUrl.port}`,
     )
   })
   childProcess.on('exit', (code) => {
@@ -87,9 +87,9 @@ export function runMxc(staticPath?: string) {
   return childProcess
 }
 
-export function killMxc() {
+export function killMxd() {
   if (abortController) {
-    log.info(`Stopping mxc...`)
+    log.info(`Stopping mxd...`)
     abortController.abort()
     abortController = null
   }
