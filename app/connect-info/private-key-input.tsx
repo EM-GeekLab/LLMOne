@@ -31,9 +31,10 @@ export function PrivateKeyInputContent({
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const [key, setKey] = useControllableState({
-    defaultProp: defaultValue,
+    defaultProp: defaultValue ?? '',
     prop: value,
     onChange: onValueChange,
+    caller: 'PrivateKeyInput',
   })
 
   return (

@@ -19,7 +19,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
 import { ConnectModeIf } from '@/app/_shared/condition'
@@ -52,14 +51,25 @@ function BmcNextStepButton() {
   const { isAllConnected } = useIsAllConnected()
   const hasHost = useGlobalStore((s) => !!s.bmcHosts.length)
 
+  const storeApi = useGlobalStoreApi()
+  const setHosts = useGlobalStore((s) => s.setFinalBmcHosts)
+
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <NavButtonGuard pass={isAllConnected && hasHost} message={!hasHost ? noHostMessage : connectionMessage}>
-        <DialogTrigger asChild>
-          <Button>下一步</Button>
-        </DialogTrigger>
+        <Button
+          onClick={() => {
+            const { bmcHosts, defaultCredentials } = storeApi.getState()
+            const result = validateBmcHosts(bmcHosts, defaultCredentials)
+            if (!result.success) return
+            setHosts(result.data)
+            setDialogOpen(true)
+          }}
+        >
+          下一步
+        </Button>
       </NavButtonGuard>
       <ConfirmDialogContent onClose={() => setDialogOpen(false)} />
     </Dialog>
@@ -70,7 +80,6 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
   const { push } = useRouter()
 
   const hosts = useGlobalStore((s) => s.bmcHosts)
-  const setHosts = useGlobalStore((s) => s.setFinalBmcHosts)
   const storeApi = useGlobalStoreApi()
 
   const queryClient = useQueryClient()
@@ -78,22 +87,18 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
   const trpc = useTRPC()
   const { mutate, isPending, error, isError } = useMutation({
     mutationFn: async () => {
-      const { bmcHosts, defaultCredentials } = storeApi.getState()
-      const result = validateBmcHosts(bmcHosts, defaultCredentials)
-      if (!result.success) return
-      setHosts(result.data)
-
       if (storeApi.getState().deployMode === 'local') {
+        const finalHosts = storeApi.getState().finalBmcHosts
         const manifestPath = storeApi.getState().manifestPath
         if (!manifestPath) {
           toast.error('请先选择离线安装配置')
           return
         }
         const { architecture } = await trpcClient.connection.bmc.checkAndBootLocal.mutate({
-          bmcHosts: result.data,
+          bmcHosts: finalHosts,
           manifestPath,
         })
-        queryClient.setQueryData(trpc.connection.bmc.getDefaultArchitecture.queryKey(result.data), architecture)
+        queryClient.setQueryData(trpc.connection.bmc.getDefaultArchitecture.queryKey(finalHosts), architecture)
       }
     },
     onSuccess: () => {

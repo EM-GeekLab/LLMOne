@@ -89,15 +89,18 @@ export function FileSelector({
   onOpenChange,
   showSize = true,
 }: FileSelectorProps) {
-  const [_open, setOpen] = useControllableState<boolean>({
+  const [open, setOpen] = useControllableState<boolean>({
     prop: controlledOpen,
     onChange: onOpenChange,
+    defaultProp: false,
+    caller: 'FileSelector',
   })
-  const open = !!_open
 
-  const [filePath, setFilePath] = useControllableState<string>({
+  const [filePath, setFilePath] = useControllableState<string | undefined>({
     prop: path,
     onChange: onSelected,
+    defaultProp: undefined,
+    caller: 'FileSelector',
   })
 
   return (

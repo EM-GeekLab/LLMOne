@@ -15,12 +15,13 @@ export function OsDistroSelector({
   distroIds?: OsDistribution[]
   value?: OsDistribution
   defaultValue?: OsDistribution
-  onValueChange?: (value: OsDistribution) => void
+  onValueChange?: (value?: OsDistribution) => void
 }) {
   const [distro, setDistro] = useControllableState({
     prop: value,
     defaultProp: defaultValue,
     onChange: onValueChange,
+    caller: 'OsDistroSelector',
   })
   const [hoveringId, setHoveringId] = useState<OsDistribution>()
   const hoveringInfo = hoveringId ? distroInfo[hoveringId] : undefined
