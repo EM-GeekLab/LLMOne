@@ -10,13 +10,9 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const rootDir = dirname(__dirname)
 
-process.chdir(rootDir)
-
-const loadUrl = app.isPackaged
-  ? electronServe({
-      directory: join(rootDir, 'out'),
-    })
-  : null
+const loadUrl = electronServe({
+  directory: join(rootDir, 'out'),
+})
 
 async function createWindow() {
   const win = new BrowserWindow({
@@ -31,7 +27,7 @@ async function createWindow() {
   })
 
   if (app.isPackaged) {
-    await loadUrl?.(win)
+    await loadUrl(win)
   } else {
     await win.loadURL('http://localhost:3000')
     win.webContents.openDevTools({

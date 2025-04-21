@@ -14,7 +14,8 @@
     "trpc:build": "bun build trpc/index.ts --target node --outdir dist-trpc --minify",
     "electron:build-dev": "node electron/build.mjs dev",
     "electron:build-prod": "node electron/build.mjs",
-    "electron:dev": "node electron/build.mjs dev && electron ."
+    "electron:dev": "node electron/build.mjs dev && electron .",
+    "electron:build": "node electron/build.mjs && electron-builder --config ./electron-builder.config.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -73,6 +74,7 @@
     "node-ssh": "^13.2.1",
     "nuqs": "^2.4.3",
     "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
     "radash": "^12.1.0",
     "react": "^19.1.0",
     "react-day-picker": "8.10.1",
@@ -115,9 +117,9 @@
     "eslint": "^9.25.0",
     "eslint-config-next": "15.2.4",
     "nextjs-node-loader": "^1.1.9",
-    "pino-pretty": "^13.0.0",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
+    "rimraf": "^6.0.1",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.1.4",
     "typescript": "^5.8.3"

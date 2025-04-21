@@ -1,7 +1,25 @@
 import esbuild from 'esbuild'
-import { nodeExternalsPlugin } from 'esbuild-node-externals'
 
 const isDev = process.argv[2] === 'dev'
+
+const environments = {
+  development: {
+    NODE_ENV: 'development',
+    ELECTRON_ENV: 'development',
+  },
+  production: {
+    NODE_ENV: 'production',
+    ELECTRON_ENV: 'production',
+    MXC_EXECUTABLE: 'mxd',
+  },
+}
+
+const toDefineObject = (obj) => {
+  return Object.entries(obj).reduce((acc, [key, value]) => {
+    acc[`process.env.${key}`] = JSON.stringify(value)
+    return acc
+  }, {})
+}
 
 await esbuild.build({
   entryPoints: ['./electron/main.ts', './electron/preload.ts'],
@@ -13,8 +31,12 @@ await esbuild.build({
   minify: !isDev,
   sourcemap: isDev,
   outExtension: { '.js': '.mjs' },
-  plugins: [nodeExternalsPlugin({ allowList: ['maria2'] })],
-  define: {
-    'process.env.NODE_ENV': isDev ? '"development"' : '"production"',
+  external: ['electron'],
+  define: toDefineObject(isDev ? environments.development : environments.production),
+  banner: {
+    js: `
+      import { createRequire } from 'module';
+      const require = createRequire(import.meta.url);
+    `,
   },
 })
