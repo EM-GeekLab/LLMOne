@@ -59,6 +59,11 @@ const config = {
       },
     ],
   },
+  nsis: {
+    oneClick: false,
+    createDesktopShortcut: false,
+    allowToChangeInstallationDirectory: true,
+  },
 
   linux: {
     extraResources: ['bin/mxd'],
