@@ -4,7 +4,6 @@ import * as process from 'node:process'
 
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
-import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { ReactScan } from '@/lib/react-scan'
 import { cn } from '@/lib/utils'
@@ -49,15 +48,13 @@ export default function RootLayout({
       <body className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TrpcReactProvider>
-            <NuqsAdapter>
-              <EnvProvider>
-                <LocalStoreProvider>
-                  <GlobalStoreProvider>
-                    <TooltipProvider>{children}</TooltipProvider>
-                  </GlobalStoreProvider>
-                </LocalStoreProvider>
-              </EnvProvider>
-            </NuqsAdapter>
+            <EnvProvider>
+              <LocalStoreProvider>
+                <GlobalStoreProvider>
+                  <TooltipProvider>{children}</TooltipProvider>
+                </GlobalStoreProvider>
+              </LocalStoreProvider>
+            </EnvProvider>
             <Toaster />
           </TrpcReactProvider>
         </ThemeProvider>
