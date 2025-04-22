@@ -7,9 +7,12 @@ import { useInstallStore } from '@/stores/install-store-provider'
 
 export function Footer() {
   const isAllInstalled = useInstallStore((s) => {
-    return s.installProgress
-      .values()
-      .every((s) => s.system?.ok && s.system.from === 100 && s.driver?.ok && s.driver.from === 100)
+    return (
+      s.installProgress.size > 0 &&
+      s.installProgress
+        .values()
+        .every((s) => s.system?.ok && s.system.from === 100 && s.driver?.ok && s.driver.from === 100)
+    )
   })
 
   return (
