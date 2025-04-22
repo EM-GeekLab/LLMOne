@@ -16,6 +16,6 @@ export async function createServer() {
   return config
 }
 
-if (import.meta.main) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   await createServer()
 }
