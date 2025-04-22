@@ -91,6 +91,8 @@ async function buildPlatform(platform: 'win' | 'mac' | 'linux'): Promise<void> {
   }
 
   await buildMain(platform, 'prod')
+  const message = `Application for ${platform} is built.`
+  console.time(message)
   await build({
     targets,
     config: {
@@ -98,6 +100,7 @@ async function buildPlatform(platform: 'win' | 'mac' | 'linux'): Promise<void> {
       afterPack,
     },
   })
+  console.timeLog(message, '\n')
 }
 
 const platforms = process.argv.slice(2) as ('win' | 'mac' | 'linux')[]
@@ -107,6 +110,9 @@ if (platforms.length === 0) {
   process.exit(1)
 }
 
+const message = 'Build completed.'
+console.time(message)
 for (const platform of platforms) {
   await buildPlatform(platform)
 }
+console.timeLog(message, '\n')
