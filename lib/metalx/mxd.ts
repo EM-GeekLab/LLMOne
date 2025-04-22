@@ -150,6 +150,7 @@ export class MxdManager {
       const info: InstallProgressBase<Step | null> = { ok: false, host, stage, from, to, step: started, error }
       log.error(info, `${host.hostname} (${host.bmcIp}): ${started} 步骤执行失败`)
       yield info
+      throw err
     }
   }
 }
