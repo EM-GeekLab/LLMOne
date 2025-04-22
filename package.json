@@ -16,7 +16,7 @@
     "electron:dev": "bun run scripts/build-main.ts dev && electron .",
     "electron:build-main": "bun run scripts/build-main.ts dev",
     "electron:build": "bun run scripts/build-app.ts",
-    "electron:clean": "rimraf dist-electron && rimraf release",
+    "electron:clean": "rm -r dist-electron && rm -r release",
     "build": "next build && bun run scripts/build-app.ts"
   },
   "dependencies": {
@@ -117,7 +117,6 @@
     "nextjs-node-loader": "^1.1.9",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "rimraf": "^6.0.1",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.1.4",
     "typescript": "^5.8.3"
