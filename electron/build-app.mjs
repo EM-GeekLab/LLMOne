@@ -54,15 +54,10 @@ const config = {
     extraResources: ['bin/mxd.exe'],
     target: [
       {
-        target: 'nsis',
+        target: 'zip',
         arch: ['x64'],
       },
     ],
-  },
-  nsis: {
-    oneClick: false,
-    createDesktopShortcut: false,
-    allowToChangeInstallationDirectory: true,
   },
 
   linux: {
