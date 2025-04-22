@@ -1,15 +1,11 @@
 import { join } from 'node:path'
 
-import { build, Platform } from 'electron-builder'
-import { $ } from 'zx'
+import { $ } from 'bun'
+import { AfterPackContext, Arch, build, Configuration, Platform } from 'electron-builder'
 
-import { buildMain } from './build-main.mjs'
+import { buildMain } from './build-main'
 
-/**
- * @param {import('electron-builder').AfterPackContext} context
- * @returns {Promise<void>}
- */
-async function afterPack(context) {
+async function afterPack(context: AfterPackContext): Promise<void> {
   // remove this once you set up your own code signing for macOS
   if (context.electronPlatformName === 'darwin') {
     // check whether the app was already signed
@@ -22,11 +18,7 @@ async function afterPack(context) {
   }
 }
 
-/**
- * @type {import('electron-builder').Configuration}
- * @see https://www.electron.build/configuration
- */
-const config = {
+const config: Configuration = {
   appId: 'com.geek-tech.model-machine',
   productName: 'ModelMachine',
   asar: true,
@@ -78,12 +70,10 @@ const config = {
 
 /**
  * Build the application for the specified platform
- * @param {'win' | 'mac' | 'linux'} platform
- * @returns {Promise<void>}
+ * @param platform The target platform to build for
  */
-async function buildPlatform(platform) {
-  /** @type {Map<import('electron-builder').Platform, Map<import('electron-builder').Arch, string[]>>} */
-  let targets
+async function buildPlatform(platform: 'win' | 'mac' | 'linux'): Promise<void> {
+  let targets: Map<Platform, Map<Arch, string[]>>
 
   switch (platform) {
     case 'win':
@@ -111,8 +101,7 @@ async function buildPlatform(platform) {
   })
 }
 
-/** @type {Array<'win' | 'mac' | 'linux'>} */
-const platforms = process.argv.slice(2)
+const platforms = process.argv.slice(2) as ('win' | 'mac' | 'linux')[]
 
 if (platforms.length === 0) {
   console.info('Please specify a platform or platforms: win, mac, or linux.')

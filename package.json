@@ -13,11 +13,11 @@
     "next:build": "next build",
     "trpc:dev": "bun run --hot trpc/index.ts",
     "trpc:build": "bun build trpc/index.ts --target node --outdir dist-trpc --minify",
-    "electron:dev": "node electron/build-main.mjs dev && electron .",
-    "electron:build-main": "node electron/build-main.mjs dev",
-    "electron:build": "node electron/build-app.mjs",
+    "electron:dev": "bun run electron/build-main.ts dev && electron .",
+    "electron:build-main": "bun run electron/build-main.ts dev",
+    "electron:build": "bun run electron/build-app.ts",
     "electron:clean": "rimraf dist-electron && rimraf release",
-    "build": "next build && node electron/build-app.mjs"
+    "build": "next build && bun run electron/build-app.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -103,6 +103,7 @@
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4.1.4",
     "@tanstack/eslint-plugin-query": "^5.73.3",
+    "@types/bun": "^1.2.10",
     "@types/cors": "^2.8.17",
     "@types/node": "^22.14.1",
     "@types/react": "^19.1.2",
@@ -111,8 +112,6 @@
     "electron": "^35.2.0",
     "electron-builder": "^26.0.12",
     "electron-serve": "^2.1.1",
-    "esbuild": "^0.25.2",
-    "esbuild-node-externals": "^1.18.0",
     "eslint": "^9.25.0",
     "eslint-config-next": "15.2.4",
     "nextjs-node-loader": "^1.1.9",
@@ -121,8 +120,6 @@
     "rimraf": "^6.0.1",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.1.4",
-    "typescript": "^5.8.3",
-    "zx": "^8.5.3"
-  },
-  "packageManager": "npm@11.3.0+sha512.96eb611483f49c55f7fa74df61b588de9e213f80a256728e6798ddc67176c7b07e4a1cfc7de8922422cbce02543714367037536955221fa451b0c4fefaf20c66"
+    "typescript": "^5.8.3"
+  }
 }
