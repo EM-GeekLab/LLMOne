@@ -90,7 +90,6 @@ async function buildPlatform(platform: 'win' | 'mac' | 'linux'): Promise<void> {
       return
   }
 
-  console.info(`Building for ${platform}...`)
   await buildMain(platform, 'prod')
   await build({
     targets,

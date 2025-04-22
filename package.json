@@ -12,12 +12,12 @@
     "next:dev": "next dev --turbopack",
     "next:build": "next build",
     "trpc:dev": "bun run --hot trpc/index.ts",
-    "trpc:build": "bun build trpc/index.ts --target node --outdir dist-trpc --minify",
-    "electron:dev": "bun run electron/build-main.ts dev && electron .",
-    "electron:build-main": "bun run electron/build-main.ts dev",
-    "electron:build": "bun run electron/build-app.ts",
+    "trpc:build": "bun run scripts/build-trpc.ts",
+    "electron:dev": "bun run scripts/build-main.ts dev && electron .",
+    "electron:build-main": "bun run scripts/build-main.ts dev",
+    "electron:build": "bun run scripts/build-app.ts",
     "electron:clean": "rimraf dist-electron && rimraf release",
-    "build": "next build && bun run electron/build-app.ts"
+    "build": "next build && bun run scripts/build-app.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
