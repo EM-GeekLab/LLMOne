@@ -19,7 +19,10 @@ import { useHostInfo } from '../use-host-info'
 
 export function OpenWebuiDeployPage() {
   const { deployMutation } = useServiceDeployContext()
-  const isSuccess = useModelStore((s) => s.serviceDeploy.progress.openWebui.values().every(isCompleted))
+  const isSuccess = useModelStore(
+    (s) =>
+      s.serviceDeploy.progress.openWebui.size > 0 && s.serviceDeploy.progress.openWebui.values().every(isCompleted),
+  )
 
   if (deployMutation.isError) {
     return (

@@ -25,7 +25,9 @@ import { useHostInfo } from '../use-host-info'
 
 export function DeployPage() {
   const { deployMutation } = useModelDeployContext()
-  const isSuccess = useModelStore((s) => s.modelDeploy.progress.values().every(isCompleted))
+  const isSuccess = useModelStore(
+    (s) => s.modelDeploy.progress.size > 0 && s.modelDeploy.progress.values().every(isCompleted),
+  )
 
   if (deployMutation.isError) {
     return (
