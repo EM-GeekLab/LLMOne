@@ -34,7 +34,6 @@ const config = {
     'dist-electron/**/*',
     '!dist-electron/**/*.map',
     'out/**/*',
-    'bin/**/*',
     '!node_modules/**/*',
     '!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}',
     '!.{git,hg,svn,cache,DS_Store}',
