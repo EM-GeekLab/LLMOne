@@ -26,6 +26,7 @@ async function createWindow() {
       sandbox: false,
     },
   })
+  win.autoHideMenuBar = true
 
   if (app.isPackaged) {
     await loadUrl(win)
