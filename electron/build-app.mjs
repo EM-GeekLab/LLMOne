@@ -11,7 +11,7 @@ import { buildMain } from './build-main.mjs'
  */
 const config = {
   appId: 'com.geek-tech.model-machine',
-  productName: 'Model Machine',
+  productName: 'ModelMachine',
   asar: true,
   directories: {
     output: 'release',
