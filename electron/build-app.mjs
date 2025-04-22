@@ -6,8 +6,25 @@ import { $ } from 'zx'
 import { buildMain } from './build-main.mjs'
 
 /**
+ * @param {import('electron-builder').AfterPackContext} context
+ * @returns {Promise<void>}
+ */
+async function afterPack(context) {
+  // remove this once you set up your own code signing for macOS
+  if (context.electronPlatformName === 'darwin') {
+    // check whether the app was already signed
+    const appPath = join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`)
+
+    // this is needed for the app to not appear as "damaged" on Apple Silicon Macs
+    // https://github.com/electron-userland/electron-builder/issues/5850#issuecomment-1821648559
+    console.log('Signing app with ad-hoc signature...')
+    await $`codesign --force --deep --sign - ${appPath}`
+  }
+}
+
+/**
  * @type {import('electron-builder').Configuration}
- * @see https://www.electron.build/configuration/configuration
+ * @see https://www.electron.build/configuration
  */
 const config = {
   appId: 'com.geek-tech.model-machine',
@@ -16,19 +33,7 @@ const config = {
   directories: {
     output: 'release',
   },
-
-  async afterPack(context) {
-    // remove this once you set up your own code signing for macOS
-    if (context.electronPlatformName === 'darwin') {
-      // check whether the app was already signed
-      const appPath = join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`)
-
-      // this is needed for the app to not appear as "damaged" on Apple Silicon Macs
-      // https://github.com/electron-userland/electron-builder/issues/5850#issuecomment-1821648559
-      console.log('Signing app with ad-hoc signature...')
-      await $`codesign --force --deep --sign - ${appPath}`
-    }
-  },
+  compression: 'maximum',
 
   files: [
     'dist-electron/**/*',
@@ -91,21 +96,29 @@ async function buildPlatform(platform) {
       targets = Platform.LINUX.createTarget()
       break
     default:
-      console.info(`Unsupported platform: ${platform}.\nExiting...`)
-      process.exit(1)
+      console.info(`Unsupported platform: ${platform}.\nSkipping...`)
+      return
   }
 
   console.info(`Building for ${platform}...`)
   await buildMain(platform, 'prod')
-  await build({ targets, config })
+  await build({
+    targets,
+    config: {
+      ...structuredClone(config),
+      afterPack,
+    },
+  })
 }
 
-/** @type {'win' | 'mac' | 'linux'} */
-const platform = process.argv[2]
+/** @type {Array<'win' | 'mac' | 'linux'>} */
+const platforms = process.argv.slice(2)
 
-if (!platform) {
-  console.info('Please specify a platform: win, mac, or linux.')
+if (platforms.length === 0) {
+  console.info('Please specify a platform or platforms: win, mac, or linux.')
   process.exit(1)
 }
 
-await buildPlatform(platform)
+for (const platform of platforms) {
+  await buildPlatform(platform)
+}
