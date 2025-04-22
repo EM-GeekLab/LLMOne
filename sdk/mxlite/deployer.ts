@@ -23,7 +23,8 @@ const PREINSTALL_SCRIPT = `
 umount -R /mnt || true
 parted "$DISK" --fix --script --align 'optimal' 'mklabel gpt \
   mkpart primary fat32 1MiB 512MiB \
-  mkpart primary ext4 512MiB 100% \
+  mkpart primary ext4 512MiB 2048MiB \
+  mkpart primary ext4 2048MiB 100% \
   set 1 esp on \
   print' || exit 1
 partprobe "$DISK"
@@ -31,15 +32,20 @@ mdev -s
 
 DISK_INFO="$(parted "$DISK" --script 'print' -j)"
 EFI_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[0].uuid' -r)"
-ROOTFS_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[1].uuid' -r)"
+BOOT_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[1].uuid' -r)"
+ROOTFS_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[2].uuid' -r)"
 EFI_PATH="/dev/disk/by-partuuid/$EFI_PARTUUID"
+BOOT_PATH="/dev/disk/by-partuuid/$BOOT_PARTUUID"
 ROOTFS_PATH="/dev/disk/by-partuuid/$ROOTFS_PARTUUID"
 
 mkfs.vfat -F 32 -n EFI "$EFI_PATH" || exit 1
+mkfs.ext4 -L boot "$BOOT_PATH" || exit 1
 mkfs.ext4 -L rootfs "$ROOTFS_PATH" || exit 1
 
 mount "$ROOTFS_PATH" /mnt -t ext4 || exit 1
-mkdir -p /mnt/boot/efi 
+mkdir -p /mnt/boot
+mount "$BOOT_PATH" /mnt/boot -t ext4 || exit 1
+mkdir -p /mnt/boot/efi
 mount "$EFI_PATH" /mnt/boot/efi -t vfat || exit 1
 `
 const POSTINSTALL_SCRIPT = (grubArch: string) => `
@@ -54,15 +60,20 @@ mount -t efivarfs none /mnt/sys/firmware/efi/efivars
 
 DISK_INFO="$(parted "$DISK" --script 'print' -j)"
 EFI_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[0].uuid' -r)"
-ROOTFS_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[1].uuid' -r)"
+BOOT_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[1].uuid' -r)"
+ROOTFS_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[2].uuid' -r)"
 
-cat <<EOF > /mnt/etc/fstab
+cat << EOF > /mnt/etc/fstab
 PARTUUID=$ROOTFS_PARTUUID / ext4 defaults 0 1
+PARTUUID=$BOOT_PARTUUID /boot ext4 defaults 0 2
 PARTUUID=$EFI_PARTUUID /boot/efi vfat defaults 0 2
 EOF
 
-chroot /mnt sh -c 'update-initramfs -c -k all && grub-install --target=${grubArch}-efi --efi-directory=/boot/efi --recheck && update-grub' || exit 1
-chroot /mnt sh -c 'ln -frs /usr/lib/systemd/systemd /sbin/init' || exit 1`
+chroot /mnt sh << END_OF_SCRIPT
+update-initramfs -c -k all || exit 1
+grub-install --efi-directory=/boot/efi --recheck && update-grub || exit 1
+END_OF_SCRIPT
+`
 
 class DeployError extends Error {
   public reason?: OperationError
