@@ -10,7 +10,9 @@ import { useModelDeployContext } from '../model-deploy-provider'
 
 export function Footer() {
   const { deployMutation } = useModelDeployContext()
-  const isSuccess = useModelStore((s) => s.modelDeploy.progress.values().every(isCompleted))
+  const isSuccess = useModelStore(
+    (s) => s.modelDeploy.progress.size > 0 && s.modelDeploy.progress.values().every(isCompleted),
+  )
 
   return (
     <AppCardFooter>

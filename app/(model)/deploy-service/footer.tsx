@@ -10,8 +10,10 @@ import { useServiceDeployContext } from '../service-deploy-provider'
 
 export function Footer() {
   const { deployMutation } = useServiceDeployContext()
-  const isSuccess = useModelStore((s) =>
-    Object.values(s.serviceDeploy.progress).every((progress) => progress.values().every(isCompleted)),
+  const isSuccess = useModelStore(
+    (s) =>
+      Object.keys(s.serviceDeploy.progress).length > 0 &&
+      Object.values(s.serviceDeploy.progress).every((progress) => progress.values().every(isCompleted)),
   )
 
   return (
