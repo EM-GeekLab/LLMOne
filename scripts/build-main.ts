@@ -1,6 +1,6 @@
 import Bun from 'bun'
 
-import { formatBuild } from './format-build'
+import { printBuild } from './print-build'
 
 interface EnvironmentConfig {
   development: Record<string, string>
@@ -39,8 +39,10 @@ export async function buildMain(platform: 'win' | 'mac' | 'linux', env: 'dev' | 
   const isDev = env === 'dev'
 
   console.log(`Building for ${platform} in ${isDev ? 'development' : 'production'} mode...`)
+
   const message = `The main and preload scripts are built.`
   console.time(message)
+
   const result = await Bun.build({
     entrypoints: ['./electron/main.ts', './electron/preload.ts'],
     target: 'node',
@@ -52,9 +54,11 @@ export async function buildMain(platform: 'win' | 'mac' | 'linux', env: 'dev' | 
     define: toDefineObject(isDev ? environments.development : environments.production),
     naming: '[dir]/[name].mjs',
   })
+
   console.timeLog(message, '\n')
-  formatBuild(result)
-  console.log('')
+
+  printBuild(result)
+  console.log()
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

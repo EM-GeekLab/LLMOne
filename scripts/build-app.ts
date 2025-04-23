@@ -18,6 +18,9 @@ async function afterPack(context: AfterPackContext): Promise<void> {
   }
 }
 
+/**
+ * @see https://www.electron.build/configuration
+ */
 const config: Configuration = {
   appId: 'com.geek-tech.model-machine',
   productName: 'ModelMachine',
