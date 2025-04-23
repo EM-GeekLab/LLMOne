@@ -11,7 +11,7 @@ export async function createServer() {
   } satisfies ListenOptions
   createTRPCServer().listen(config)
 
-  logger.info(config, 'trpc server started')
+  logger.info(`trpc server started on ${config.host}:${config.port}`)
 
   return config
 }
