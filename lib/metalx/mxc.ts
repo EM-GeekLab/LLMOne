@@ -2,7 +2,7 @@ import { ChildProcess, execFile } from 'node:child_process'
 import { existsSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { certificatesDir, executable, httpEndpoint, httpsEndpoint, rootDir, token } from '@/lib/env/mxc'
+import { certificatesDir as certsDir, executable, httpEndpoint, httpsEndpoint, rootDir, token } from '@/lib/env/mxc'
 import { logger } from '@/lib/logger'
 import { Mxc } from '@/sdk/mxlite'
 
@@ -34,9 +34,8 @@ export function runMxd(staticPath?: string) {
   const httpUrl = new URL(httpEndpoint)
   const httpsUrl = new URL(httpsEndpoint)
 
-  const certsDir = join(rootDir, certificatesDir)
   if (!existsSync(certsDir)) {
-    mkdirSync(certsDir)
+    mkdirSync(certsDir, { recursive: true })
   }
 
   const childProcess = execFile(
@@ -55,7 +54,7 @@ export function runMxd(staticPath?: string) {
     ],
     { signal: abortController.signal },
     (error) => {
-      if (error) {
+      if (error && error.name !== 'AbortError') {
         log.error(error, `Error executing mxd`)
       }
     },
