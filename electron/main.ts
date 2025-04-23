@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, shell } from 'electron'
 import electronServe from 'electron-serve'
 
 import { killMxd } from '@/lib/metalx/mxc'
@@ -35,6 +35,14 @@ async function createWindow() {
     win.webContents.openDevTools({
       mode: 'undocked',
       activate: false,
+    })
+    // Open external links in the default browser
+    win.webContents.setWindowOpenHandler(({ url }) => {
+      if (url.startsWith('app://')) {
+        return { action: 'allow' }
+      }
+      shell.openExternal(url)
+      return { action: 'deny' }
     })
   }
 }
