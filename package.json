@@ -1,7 +1,7 @@
 {
   "name": "model-machine",
   "description": "Model Machine - 大模型一体机部署工具",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "author": {
     "name": "GeekTech EM"
