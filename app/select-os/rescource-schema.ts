@@ -18,7 +18,7 @@ export const resourceOsInfoSchema = z.object({
   arch: architecturesEnum,
   distro: z.enum(distributions),
   version: z.string(),
-  grubArch: z.string(),
+  grubArch: z.string().optional(),
   displayName: z.string(),
   file: z.string(),
   sha256: z.string(),

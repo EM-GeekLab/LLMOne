@@ -29,7 +29,7 @@ export type CreateMxdParams = {
   network: NetworkConfigType
   systemImagePath: string
   packages: ResourcePackage[]
-  grubArch: string
+  grubArch?: string
 }
 
 export class MxdManager {
@@ -42,7 +42,7 @@ export class MxdManager {
     account: AccountConfigType,
     network: NetworkConfigType,
     packages: ResourcePackage[],
-    grubArch: string,
+    grubArch?: string,
   ) {
     this.list = list
     this.shared = { account, network }

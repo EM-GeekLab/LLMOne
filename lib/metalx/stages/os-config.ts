@@ -35,8 +35,8 @@ export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstal
   {
     step: 'postinstall',
     progress: 90,
-    executor: async ({ deployer }, _, { grubArch }) => {
-      await deployer.postinstall(grubArch)
+    executor: async ({ deployer }) => {
+      await deployer.postinstall()
       await deployer.applyModprobeConfigs()
       await deployer.execScriptChroot('mkdir -p /etc/cloud && touch /etc/cloud/cloud-init.disabled')
     },

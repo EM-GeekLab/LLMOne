@@ -48,7 +48,7 @@ mount "$BOOT_PATH" /mnt/boot -t ext4 || exit 1
 mkdir -p /mnt/boot/efi
 mount "$EFI_PATH" /mnt/boot/efi -t vfat || exit 1
 `
-const POSTINSTALL_SCRIPT = (grubArch: string) => `
+const POSTINSTALL_SCRIPT = `
 # Prepare chroot envrionment mount special filesystems
 mkdir -p /mnt/tmp /mnt/proc /mnt/sys /mnt/dev /mnt/dev/pts
 mount -t tmpfs tmpfs /mnt/tmp
@@ -227,9 +227,9 @@ ${PREINSTALL_SCRIPT}`
     await this.execScript(script)
   }
 
-  public async postinstall(grubArch: string) {
+  public async postinstall() {
     const script = `export DISK="${this.diskName}";
-${POSTINSTALL_SCRIPT(grubArch)}
+${POSTINSTALL_SCRIPT}
 `
     await this.execScript(script)
   }

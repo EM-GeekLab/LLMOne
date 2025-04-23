@@ -42,5 +42,5 @@ export type SharedConfig = {
 
 export type SystemMeta = {
   packages: ResourcePackage[]
-  grubArch: string
+  grubArch?: string
 }
