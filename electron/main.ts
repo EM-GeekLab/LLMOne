@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, shell } from 'electron'
 import electronServe from 'electron-serve'
 
 import { killMxd } from '@/lib/metalx/mxc'
@@ -68,4 +68,39 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', () => {
   killMxd()
+})
+
+process.on('uncaughtException', (e) => {
+  if (e.message === 'the worker has exited') {
+    // Pino worker thread exited, ignore this error
+    return
+  }
+  if (e.name === 'AbortError') {
+    // AbortError is thrown when the process is killed, ignore this error
+    return
+  }
+
+  const title = 'ModelMachine 发生了意外错误'
+  const stack = e.stack ?? `${e.name}:${e.message}`
+  if (app.isReady()) {
+    const buttons = ['关闭', '重新打开', '复制错误信息']
+    const buttonIndex = dialog.showMessageBoxSync({
+      type: 'error',
+      message: title,
+      detail: stack,
+      defaultId: 0,
+      buttons,
+    })
+    if (buttonIndex === 0) {
+      app.exit(1)
+    }
+    if (buttonIndex === 1) {
+      app.relaunch()
+      app.exit(1)
+    }
+    if (buttonIndex === 2) {
+      clipboard.writeText(`${title}\n${stack}`)
+      app.exit(1)
+    }
+  }
 })
