@@ -71,7 +71,7 @@ app.on('will-quit', () => {
 })
 
 process.on('uncaughtException', (e) => {
-  if (e.message === 'the worker has exited') {
+  if (e.message.toLowerCase().startsWith('the worker ')) {
     // Pino worker thread exited, ignore this error
     return
   }
