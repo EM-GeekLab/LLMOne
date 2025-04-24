@@ -2,6 +2,7 @@ import type { ListenOptions } from 'net'
 
 import { trpcPort } from '@/lib/env/trpc'
 import { logger } from '@/lib/logger'
+import { startMxd } from '@/lib/metalx/mxc'
 import { createTRPCServer } from '@/trpc/create-server'
 
 export async function createServer() {
@@ -17,5 +18,6 @@ export async function createServer() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+  await startMxd()
   await createServer()
 }
