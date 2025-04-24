@@ -93,6 +93,7 @@
         "@types/react": "^19.1.2",
         "@types/react-dom": "^19.1.2",
         "bun-plugin-pino": "^1.4.0",
+        "colorette": "^2.0.20",
         "concurrently": "^9.1.2",
         "electron": "^35.2.1",
         "electron-builder": "^26.0.12",
