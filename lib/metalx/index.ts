@@ -1,3 +1,3 @@
 export { mxc } from './mxc'
-export * from './mxd'
+export * from './deployer-manager'
 export * from './stages'

@@ -21,7 +21,7 @@ import {
   SystemMeta,
 } from './stages'
 
-const log = logger.child({ module: 'mxd manager' })
+const log = logger.child({ module: 'deployer manager' })
 
 export type CreateMxdParams = {
   hosts: HostConfigType[]

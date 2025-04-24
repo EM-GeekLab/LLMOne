@@ -1,6 +1,9 @@
 import { ChildProcess, execFile } from 'node:child_process'
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
+
+import { mkdir } from 'fs-extra'
+import { match } from 'ts-pattern'
 
 import { certificatesDir as certsDir, executable, httpEndpoint, httpsEndpoint, rootDir, token } from '@/lib/env/mxc'
 import { logger } from '@/lib/logger'
@@ -10,19 +13,17 @@ const log = logger.child({ module: 'mxd' })
 
 export const mxc = new Mxc(httpEndpoint, token)
 
-const globalMxdProcess = global as typeof globalThis & {
-  mxdProcess?: ChildProcess
+let mxdProcess: ChildProcess | undefined
+let abortController: AbortController | undefined
+
+export async function startMxd() {
+  if (executable && !mxdProcess) {
+    log.info(`Using mxd executable: ${executable}`)
+    mxdProcess = await runMxd()
+  }
 }
 
-let abortController: AbortController | null = null
-
-if (executable && !globalMxdProcess.mxdProcess) {
-  log.info(`Root directory: ${rootDir}`)
-  log.info(`Using mxd executable: ${executable}`)
-  globalMxdProcess.mxdProcess = runMxd()
-}
-
-export function runMxd(staticPath?: string) {
+async function runMxd(staticPath?: string) {
   if (!executable) {
     log.warn(`No mxd executable found, skipping mxd`)
     return
@@ -35,7 +36,7 @@ export function runMxd(staticPath?: string) {
   const httpsUrl = new URL(httpsEndpoint)
 
   if (!existsSync(certsDir)) {
-    mkdirSync(certsDir, { recursive: true })
+    await mkdir(certsDir, { recursive: true })
   }
 
   const childProcess = execFile(
@@ -50,7 +51,7 @@ export function runMxd(staticPath?: string) {
       ...['--tls-key', join(certsDir, 'tls.key')],
       ...['--ca-cert', join(certsDir, 'ca.crt')],
       ...['--ca-key', join(certsDir, 'ca.key')],
-      ...(process.env.NODE_ENV === 'development' ? ['-v'] : []),
+      ...(process.env.NODE_ENV !== 'production' ? ['-v'] : []),
     ],
     { signal: abortController.signal },
     (error) => {
@@ -59,13 +60,7 @@ export function runMxd(staticPath?: string) {
       }
     },
   )
-  childProcess.stdout?.on('data', (data) => {
-    data
-      .toString()
-      .split('\n')
-      .filter(Boolean)
-      .map((v: string) => log.info(v))
-  })
+  childProcess.stdout?.on('data', handleLog)
   childProcess.stderr?.on('data', (data) => {
     data
       .toString()
@@ -81,7 +76,7 @@ export function runMxd(staticPath?: string) {
   })
   childProcess.on('exit', (code) => {
     log.info(`Process exited with code: ${code}`)
-    abortController = null
+    abortController = undefined
   })
   return childProcess
 }
@@ -90,6 +85,25 @@ export function killMxd() {
   if (abortController) {
     log.info(`Stopping mxd...`)
     abortController.abort()
-    abortController = null
+    abortController = undefined
   }
+}
+
+function handleLog(data: string) {
+  const patternRfc3339 = /^((\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?)(Z|[+-]\d{2}:\d{2})?)/
+  data
+    .split('\n')
+    .filter(Boolean)
+    .map((v: string) => {
+      const text = v.replace(patternRfc3339, '').trim()
+      const level = text.slice(0, 6).trim()
+      const message = text.slice(6).trim()
+      match(level)
+        .with('INFO', () => log.info(message))
+        .with('ERROR', () => log.error(message))
+        .with('WARN', () => log.warn(message))
+        .with('DEBUG', () => log.debug(message))
+        .with('TRACE', () => log.trace(message))
+        .otherwise(() => log.info(text))
+    })
 }

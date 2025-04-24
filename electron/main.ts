@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, clipboard, dialog, shell } from 'electron'
 import electronServe from 'electron-serve'
 
-import { killMxd } from '@/lib/metalx/mxc'
+import { killMxd, startMxd } from '@/lib/metalx/mxc'
 import { createServer } from '@/trpc'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -14,6 +14,8 @@ const rootDir = dirname(__dirname)
 const loadUrl = electronServe({
   directory: join(rootDir, 'out'),
 })
+
+const singletonLock = app.requestSingleInstanceLock()
 
 async function createWindow() {
   const win = new BrowserWindow({
@@ -46,29 +48,6 @@ async function createWindow() {
     })
   }
 }
-
-app.whenReady().then(async () => {
-  const { port } = await createServer()
-  process.env.TRPC_REAL_PORT = String(port)
-
-  await createWindow()
-
-  app.on('activate', () => {
-    if (process.platform === 'darwin' && BrowserWindow.getAllWindows().length === 0) {
-      createWindow()
-    }
-  })
-})
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-app.on('will-quit', () => {
-  killMxd()
-})
 
 process.on('uncaughtException', (e) => {
   if (e.message.toLowerCase().startsWith('the worker ')) {
@@ -103,4 +82,43 @@ process.on('uncaughtException', (e) => {
       app.exit(1)
     }
   }
+})
+
+if (!singletonLock) {
+  console.warn('Another instance of ModelMachine is running. Exiting...')
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    const win = BrowserWindow.getAllWindows()[0]
+    if (win) {
+      if (win.isMinimized()) {
+        win.restore()
+      }
+      win.focus()
+    }
+  })
+
+  app.whenReady().then(async () => {
+    await startMxd()
+    const { port } = await createServer()
+    process.env.TRPC_REAL_PORT = String(port)
+
+    await createWindow()
+
+    app.on('activate', () => {
+      if (process.platform === 'darwin' && BrowserWindow.getAllWindows().length === 0) {
+        createWindow()
+      }
+    })
+  })
+}
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
+
+app.on('will-quit', () => {
+  killMxd()
 })

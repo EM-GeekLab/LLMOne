@@ -16,32 +16,38 @@ const getDatedFileName = () => {
 }
 const destFile = join(logsPath, getDatedFileName())
 
-const prodTransport = pino.transport({
-  targets: [
-    {
-      level: 'info',
-      target: 'pino/file',
-      options: { destination: destFile, mkdir: true },
-    },
-  ],
-})
-
-const devTransport = pino.transport({
-  targets: [
-    {
-      level: 'info',
-      target: 'pino/file',
-      options: { destination: destFile, mkdir: true },
-    },
-    {
-      level: 'debug',
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        ignore: 'pid,hostname',
+export const logger: Logger = pino(
+  process.env.NODE_ENV !== 'production'
+    ? {
+        level: 'debug',
+        transport: {
+          targets: [
+            {
+              level: 'info',
+              target: 'pino/file',
+              options: { destination: destFile, mkdir: true },
+            },
+            {
+              level: 'debug',
+              target: 'pino-pretty',
+              options: {
+                colorize: true,
+                ignore: 'pid,hostname',
+              },
+            },
+          ],
+        },
+      }
+    : {
+        level: 'info',
+        transport: {
+          targets: [
+            {
+              level: 'info',
+              target: 'pino/file',
+              options: { destination: destFile, mkdir: true },
+            },
+          ],
+        },
       },
-    },
-  ],
-})
-
-export const logger: Logger = pino(process.env.NODE_ENV !== 'production' ? devTransport : prodTransport)
+)
