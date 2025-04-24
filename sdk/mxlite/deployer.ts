@@ -39,8 +39,8 @@ BOOT_PATH="/dev/disk/by-partuuid/$BOOT_PARTUUID"
 ROOTFS_PATH="/dev/disk/by-partuuid/$ROOTFS_PARTUUID"
 
 mkfs.vfat -F 32 -n EFI "$EFI_PATH" || exit 1
-mkfs.ext4 -L boot "$BOOT_PATH" || exit 1
-mkfs.ext4 -L rootfs "$ROOTFS_PATH" || exit 1
+mkfs.ext4 -O ^metadata_csum_seed -O ^orphan_file -L boot "$BOOT_PATH" || exit 1
+mkfs.ext4 -O ^orphan_file -L rootfs "$ROOTFS_PATH" || exit 1
 
 mount "$ROOTFS_PATH" /mnt -t ext4 || exit 1
 mkdir -p /mnt/boot
