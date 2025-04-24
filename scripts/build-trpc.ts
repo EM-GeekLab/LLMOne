@@ -1,4 +1,5 @@
 import Bun from 'bun'
+import bunPluginPino from 'bun-plugin-pino'
 
 import { printBuild } from './print-build'
 
@@ -11,6 +12,12 @@ const result = await Bun.build({
   outdir: './dist-trpc',
   format: 'esm',
   minify: true,
+  plugins: [
+    bunPluginPino({
+      transports: ['pino-pretty'],
+      logging: 'quiet',
+    }),
+  ],
 })
 
 console.timeLog(message)

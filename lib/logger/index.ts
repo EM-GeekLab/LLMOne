@@ -1,12 +1,8 @@
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 
 import pino, { type Logger } from 'pino'
 
 import { logsPath } from '@/lib/env/logs'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 
 const getDatedFileName = () => {
   const date = new Date(Date.now() - process.uptime() * 1000)
@@ -24,8 +20,8 @@ const prodTransport = pino.transport({
   targets: [
     {
       level: 'info',
-      target: join(__dirname, './transports/file-transport.mjs'),
-      options: { dest: destFile },
+      target: 'pino/file',
+      options: { destination: destFile, mkdir: true },
     },
   ],
 })
@@ -34,12 +30,12 @@ const devTransport = pino.transport({
   targets: [
     {
       level: 'info',
-      target: join(__dirname, './transports/file-transport.mjs'),
-      options: { dest: destFile },
+      target: 'pino/file',
+      options: { destination: destFile, mkdir: true },
     },
     {
       level: 'debug',
-      target: join(__dirname, './transports/pretty.mjs'),
+      target: 'pino-pretty',
       options: {
         colorize: true,
         ignore: 'pid,hostname',

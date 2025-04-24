@@ -22,7 +22,6 @@
 /dist
 /dist-*
 /release
-/lib/logger/transports/*.mjs
 
 # misc
 .DS_Store

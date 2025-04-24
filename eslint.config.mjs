@@ -16,15 +16,7 @@ const eslintConfig = defineConfig([
   { rules: { camelcase: 'warn' } },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   ...pluginQuery.configs['flat/recommended'],
-  globalIgnores([
-    'svgr.d.ts',
-    'node_modules/',
-    '.next/',
-    '*.config.ts',
-    'dist-*/',
-    'data/',
-    'lib/logger/transports/*.mjs',
-  ]),
+  globalIgnores(['svgr.d.ts', 'node_modules/', '.next/', '*.config.ts', 'dist-*/', 'data/']),
 ])
 
 export default eslintConfig
