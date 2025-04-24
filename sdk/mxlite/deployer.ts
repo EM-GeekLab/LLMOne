@@ -4,7 +4,7 @@ import type { Mxc } from '.'
 import { configToYaml, type NetplanConfiguration } from './netplan'
 import type { OperationError } from './types'
 
-const log = logger.child({ module: 'mxlite/deployer' })
+const log = logger.child({ module: 'mxlite.deployer' })
 
 export type DeployStage =
   | 'Pending'

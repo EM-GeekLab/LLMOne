@@ -1,6 +1,6 @@
 import Bun from 'bun'
-import bunPluginPino from 'bun-plugin-pino'
 
+import { buildPlugins } from './plugins'
 import { printBuild } from './print-build'
 
 interface EnvironmentConfig {
@@ -54,12 +54,7 @@ export async function buildMain(platform: 'win' | 'mac' | 'linux', env: 'dev' | 
     external: ['electron'],
     define: toDefineObject(isDev ? environments.development : environments.production),
     naming: '[dir]/[name].mjs',
-    plugins: [
-      bunPluginPino({
-        transports: ['pino-pretty'],
-        logging: 'quiet',
-      }),
-    ],
+    plugins: buildPlugins,
   })
 
   console.timeLog(message, '\n')

@@ -92,7 +92,6 @@
         "@types/node": "^22.14.1",
         "@types/react": "^19.1.2",
         "@types/react-dom": "^19.1.2",
-        "bun-plugin-pino": "^1.4.0",
         "colorette": "^2.0.20",
         "concurrently": "^9.1.2",
         "electron": "^35.2.1",
@@ -1197,8 +1196,6 @@
     "builder-util": ["builder-util@26.0.11", "https://registry.npmmirror.com/builder-util/-/builder-util-26.0.11.tgz", { "dependencies": { "7zip-bin": "~5.2.0", "@types/debug": "^4.1.6", "app-builder-bin": "5.0.0-alpha.12", "builder-util-runtime": "9.3.1", "chalk": "^4.1.2", "cross-spawn": "^7.0.6", "debug": "^4.3.4", "fs-extra": "^10.1.0", "http-proxy-agent": "^7.0.0", "https-proxy-agent": "^7.0.0", "is-ci": "^3.0.0", "js-yaml": "^4.1.0", "sanitize-filename": "^1.6.3", "source-map-support": "^0.5.19", "stat-mode": "^1.0.0", "temp-file": "^3.4.0", "tiny-async-pool": "1.3.0" } }, "sha512-xNjXfsldUEe153h1DraD0XvDOpqGR0L5eKFkdReB7eFW5HqysDZFfly4rckda6y9dF39N3pkPlOblcfHKGw+uA=="],
 
     "builder-util-runtime": ["builder-util-runtime@9.3.1", "https://registry.npmmirror.com/builder-util-runtime/-/builder-util-runtime-9.3.1.tgz", { "dependencies": { "debug": "^4.3.4", "sax": "^1.2.4" } }, "sha512-2/egrNDDnRaxVwK3A+cJq6UOlqOdedGA7JPqCeJjN2Zjk1/QB/6QUi3b714ScIGS7HafFXTyzJEOr5b44I3kvQ=="],
-
-    "bun-plugin-pino": ["bun-plugin-pino@1.4.0", "https://registry.npmmirror.com/bun-plugin-pino/-/bun-plugin-pino-1.4.0.tgz", { "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-Ue+ZZTwrifKZkyau9yvLL689eRnBo6FsAK1C4QC8gAPKJMmj/U/9By+UgDsxas6OsTWArl0QqkWommdK/pzrCA=="],
 
     "bun-types": ["bun-types@1.2.10", "https://registry.npmmirror.com/bun-types/-/bun-types-1.2.10.tgz", { "dependencies": { "@types/node": "*" } }, "sha512-b5ITZMnVdf3m1gMvJHG+gIfeJHiQPJak0f7925Hxu6ZN5VKA8AGy4GZ4lM+Xkn6jtWxg5S3ldWvfmXdvnkp3GQ=="],
 

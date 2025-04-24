@@ -19,7 +19,7 @@ const destFile = join(logsPath, getDatedFileName())
 export const logger: Logger = pino(
   process.env.NODE_ENV !== 'production'
     ? {
-        level: 'debug',
+        level: 'trace',
         transport: {
           targets: [
             {
@@ -28,12 +28,8 @@ export const logger: Logger = pino(
               options: { destination: destFile, mkdir: true },
             },
             {
-              level: 'debug',
-              target: 'pino-pretty',
-              options: {
-                colorize: true,
-                ignore: 'pid,hostname',
-              },
+              level: 'trace',
+              target: './pretty-transport',
             },
           ],
         },

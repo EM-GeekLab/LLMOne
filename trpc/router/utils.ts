@@ -7,4 +7,4 @@ export function inputType<T>(input: unknown) {
   return input as T
 }
 
-export const log = logger.child({ module: 'trpc' })
+export const log = logger.child({ module: 'trpc.procedure' })

@@ -12,7 +12,7 @@ import type {
 } from './types'
 import { ERR_REASON_TASK_NOT_COMPLETED } from './types'
 
-const log = logger.child({ module: 'mxlite-sdk' })
+const log = logger.child({ module: 'mxlite.sdk' })
 
 export class Mxc {
   readonly endpoint: string

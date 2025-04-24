@@ -6,7 +6,7 @@ import { ResourcePackage } from '@/app/select-os/rescource-schema'
 
 import { InstallProgressBase, InstallStepConfig } from './types'
 
-const log = logger.child({ module: 'mxd manager' })
+const log = logger.child({ module: 'deployer' })
 
 export async function generateDriverInstallStepConfig(
   hostId: string,

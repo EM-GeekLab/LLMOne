@@ -4,7 +4,7 @@ import superjson from 'superjson'
 
 import { logger } from '@/lib/logger'
 
-const log = logger
+const log = logger.child({ module: 'trpc' })
 
 export const createTRPCContext = cache(async () => {
   // @see: https://trpc.io/docs/server/context

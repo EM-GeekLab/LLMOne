@@ -1,8 +1,10 @@
 import { basename } from 'node:path'
 
 import { BuildOutput } from 'bun'
-import { blueBright, white, yellow, yellowBright } from 'colorette'
+import { blueBright, dim, white, yellowBright } from 'colorette'
 import { filesize } from 'filesize'
+
+const dimYellow = (text: string | number) => dim(yellowBright(text))
 
 function withColor(text: string, color?: (text: string | number) => string) {
   if (color) {
@@ -20,7 +22,7 @@ export function printBuild(result: BuildOutput) {
         filesize(artifact.size, { standard: 'jedec' }).padEnd(10),
         artifact.kind === 'sourcemap' ? white : yellowBright,
       ),
-      withColor(`(${artifact.kind})`, artifact.kind === 'entry-point' ? yellow : white),
+      withColor(`(${artifact.kind})`, artifact.kind === 'entry-point' ? dimYellow : dim),
     )
   }
   console.groupEnd()

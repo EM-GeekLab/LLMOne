@@ -1,6 +1,6 @@
 import Bun from 'bun'
-import bunPluginPino from 'bun-plugin-pino'
 
+import { buildPlugins } from './plugins'
 import { printBuild } from './print-build'
 
 const message = `The tRPC server is built.`
@@ -12,12 +12,7 @@ const result = await Bun.build({
   outdir: './dist-trpc',
   format: 'esm',
   minify: true,
-  plugins: [
-    bunPluginPino({
-      transports: ['pino-pretty'],
-      logging: 'quiet',
-    }),
-  ],
+  plugins: buildPlugins,
 })
 
 console.timeLog(message)
