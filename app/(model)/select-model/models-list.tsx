@@ -100,27 +100,31 @@ function ModelTableBody({ className, children }: ComponentProps<'div'>) {
 function ModelList({ data }: { data: Awaited<ReturnType<AppRouter['resource']['getModels']>> }) {
   return (
     <ModelTableBody>
-      {data.map((model) => (
-        <div
-          key={model.modelInfoPath}
-          className="col-span-full grid grid-cols-subgrid items-center not-last:border-b *:not-last:py-2.5"
-        >
-          <div className="pl-3">
-            <ModelIcon type="color" model={model.logoKey} size={32} />
+      {data.length > 0 ? (
+        data.map((model) => (
+          <div
+            key={model.modelInfoPath}
+            className="col-span-full grid grid-cols-subgrid items-center not-last:border-b *:not-last:py-2.5"
+          >
+            <div className="pl-3">
+              <ModelIcon type="color" model={model.logoKey} size={32} />
+            </div>
+            <div className="max-w-40 font-medium">{model.displayName}</div>
+            <div>
+              <div className="line-clamp-3 overflow-hidden">{model.description}</div>
+            </div>
+            <div>{model.requirements.gpu}</div>
+            <div className="text-right whitespace-nowrap">{model.requirements.ram} GB</div>
+            <div className="font-mono whitespace-nowrap">{model.weightType}</div>
+            <div className="text-right whitespace-nowrap">{model.storageSize} GB</div>
+            <div className="pr-3">
+              <DeployButton model={model} />
+            </div>
           </div>
-          <div className="max-w-40 font-medium">{model.displayName}</div>
-          <div>
-            <div className="line-clamp-3 overflow-hidden">{model.description}</div>
-          </div>
-          <div>{model.requirements.gpu}</div>
-          <div className="text-right whitespace-nowrap">{model.requirements.ram} GB</div>
-          <div className="font-mono whitespace-nowrap">{model.weightType}</div>
-          <div className="text-right whitespace-nowrap">{model.storageSize} GB</div>
-          <div className="pr-3">
-            <DeployButton model={model} />
-          </div>
-        </div>
-      ))}
+        ))
+      ) : (
+        <div className="text-muted-foreground col-span-full py-6 text-center text-sm">资源包中无可用模型</div>
+      )}
     </ModelTableBody>
   )
 }
