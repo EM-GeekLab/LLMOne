@@ -1,5 +1,5 @@
 import type { AccountConfigType, HostConfigType, NetworkConfigType } from '@/app/host-info/schemas'
-import type { ResourcePackage } from '@/app/select-os/rescource-schema'
+import { ResourceOsBaseInfo, ResourcePackage } from '@/app/select-os/rescource-schema'
 import type { SystemDeployer } from '@/sdk/mxlite/deployer'
 import type { HostExtraInfo } from '@/sdk/mxlite/types'
 
@@ -42,5 +42,5 @@ export type SharedConfig = {
 
 export type SystemMeta = {
   packages: ResourcePackage[]
-  grubArch?: string
+  info: ResourceOsBaseInfo
 }

@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 
 import { TRPCError } from '@trpc/server'
+import { omit } from 'radash'
 import { z } from 'zod'
 
 import { BmcClients } from '@/lib/bmc-clients'
@@ -48,11 +49,10 @@ export const deployRouter = createRouter({
           account,
           network,
           systemImagePath: osInfo.file,
-          packages: osInfo.packages.map(({ file, name }) => ({
-            name,
-            file: join(osInfo.packagesDir, file),
-          })),
-          grubArch: osInfo.grubArch,
+          packages: osInfo.packages.map((pkg) =>
+            pkg.role === 'file' ? { role: 'file', name: pkg.name, file: join(osInfo.packagesDir, pkg.file) } : pkg,
+          ),
+          info: omit(osInfo, ['packages', 'packagesDir']),
         })
       } catch (err) {
         log.error(err, '初始化部署器失败')

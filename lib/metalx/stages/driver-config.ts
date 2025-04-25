@@ -1,7 +1,10 @@
 import { basename } from 'node:path'
 
+import { match } from 'ts-pattern'
+
 import { logger } from '@/lib/logger'
 import { mxc } from '@/lib/metalx'
+import { spacingText } from '@/lib/pangu'
 import { ResourcePackage } from '@/app/select-os/rescource-schema'
 
 import { InstallProgressBase, InstallStepConfig } from './types'
@@ -11,27 +14,50 @@ const log = logger.child({ module: 'deployer' })
 export async function generateDriverInstallStepConfig(
   hostId: string,
   packages: ResourcePackage[],
+  { reboot }: { reboot: () => Promise<void> },
 ): Promise<InstallStepConfig[]> {
-  const urls = await Promise.all(
-    packages.map(async ({ file }) => {
-      const fileName = basename(file)
-      const [res1] = await mxc.addFileMap(file, fileName)
-      const [res2] = await mxc.urlSubByHost(`/srv/file/${fileName}`, hostId)
-      if (!res1.result[0].ok) {
-        log.error({ file, message: res1.result[0].err }, '添加文件失败')
-        throw new Error(`软件包文件服务失败：${res1.result[0].err}`)
-      }
-      return res2.urls[0]
-    }),
+  const urls = new Map(
+    await Promise.all(
+      packages
+        .filter((p) => p.role === 'file')
+        .map(async ({ file }): Promise<[string, string]> => {
+          const fileName = basename(file)
+          const [res1] = await mxc.addFileMap(file, fileName)
+          const [res2] = await mxc.urlSubByHost(`/srv/file/${fileName}`, hostId)
+          if (!res1.result[0].ok) {
+            log.error({ file, message: res1.result[0].err }, '添加文件失败')
+            throw new Error(`软件包文件服务失败：${res1.result[0].err}`)
+          }
+          return [file, res2.urls[0]]
+        }),
+    ),
   )
   const installSteps = packages.map(
-    ({ name }, index): InstallStepConfig => ({
-      step: `安装 ${name}`,
-      progress: 100 - (packages.length - index - 1) * (100 / packages.length),
-      executor: ({ deployer }) => deployer.applyCustomPackage(urls[index]),
-    }),
+    (pkg, index): InstallStepConfig =>
+      match(pkg)
+        .returnType<InstallStepConfig>()
+        .with({ role: 'file' }, (pkg) => ({
+          step: spacingText(`安装${pkg.name}`),
+          progress: 100 - (packages.length - index - 1) * (100 / packages.length),
+          executor: async ({ deployer }) => {
+            const url = urls.get(pkg.file)
+            if (!url) throw new Error('Package URL not found')
+            await deployer.applyCustomPackage(url)
+          },
+        }))
+        .with({ role: 'reboot' }, () => ({
+          step: 'reboot',
+          progress: 100 - (packages.length - index - 1) * (100 / packages.length),
+          executor: () => reboot(),
+        }))
+        .exhaustive(),
   )
   return [
+    {
+      step: 'reboot',
+      progress: 0,
+      executor: () => reboot(),
+    },
     ...installSteps,
     {
       step: 'complete',

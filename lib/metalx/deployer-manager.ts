@@ -2,7 +2,7 @@ import { basename } from 'node:path'
 
 import { logger } from '@/lib/logger'
 import type { AccountConfigType, HostConfigType, NetworkConfigType } from '@/app/host-info/schemas'
-import type { ResourcePackage } from '@/app/select-os/rescource-schema'
+import { ResourceOsBaseInfo, ResourcePackage } from '@/app/select-os/rescource-schema'
 import { SystemDeployer } from '@/sdk/mxlite/deployer'
 
 import { mxc } from './mxc'
@@ -29,7 +29,7 @@ export type CreateMxdParams = {
   network: NetworkConfigType
   systemImagePath: string
   packages: ResourcePackage[]
-  grubArch?: string
+  info: ResourceOsBaseInfo
 }
 
 export class MxdManager {
@@ -42,14 +42,14 @@ export class MxdManager {
     account: AccountConfigType,
     network: NetworkConfigType,
     packages: ResourcePackage[],
-    grubArch?: string,
+    info: ResourceOsBaseInfo,
   ) {
     this.list = list
     this.shared = { account, network }
-    this.system = { packages, grubArch }
+    this.system = { packages, info }
   }
 
-  static async create({ hosts, account, network, systemImagePath, packages, grubArch }: CreateMxdParams) {
+  static async create({ hosts, account, network, systemImagePath, packages, info }: CreateMxdParams) {
     const systemImageFile = basename(systemImagePath)
     const [res] = await mxc.addFileMap(systemImagePath, systemImageFile)
     if (!res.result[0].ok) {
@@ -79,7 +79,7 @@ export class MxdManager {
         }
       }),
     )
-    return new MxdManager(deployerList, account, network, packages, grubArch)
+    return new MxdManager(deployerList, account, network, packages, info)
   }
 
   async *installOsOneFromStep(index: number, from?: SystemInstallStep | null) {
@@ -101,8 +101,16 @@ export class MxdManager {
     return this.list.findIndex((item) => item.host.id === hostId)
   }
 
+  private async rebootOne(index: number) {
+    const item = this.list[index]
+    await item.deployer.reboot()
+    await this.waitUntilReady(index)
+  }
+
   private async getDriverInstallStepConfig(index: number) {
-    return await generateDriverInstallStepConfig(this.list[index].host.id, this.system.packages)
+    return await generateDriverInstallStepConfig(this.list[index].host.id, this.system.packages, {
+      reboot: () => this.rebootOne(index),
+    })
   }
 
   async *installEnvOneFromStep(index: number, from?: DriverInstallStep | null): AsyncGenerator<DriverInstallProgress> {

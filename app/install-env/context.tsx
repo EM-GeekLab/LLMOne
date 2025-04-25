@@ -44,15 +44,6 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
     return config
   }
 
-  const waitForReboot = async (id: string, index: number) => {
-    setStage(id, 'reboot')
-    addLog(id, { type: 'info', time: new Date(), log: '重启主机' })
-    await trpc.deploy.waitUntilReady.mutate(index).catch((err) => {
-      addLog(id, { type: 'error', time: new Date(), log: '等待主机启动超时' })
-      throw err
-    })
-  }
-
   const mutation = useMutation({
     mutationFn: async () => {
       const { hosts } = await initDeployer()
@@ -64,7 +55,6 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
               setOsProgress(id, result)
               addLog(id, formatProgress({ stage: 'system', progress: result }))
             }
-            await waitForReboot(id, index)
             setStage(id, 'driver')
             for await (const result of await trpc.deploy.env.installOne.mutate(index, { context: { stream: true } })) {
               setEnvProgress(id, result)
@@ -97,7 +87,6 @@ export function BmcLocalInstallProvider({ children }: { children: ReactNode }) {
           setOsProgress(hostId, result)
           addLog(hostId, formatProgress({ stage: 'system', progress: result }))
         }
-        await waitForReboot(hostId, index)
         setStage(hostId, 'driver')
         for await (const result of await trpc.deploy.env.installOne.mutate(index, { context: { stream: true } })) {
           setEnvProgress(hostId, result)

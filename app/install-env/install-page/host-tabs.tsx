@@ -78,14 +78,13 @@ function HostTabsTrigger({ host, className }: { host: HostConfigType; className?
   const isSuccess = driverProgress && driverProgress.from === 100
 
   const progress = match(stage)
-    .with('system', 'reboot', () => systemProgress)
+    .with('system', () => systemProgress)
     .with('driver', () => driverProgress)
     .with(undefined, () => undefined)
     .exhaustive()
 
   const globalFakeProgress = match(stage)
     .with('system', () => (systemProgress ? { from: systemProgress.from / 2, to: systemProgress.to / 2 } : undefined))
-    .with('reboot', () => ({ from: 50, to: 50 }))
     .with('driver', () =>
       driverProgress ? { from: driverProgress.from / 2 + 50, to: driverProgress.to / 2 + 50 } : undefined,
     )

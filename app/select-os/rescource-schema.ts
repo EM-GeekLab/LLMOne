@@ -18,14 +18,24 @@ export const resourceOsInfoSchema = z.object({
   arch: architecturesEnum,
   distro: z.enum(distributions),
   version: z.string(),
-  grubArch: z.string().optional(),
   displayName: z.string(),
   file: z.string(),
   sha256: z.string(),
   packagesDir: z.string(),
-  packages: z.array(z.object({ name: z.string(), file: z.string() })),
+  packages: z.array(
+    z.union([
+      z.object({
+        role: z.literal('file').default('file'),
+        name: z.string(),
+        file: z.string(),
+      }),
+      z.object({ role: z.literal('reboot') }),
+    ]),
+  ),
 })
 
 export type ResourceOsInfoType = z.infer<typeof resourceOsInfoSchema>
+
+export type ResourceOsBaseInfo = Omit<ResourceOsInfoType, 'packages' | 'packagesDir'>
 
 export type ResourcePackage = ResourceOsInfoType['packages'][number]

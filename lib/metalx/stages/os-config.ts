@@ -19,17 +19,17 @@ export const systemInstallSteps = [
 export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstallStep>>[] = [
   {
     step: 'preinstall',
-    progress: 30,
+    progress: 20,
     executor: ({ deployer }) => deployer.preinstall(),
   },
   {
     step: 'downloadRootfs',
-    progress: 65,
+    progress: 50,
     executor: ({ deployer }) => deployer.downloadRootfs(),
   },
   {
     step: 'install',
-    progress: 80,
+    progress: 75,
     executor: ({ deployer }) => deployer.install(),
   },
   {
@@ -89,7 +89,7 @@ export const systemInstallStepConfig: InstallStepConfig<NonNullable<SystemInstal
   {
     step: 'complete',
     progress: 100,
-    executor: ({ deployer }) => deployer.reboot(),
+    executor: () => Promise.resolve(),
   },
 ]
 

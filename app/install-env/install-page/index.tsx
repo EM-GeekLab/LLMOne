@@ -80,7 +80,6 @@ function SystemInstallCard() {
 
 function DriverInstallCard() {
   const { hostId } = InstallPageContext.useContext()
-  const stage = useInstallStore((s) => s.installProgress.get(hostId)?.stage)
   const progress = useInstallStore((s) => s.installProgress.get(hostId)?.driver)
 
   return (
@@ -88,7 +87,7 @@ function DriverInstallCard() {
       <ProgressCardTitle>环境组件安装</ProgressCardTitle>
       <FakeProgressBar progress={progress} />
       <ProgressCardDescription>
-        {stage === 'reboot' ? (
+        {progress?.ok && progress.started === 'reboot' ? (
           <p>
             主机重启中，这可能需要几分钟。
             <WaitingForBootTimer />

@@ -33,6 +33,7 @@ export function formatProgress({ stage, progress }: { stage: InstallStage; progr
 export function progressText(params: { stage: InstallStage; step: InstallStepType }) {
   return match(params)
     .with({ step: P.nullish }, () => '准备安装')
+    .with({ step: 'reboot' }, () => '重启主机')
     .with({ step: 'preinstall' }, () => '分配磁盘空间')
     .with({ step: 'downloadRootfs' }, () => '传输系统镜像')
     .with({ step: 'install' }, () => '安装系统')
@@ -42,7 +43,6 @@ export function progressText(params: { stage: InstallStage; step: InstallStepTyp
     .with({ step: 'configUser' }, () => '配置用户')
     .with({ step: 'configMirrors' }, () => '配置镜像源')
     .with({ stage: 'system', step: 'complete' }, () => '系统安装完成')
-    .with({ stage: 'reboot' }, () => '等待主机重启')
     .with({ stage: 'driver', step: 'complete' }, () => '环境组件安装完成')
     .otherwise(({ step }) => step || '未知步骤')
 }

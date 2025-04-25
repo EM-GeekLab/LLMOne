@@ -1,1 +1,1 @@
-export type InstallStage = 'system' | 'reboot' | 'driver'
+export type InstallStage = 'system' | 'driver'
