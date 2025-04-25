@@ -132,11 +132,11 @@ export class SystemDeployer {
     }
     if (r2.payload.payload.stdout.length > 0) {
       log.info({ stdout: r2.payload.payload.stdout }, 'Command execution stdout')
-      if (process.env.NODE_ENV === 'development') console.log(r2.payload.payload.stdout)
+      if (process.env.NODE_ENV !== 'production') console.log(r2.payload.payload.stdout)
     }
     if (r2.payload.payload.stderr.length > 0) {
       log.info({ stderr: r2.payload.payload.stderr }, 'Command execution stderr')
-      if (process.env.NODE_ENV === 'development') console.error(r2.payload.payload.stderr)
+      if (process.env.NODE_ENV !== 'production') console.error(r2.payload.payload.stderr)
     }
     return {
       stdout: r2.payload.payload.stdout,
@@ -182,7 +182,7 @@ export class SystemDeployer {
   public async waitUntilReady({
     skipSessionId,
     interval = 2000,
-    timeout = 30 * 60 * 1000,
+    timeout = 40 * 60 * 1000,
   }: {
     interval?: number
     timeout?: number

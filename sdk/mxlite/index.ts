@@ -144,6 +144,7 @@ export class Mxc {
   }
 
   public async addFileMap(file: string, publishName: string): ApiResult<AddFileMapResponse> {
+    log.debug(`Adding file map: ${file} as ${publishName}`)
     return await this.request(`${this.endpoint}/api/file-map`, 'POST', {
       maps: [
         {
@@ -156,6 +157,7 @@ export class Mxc {
   }
 
   public async addDirMap(dirname: string, publishName: string): ApiResult<AddFileMapResponse> {
+    log.debug(`Adding dir map: ${dirname} as ${publishName}`)
     return await this.request(`${this.endpoint}/api/file-map`, 'POST', {
       maps: [
         {
