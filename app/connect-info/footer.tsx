@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { Fragment, useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -13,7 +13,6 @@ import { NavButtonGuard } from '@/components/base/nav-button-guard'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -85,6 +84,10 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
   const trpcClient = useTRPCClient()
   const trpc = useTRPC()
+
+  const [manualList, setManualList] = useState<{ ip: string; url: string }[]>([])
+  const hasManualList = manualList.length > 0
+
   const { mutate, isPending, error, isError } = useMutation({
     mutationFn: async () => {
       if (storeApi.getState().deployMode === 'local') {
@@ -94,16 +97,29 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
           toast.error('请先选择离线安装配置')
           return
         }
-        const { architecture } = await trpcClient.connection.bmc.checkAndBootLocal.mutate({
+
+        if (hasManualList) {
+          const filteredHosts = finalHosts.filter((host) => manualList.some((m) => m.ip === host.ip))
+          await trpcClient.connection.bmc.bootVirtualMedia.mutate({ bmcHosts: filteredHosts })
+
+          onClose()
+          push('/select-os')
+          return
+        }
+
+        const { architecture, kvmUrls } = await trpcClient.connection.bmc.checkAndBootLocal.mutate({
           bmcHosts: finalHosts,
           manifestPath,
         })
         queryClient.setQueryData(trpc.connection.bmc.getDefaultArchitecture.queryKey(finalHosts), architecture)
+
+        if (kvmUrls.length === 0) {
+          onClose()
+          push('/select-os')
+        }
+
+        setManualList(kvmUrls)
       }
-    },
-    onSuccess: () => {
-      onClose()
-      push('/select-os')
     },
     onError: (error) => {
       console.error(error)
@@ -114,25 +130,47 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>确认信息</DialogTitle>
-        <DialogDescription>即将给下列主机挂载引导镜像并启动，是否继续？</DialogDescription>
+        <DialogTitle>{hasManualList ? '手动处理' : '确认信息'}</DialogTitle>
+        <DialogDescription>
+          {hasManualList ? '下列主机需要手动处理' : '即将给下列主机挂载引导镜像并启动，是否继续？'}
+        </DialogDescription>
       </DialogHeader>
-      <ol className="*:marker:text-primary list-disc pl-4 text-sm *:pl-1">
-        {hosts.map((host) => (
-          <li key={host.id}>{host.ip}</li>
-        ))}
-      </ol>
-      <div className="grid gap-1 text-sm">
-        <p>继续后将进入装机流程，主机所有数据将会清空。</p>
-        <p>此操作不可撤销，请谨慎处理。</p>
-      </div>
+      {hasManualList ? (
+        <>
+          <div className="col-span-full text-sm">
+            下列主机需要手动上传启动镜像，上传完成后点击继续（这是教程占位符）
+          </div>
+          <div className="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1 text-sm">
+            {manualList.map((host) => (
+              <Fragment key={host.ip}>
+                <div>{host.ip}</div>
+                <a href={host.url} target="_blank" className="text-primary hover:text-primary/80 truncate">
+                  {host.url}
+                </a>
+              </Fragment>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <ol className="*:marker:text-primary list-disc pl-4 text-sm *:pl-1">
+            {hosts.map((host) => (
+              <li key={host.id}>{host.ip}</li>
+            ))}
+          </ol>
+          <div className="grid gap-1 text-sm">
+            <p>继续后将进入装机流程，主机所有数据将会清空。</p>
+            <p>此操作不可撤销，请谨慎处理。</p>
+          </div>
+        </>
+      )}
       {error && <Callout>{error.message}</Callout>}
       <DialogFooter>
-        <DialogClose disabled={isPending} asChild>
-          <Button variant="outline">取消</Button>
-        </DialogClose>
+        <Button disabled={isPending} onClick={() => (hasManualList ? setManualList([]) : onClose())} variant="outline">
+          取消
+        </Button>
         <Button
-          variant="destructive"
+          variant={hasManualList ? 'default' : 'destructive'}
           className={cn(isPending && 'pointer-events-none opacity-50')}
           onClick={() => mutate()}
         >

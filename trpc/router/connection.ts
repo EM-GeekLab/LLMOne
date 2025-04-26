@@ -58,17 +58,35 @@ export const connectionRouter = createRouter({
             })
           }
 
-          const errors = await bmcClients.map(async ({ defaultId, ip, client }) => {
-            const [res, status] = await mxc.urlSubByIp(
-              `srv/file/${bootstrapFile}`,
-              ip,
-              client.name === 'iBMCRedfishClient',
-            )
+          type iBMCMessage = {
+            type: 'iBMC'
+            ip: string
+            url: string
+          }
+          type iDRACMessage = {
+            type: 'iDRAC'
+            ip: string
+            err?: TRPCError
+          }
+          type BmcMessage = iBMCMessage | iDRACMessage
+
+          const messages = await bmcClients.map(async ({ defaultId, ip, client }): Promise<BmcMessage> => {
+            const [res, status] = await mxc.urlSubByIp(`/srv/file/${bootstrapFile}`, ip)
+
+            if (client.name === 'iBMCRedfishClient') {
+              const url = await client.getKVMUrl(defaultId)
+              return { type: 'iBMC', ip, url }
+            }
+
             if (status >= 400 || !res.ok) {
-              return new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message: `${ip} 引导文件服务失败，状态码 ${status}`,
-              })
+              return {
+                type: 'iDRAC',
+                ip,
+                err: new TRPCError({
+                  code: 'INTERNAL_SERVER_ERROR',
+                  message: `${ip} 引导文件服务失败，状态码 ${status}`,
+                }),
+              }
             }
 
             const { urls } = res
@@ -77,31 +95,107 @@ export const connectionRouter = createRouter({
               const { status } = await client.bootVirtualMedia(urls[0], defaultId)
               log.error({ ip, url: urls[0], status }, `${ip} 引导失败`)
               if (!status)
-                return new TRPCError({
-                  code: 'INTERNAL_SERVER_ERROR',
-                  message: `${ip} 引导失败`,
-                })
+                return {
+                  type: 'iDRAC',
+                  ip,
+                  err: new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `${ip} 引导失败`,
+                  }),
+                }
             } catch (err) {
               log.error({ ip, url: urls[0], err }, `${ip} 引导失败`)
-              return new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message: `${ip} 引导失败`,
-                cause: err,
-              })
+              return {
+                type: 'iDRAC',
+                ip,
+                err: new TRPCError({
+                  code: 'INTERNAL_SERVER_ERROR',
+                  message: `${ip} 引导失败`,
+                  cause: err,
+                }),
+              }
             }
+
+            return { type: 'iDRAC', ip }
           })
 
-          if (errors.some((err) => !!err)) {
+          if (messages.some((msg): msg is Required<iDRACMessage> => msg.type === 'iDRAC' && !!msg.err)) {
             throw new TRPCError({
               code: 'INTERNAL_SERVER_ERROR',
-              message: errors
-                .filter((err) => !!err)
-                .map((err) => err.message)
-                .join(', '),
+              message: messages
+                .filter((msg): msg is Required<iDRACMessage> => msg.type === 'iDRAC' && !!msg.err)
+                .map((msg) => msg.err.message)
+                .join('，'),
             })
           }
 
-          return { architecture }
+          const kvmUrls = messages.filter((msg) => msg.type === 'iBMC')
+
+          return { architecture, kvmUrls }
+        } finally {
+          await bmcClients.dispose()
+        }
+      }),
+    bootVirtualMedia: baseProcedure
+      .input(z.object({ bmcHosts: bmcHostsListSchema }))
+      .mutation(async ({ input: { bmcHosts } }) => {
+        const bmcClients = await BmcClients.create(bmcHosts)
+        try {
+          const result = await bmcClients.map(async ({ client, defaultId, ip }) => {
+            const isOk = await client.setVirtualMediaAsNextBootDevice('CD', defaultId)
+            if (!isOk) {
+              log.error({ ip }, '设置虚拟光驱为一次性启动设备失败')
+              return {
+                ip,
+                err: new TRPCError({
+                  code: 'INTERNAL_SERVER_ERROR',
+                  message: `${ip} 设置虚拟光驱为一次性启动设备失败`,
+                }),
+              }
+            }
+
+            const powerState = await client.getSystemPowerState(defaultId)
+
+            if (powerState === 'On') {
+              const isOk2 = await client.forceRestartSystem(defaultId)
+              if (!isOk2) {
+                log.error({ ip, powerState }, '重启主机失败')
+                return {
+                  ip,
+                  err: new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `${ip} 重启主机失败`,
+                  }),
+                }
+              }
+              return
+            }
+
+            if (powerState === 'Off') {
+              const isOk3 = await client.powerOnSystem(defaultId)
+              if (!isOk3) {
+                log.error({ ip, powerState }, '启动主机失败')
+                return {
+                  ip,
+                  err: new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `${ip} 启动主机失败`,
+                  }),
+                }
+              }
+              return
+            }
+          })
+
+          if (result.some((res) => !!res)) {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: result
+                .filter((res) => !!res)
+                .map((res) => res.err.message)
+                .join('，'),
+            })
+          }
         } finally {
           await bmcClients.dispose()
         }
