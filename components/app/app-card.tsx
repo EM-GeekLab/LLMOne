@@ -18,15 +18,23 @@ export function AppCard({ children, className, ...props }: ComponentProps<'div'>
   )
 }
 
-export function AppCardSidebar({ children, className, ...props }: ComponentProps<typeof ScrollArea>) {
+export function AppCardSidebar({ children, className, ...props }: ComponentProps<'div'>) {
   return (
-    <ScrollArea
+    <div
       className={cn(
-        'bg-muted/50 h-full overflow-auto border-r max-md:hidden lg:w-[14rem] xl:w-[15rem] [&>div>div]:!block',
+        'bg-muted/50 flex h-full flex-col overflow-hidden border-r max-md:hidden lg:w-[14rem] xl:w-[15rem]',
         className,
       )}
       {...props}
     >
+      {children}
+    </div>
+  )
+}
+
+export function AppCardSidebarScrollArea({ children, className, ...props }: ComponentProps<typeof ScrollArea>) {
+  return (
+    <ScrollArea className={cn('h-full flex-1 [&>div>div]:!block', className)} {...props}>
       {children}
     </ScrollArea>
   )

@@ -1,7 +1,11 @@
 'use client'
 
-import { AppCardSidebar } from '@/components/app/app-card'
+import { HelpCircleIcon, MailIcon } from 'lucide-react'
+import pkg from 'package.json'
+
+import { AppCardSidebar, AppCardSidebarScrollArea } from '@/components/app/app-card'
 import { AppStepper } from '@/components/app/stepper'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useGlobalStore } from '@/stores'
 
 export type StepId =
@@ -45,7 +49,34 @@ export function StepSidebar({ current }: { current?: StepId }) {
 
   return (
     <AppCardSidebar>
-      <AppStepper current={current} items={MODE[mode]} />
+      <AppCardSidebarScrollArea>
+        <AppStepper current={current} items={MODE[mode]} />
+      </AppCardSidebarScrollArea>
+      <footer className="flex items-center justify-between gap-1.5 px-4 py-3">
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="text-muted-foreground hover:text-accent-foreground inline-flex items-center gap-1 text-sm [&_svg]:size-3.5">
+              <HelpCircleIcon />
+              帮助
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" className="w-64 p-2.5">
+            <p className="text-muted-foreground text-xs">
+              如果您在使用过程中遇到问题，请联系我们以获取更多帮助和支持。
+            </p>
+            <p className="mt-1 flex items-center gap-1.5 text-sm">
+              <span className="text-muted-foreground flex items-center gap-1 text-xs [&_svg]:size-3.5">
+                <MailIcon />
+                邮箱
+              </span>
+              <a className="text-primary hover:text-primary/90" href={`mailto:${pkg.author.email}`}>
+                {pkg.author.email}
+              </a>
+            </p>
+          </PopoverContent>
+        </Popover>
+        <div className="text-muted-foreground text-sm">版本 {pkg.version}</div>
+      </footer>
     </AppCardSidebar>
   )
 }
