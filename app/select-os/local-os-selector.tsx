@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Spinner } from '@/components/ui/spinner'
+import { ManifestSelect } from '@/app/(connect-mode)/manifest-select'
 import { useGlobalStore, useGlobalStoreNoUpdate } from '@/stores'
 import { useTRPC, useTRPCClient } from '@/trpc/client'
 import { AppRouter } from '@/trpc/router'
@@ -45,6 +46,10 @@ function OsSelectorContainer() {
     },
     enabled: !!manifestPath,
   })
+
+  if (!manifestPath) {
+    return <ManifestSelect />
+  }
 
   if (distros.isPending || defaultArch.isPending)
     return (
