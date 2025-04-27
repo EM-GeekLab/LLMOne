@@ -2,6 +2,7 @@ import { basename, dirname } from 'node:path'
 
 import { TRPCError } from '@trpc/server'
 import type { Aria2RpcHTTPUrl } from 'maria2'
+import { diff } from 'radash'
 
 import { downloadFile, downloadWithMetalink } from '@/lib/aria2'
 import { mxc } from '@/lib/metalx'
@@ -37,6 +38,31 @@ export const modelRouter = createRouter({
       const metalinkUrl = await addDirMap(host, dirname(config.metaLinkFile))
       const hostAddr = await getHostIp(host)
       const aria2RpcUrl: Aria2RpcHTTPUrl = `http://${hostAddr}:6800/jsonrpc`
+
+      const modelTargetPath = `${MODEL_WORK_DIR}/${config.modelId}`
+
+      const envs = {
+        IMAGE_ID: config.docker.image,
+        WORK_DIR: MODEL_WORK_DIR,
+        MODEL_BASE_DIR: MODEL_WORK_DIR,
+        MODEL_PATH: config.modelId,
+        SERVED_MODEL_NAME: config.modelId,
+        GPU_COUNT: 1,
+        VLLM_PORT: port,
+        MODEL_PORT: port,
+        MODEL_API_KEY: apiKey,
+        CONFIG_JSON: `${modelTargetPath}/mindie_config.json`,
+      }
+      const envCommands = makeEnvs(envs)
+
+      const dockerCommandVars = extractVariables(config.docker.command)
+      const nonExistingVars = diff(dockerCommandVars, Object.keys(envs))
+      if (nonExistingVars.length > 0) {
+        throw new TRPCError({
+          message: `命令中 ${nonExistingVars.join(', ')} 变量未定义`,
+          code: 'BAD_REQUEST',
+        })
+      }
 
       const actorDockerTrans = createActor({
         name: '传输 Docker 镜像',
@@ -77,7 +103,6 @@ export const modelRouter = createRouter({
         formatResult: () => '模型文件传输完成',
         formatError: (error) => `模型文件传输失败: ${error.message}`,
         execute: async ({ onProgress }) => {
-          const modelTargetPath = `${MODEL_WORK_DIR}/${config.modelId}`
           await executeCommand(host, `mkdir -p ${modelTargetPath}`, 100)
           await downloadWithMetalink(`${metalinkUrl}/${basename(config.metaLinkFile)}`, aria2RpcUrl, modelTargetPath, {
             onProgress: async ({ overallProgress }) => onProgress(overallProgress),
@@ -93,15 +118,6 @@ export const modelRouter = createRouter({
         formatResult: () => '模型服务已启动',
         formatError: (error) => `模型服务启动失败: ${error.message}`,
         execute: async () => {
-          const envCommands = makeEnvs({
-            IMAGE_ID: config.docker.image,
-            WORK_DIR: MODEL_WORK_DIR,
-            MODEL_PATH: config.modelId,
-            SERVED_MODEL_NAME: config.modelId,
-            GPU_COUNT: 1,
-            VLLM_PORT: port,
-            MODEL_API_KEY: apiKey,
-          })
           const command = [...envCommands, config.docker.command].join('\n')
           await executeCommand(host, command)
         },
@@ -200,3 +216,13 @@ export const modelRouter = createRouter({
       }),
   },
 })
+
+function extractVariables(command: string): string[] {
+  const regex = /\$\{([A-Z0-9_]+)}/g
+  const variables: string[] = []
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(command)) !== null) {
+    variables.push(match[1])
+  }
+  return variables
+}
