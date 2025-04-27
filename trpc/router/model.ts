@@ -1,4 +1,5 @@
 import { basename, dirname } from 'node:path'
+import { join } from 'node:path/posix'
 
 import { TRPCError } from '@trpc/server'
 import type { Aria2RpcHTTPUrl } from 'maria2'
@@ -38,7 +39,7 @@ export const modelRouter = createRouter({
       const hostAddr = await getHostIp(host)
       const aria2RpcUrl: Aria2RpcHTTPUrl = `http://${hostAddr}:6800/jsonrpc`
 
-      const modelTargetPath = `${MODEL_WORK_DIR}/${config.modelId}`
+      const modelTargetPath = join(MODEL_WORK_DIR, config.modelId)
 
       const envCommands = makeEnvs(
         {
@@ -51,7 +52,7 @@ export const modelRouter = createRouter({
           VLLM_PORT: port,
           MODEL_PORT: port,
           MODEL_API_KEY: apiKey,
-          CONFIG_JSON: `${modelTargetPath}/mindie_config.json`,
+          CONFIG_JSON: join(modelTargetPath, 'mindie_config.json'),
         },
         config.docker.command,
       )
@@ -82,7 +83,7 @@ export const modelRouter = createRouter({
         formatResult: () => 'Docker 镜像载入完成',
         formatError: (error) => `Docker 镜像载入失败: ${error.message}`,
         execute: async () => {
-          await applyLocalDockerImage(host, `${DOCKER_IMAGES_DIR}/${basename(matchedContainer.file)}`)
+          await applyLocalDockerImage(host, join(DOCKER_IMAGES_DIR, basename(matchedContainer.file)))
         },
       })
 
@@ -173,7 +174,7 @@ export const modelRouter = createRouter({
           execute: async ({ onProgress }) => {
             const containerUrl = await addFileMap(host, openWebuiContainer.file)
             const fileSha1 = await mxc.getFileHash(basename(openWebuiContainer.file), 'sha1')
-            await executeCommand(host, `mkdir -p /srv/images`)
+            await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`)
             await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
               onProgress: async ({ overallProgress }) => onProgress(overallProgress),
             })
@@ -188,7 +189,7 @@ export const modelRouter = createRouter({
           formatResult: () => 'Docker 镜像载入完成',
           formatError: (error) => `Docker 镜像载入失败: ${error.message}`,
           execute: async () => {
-            await applyLocalDockerImage(host, `${DOCKER_IMAGES_DIR}/${basename(openWebuiContainer.file)}`)
+            await applyLocalDockerImage(host, join(DOCKER_IMAGES_DIR, basename(openWebuiContainer.file)))
           },
         })
 
