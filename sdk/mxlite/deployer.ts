@@ -6,74 +6,7 @@ import type { OperationError } from './types'
 
 const log = logger.child({ module: 'mxlite.deployer' })
 
-export type DeployStage =
-  | 'Pending'
-  | 'Preinstalling'
-  | 'Preinstalled'
-  | 'Downloading'
-  | 'Downloaded'
-  | 'Installing'
-  | 'Installed'
-  | 'Postinstalling'
-  | 'Postinstalled'
-  | 'Failed'
 export type DeployerError = 'Ok' | 'FailedToExec' | 'ReturnTypeMismatch' | 'ExecError' | 'Timeout'
-
-const PREINSTALL_SCRIPT = `
-umount -R /mnt || true
-parted "$DISK" --fix --script --align 'optimal' 'mklabel gpt \
-  mkpart primary fat32 1MiB 512MiB \
-  mkpart primary ext4 512MiB 2048MiB \
-  mkpart primary ext4 2048MiB 100% \
-  set 1 esp on \
-  print' || exit 1
-partprobe "$DISK"
-mdev -s
-
-DISK_INFO="$(parted "$DISK" --script 'print' -j)"
-EFI_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[0].uuid' -r)"
-BOOT_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[1].uuid' -r)"
-ROOTFS_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[2].uuid' -r)"
-EFI_PATH="/dev/disk/by-partuuid/$EFI_PARTUUID"
-BOOT_PATH="/dev/disk/by-partuuid/$BOOT_PARTUUID"
-ROOTFS_PATH="/dev/disk/by-partuuid/$ROOTFS_PARTUUID"
-
-mkfs.vfat -F 32 -n EFI "$EFI_PATH" || exit 1
-mkfs.ext4 -O ^metadata_csum_seed -O ^orphan_file -L boot "$BOOT_PATH" || exit 1
-mkfs.ext4 -O ^orphan_file -L rootfs "$ROOTFS_PATH" || exit 1
-
-mount "$ROOTFS_PATH" /mnt -t ext4 || exit 1
-mkdir -p /mnt/boot
-mount "$BOOT_PATH" /mnt/boot -t ext4 || exit 1
-mkdir -p /mnt/boot/efi
-mount "$EFI_PATH" /mnt/boot/efi -t vfat || exit 1
-`
-const POSTINSTALL_SCRIPT = `
-# Prepare chroot envrionment mount special filesystems
-mkdir -p /mnt/tmp /mnt/proc /mnt/sys /mnt/dev /mnt/dev/pts
-mount -t tmpfs tmpfs /mnt/tmp
-mount -t proc none /mnt/proc
-mount -t sysfs none /mnt/sys
-mount -t devtmpfs none /mnt/dev
-mount -t devpts none /mnt/dev/pts
-mount -t efivarfs none /mnt/sys/firmware/efi/efivars
-
-DISK_INFO="$(parted "$DISK" --script 'print' -j)"
-EFI_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[0].uuid' -r)"
-BOOT_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[1].uuid' -r)"
-ROOTFS_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[2].uuid' -r)"
-
-cat << EOF > /mnt/etc/fstab
-PARTUUID=$ROOTFS_PARTUUID / ext4 defaults 0 1
-PARTUUID=$BOOT_PARTUUID /boot ext4 defaults 0 2
-PARTUUID=$EFI_PARTUUID /boot/efi vfat defaults 0 2
-EOF
-
-chroot /mnt sh << END_OF_SCRIPT
-update-initramfs -c -k all || exit 1
-grub-install --efi-directory=/boot/efi --recheck && update-grub || exit 1
-END_OF_SCRIPT
-`
 
 class DeployError extends Error {
   public reason?: OperationError
@@ -90,17 +23,32 @@ class DeployError extends Error {
   }
 }
 
+export type Distro = (
+  | {
+      distro: 'debian-like'
+      release: 'bookworm' | 'noble' | 'jammy'
+    }
+  | {
+      distro: 'fedora-like'
+      release: 'f42'
+    }
+) & {
+  arch: 'x86_64' | 'arm64'
+}
+
 export class SystemDeployer {
-  private mxc: Mxc
+  private readonly mxc: Mxc
   private readonly hostId: string
   private readonly diskName: string
   private readonly rootfsUrl: string
+  private readonly distro: Distro
 
-  constructor(mxc: Mxc, hostId: string, diskName: string, rootfsUrl: string) {
+  constructor(mxc: Mxc, hostId: string, diskName: string, rootfsUrl: string, distro: Distro) {
     this.mxc = mxc
     this.hostId = hostId
     this.diskName = diskName
     this.rootfsUrl = rootfsUrl
+    this.distro = distro
   }
 
   private async execScript(script: string) {
@@ -213,8 +161,35 @@ export class SystemDeployer {
   }
 
   public async preinstall() {
-    const script = `export DISK="${this.diskName}";
-${PREINSTALL_SCRIPT}`
+    const script = String.raw`export DISK="${this.diskName}";
+umount -R /mnt || true
+parted "$DISK" --fix --script --align 'optimal' 'mklabel gpt \
+  mkpart primary fat32 1MiB 512MiB \
+  mkpart primary ext4 512MiB 2048MiB \
+  mkpart primary ext4 2048MiB 100% \
+  set 1 esp on \
+  print' || exit 1
+partprobe "$DISK"
+mdev -s
+
+DISK_INFO="$(parted "$DISK" --script 'print' -j)"
+EFI_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[0].uuid' -r)"
+BOOT_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[1].uuid' -r)"
+ROOTFS_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[2].uuid' -r)"
+EFI_PATH="/dev/disk/by-partuuid/$EFI_PARTUUID"
+BOOT_PATH="/dev/disk/by-partuuid/$BOOT_PARTUUID"
+ROOTFS_PATH="/dev/disk/by-partuuid/$ROOTFS_PARTUUID"
+
+mkfs.vfat -F 32 -n EFI "$EFI_PATH" || exit 1
+mkfs.ext4 -O ^metadata_csum_seed -O ^orphan_file -L boot "$BOOT_PATH" || exit 1
+mkfs.ext4 -O ^orphan_file -L rootfs "$ROOTFS_PATH" || exit 1
+
+mount "$ROOTFS_PATH" /mnt -t ext4 || exit 1
+mkdir -p /mnt/boot
+mount "$BOOT_PATH" /mnt/boot -t ext4 || exit 1
+mkdir -p /mnt/boot/efi
+mount "$EFI_PATH" /mnt/boot/efi -t vfat || exit 1
+`
     await this.execScript(script)
   }
 
@@ -228,9 +203,38 @@ ${PREINSTALL_SCRIPT}`
   }
 
   public async postinstall() {
-    const script = `export DISK="${this.diskName}";
-${POSTINSTALL_SCRIPT}
+    let script = String.raw`export DISK="${this.diskName}";
+# Prepare chroot envrionment mount special filesystems
+mkdir -p /mnt/tmp /mnt/proc /mnt/sys /mnt/dev /mnt/dev/pts
+mount -t tmpfs tmpfs /mnt/tmp
+mount -t proc none /mnt/proc
+mount -t sysfs none /mnt/sys
+mount -t devtmpfs none /mnt/dev
+mount -t devpts none /mnt/dev/pts
+mount -t efivarfs none /mnt/sys/firmware/efi/efivars
+
+DISK_INFO="$(parted "$DISK" --script 'print' -j)"
+EFI_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[0].uuid' -r)"
+BOOT_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[1].uuid' -r)"
+ROOTFS_PARTUUID="$(echo "$DISK_INFO" | jq '.disk.partitions[2].uuid' -r)"
+
+cat << EOF > /mnt/etc/fstab
+PARTUUID=$ROOTFS_PARTUUID / ext4 defaults 0 1
+PARTUUID=$BOOT_PARTUUID /boot ext4 defaults 0 2
+PARTUUID=$EFI_PARTUUID /boot/efi vfat defaults 0 2
+EOF
 `
+
+    if (this.distro.distro === 'debian-like') {
+      script += String.raw`
+chroot /mnt sh << END_OF_SCRIPT
+update-initramfs -c -k all || exit 1
+grub-install --efi-directory=/boot/efi --recheck && update-grub || exit 1
+END_OF_SCRIPT
+`
+    } else {
+      throw new Error('Not implemented yet')
+    }
     await this.execScript(script)
   }
 
@@ -273,8 +277,16 @@ echo "${username}:${password}" | chpasswd
   }
 
   public async applyAptSources(sources?: Record<string, string>) {
-    const sources_ = sources ?? {
-      'ubuntu.sources': `Types: deb
+    if (this.distro.distro !== 'debian-like') {
+      throw new Error('Not supported distro')
+    }
+    const sources_ =
+      sources ??
+      (((variant) => {
+        switch (variant) {
+          case 'noble':
+            return {
+              'ubuntu.sources': String.raw`Types: deb
 URIs: http://cn.archive.ubuntu.com/ubuntu/
 Suites: noble noble-updates noble-backports
 Components: main restricted universe multiverse
@@ -286,7 +298,19 @@ Suites: noble-security
 Components: main restricted universe multiverse
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 `,
-    }
+            }
+          case 'jammy':
+            return {
+              'ubuntu.sources': String.raw`deb http://cn.archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse
+deb http://cn.archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse
+deb http://cn.archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse
+`,
+            }
+          default:
+            throw new Error('Not implemented yet')
+        }
+      })(this.distro.release) as Record<string, string>)
     let script = `
 rm /etc/apt/sources.list.d/*
 cat <<EOF > /etc/apt/sources.list

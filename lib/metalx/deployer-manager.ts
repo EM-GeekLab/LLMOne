@@ -1,9 +1,11 @@
 import { basename } from 'node:path'
 
+import { match } from 'ts-pattern'
+
 import { logger } from '@/lib/logger'
 import type { AccountConfigType, HostConfigType, NetworkConfigType } from '@/app/host-info/schemas'
 import { ResourceOsBaseInfo, ResourcePackage } from '@/app/select-os/rescource-schema'
-import { SystemDeployer } from '@/sdk/mxlite/deployer'
+import { SystemDeployer, type Distro } from '@/sdk/mxlite/deployer'
 
 import { mxc } from './mxc'
 import {
@@ -75,7 +77,45 @@ export class MxdManager {
         return {
           host,
           info: res1.info,
-          deployer: new SystemDeployer(mxc, host.id, host.disk, res2.urls[0]),
+          deployer: new SystemDeployer(
+            mxc,
+            host.id,
+            host.disk,
+            res2.urls[0],
+            match(info)
+              .returnType<Distro>()
+              .with({ distro: 'ubuntu', version: 'noble', arch: 'x86_64' }, () => ({
+                distro: 'debian-like',
+                release: 'noble',
+                arch: 'x86_64',
+              }))
+              .with({ distro: 'ubuntu', version: 'noble', arch: 'ARM64' }, () => ({
+                distro: 'debian-like',
+                release: 'noble',
+                arch: 'arm64',
+              }))
+              .with({ distro: 'ubuntu', version: 'jammy', arch: 'x86_64' }, () => ({
+                distro: 'debian-like',
+                release: 'jammy',
+                arch: 'x86_64',
+              }))
+              .with({ distro: 'ubuntu', version: 'jammy', arch: 'ARM64' }, () => ({
+                distro: 'debian-like',
+                release: 'jammy',
+                arch: 'arm64',
+              }))
+              .with({ distro: 'fedora', version: '42', arch: 'x86_64' }, () => ({
+                distro: 'fedora-like',
+                release: 'f42',
+                arch: 'x86_64',
+              }))
+              .with({ distro: 'fedora', version: '42', arch: 'ARM64' }, () => ({
+                distro: 'fedora-like',
+                release: 'f42',
+                arch: 'arm64',
+              }))
+              .run(),
+          ),
         }
       }),
     )
