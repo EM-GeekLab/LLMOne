@@ -69,7 +69,7 @@ export function StepSidebar({ current }: { current?: StepId }) {
                 <MailIcon />
                 邮箱
               </span>
-              <a className="text-primary hover:text-primary/90" href={`mailto:${pkg.author.email}`}>
+              <a className="text-primary hover:text-primary/80" href={`mailto:${pkg.author.email}`}>
                 {pkg.author.email}
               </a>
             </p>

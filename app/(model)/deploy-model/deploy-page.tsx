@@ -165,7 +165,7 @@ function CopyButton({ value, message, children }: { value: string; message: stri
   return (
     <button
       className={cn(
-        '[&>svg]:text-primary hover:[&_svg]:text-primary/90 hover:text-foreground/90 inline-flex items-center gap-2 [&>svg]:size-3.5',
+        '[&>svg]:text-primary hover:[&_svg]:text-primary/80 hover:text-foreground/90 inline-flex items-center gap-2 [&>svg]:size-3.5',
         error && '[&>svg]:text-destructive',
         copied && '[&>svg]:text-success',
       )}
