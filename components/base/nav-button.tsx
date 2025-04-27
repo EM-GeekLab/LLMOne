@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 
 export function NavButton({
   to,
-  replace = false,
+  replace = process.env.NODE_ENV === 'production',
   onClick,
   ...props
 }: ComponentProps<typeof Button> & {
