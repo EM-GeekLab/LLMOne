@@ -167,10 +167,8 @@ export class MxdManager {
     stage: InstallStage,
     from?: Step | null,
   ): AsyncGenerator<InstallProgressBase<Step | null>> {
-    if (from == undefined) {
-      from = config[0].step
-    }
-    const stepIndex = config.findIndex((step) => step.step === from)
+    const fromStep = from ?? config[0].step
+    const stepIndex = config.findIndex((step) => step.step === fromStep)
     yield* this.runInstallConfig(index, config, stage, stepIndex)
   }
 
