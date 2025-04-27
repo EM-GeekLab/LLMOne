@@ -163,12 +163,12 @@ export class SystemDeployer {
   public async preinstall() {
     const script = String.raw`export DISK="${this.diskName}";
 umount -R /mnt || true
-parted "$DISK" --fix --script --align 'optimal' 'mklabel gpt \
+parted "$DISK" --fix --script --align optimal mklabel gpt \
   mkpart primary fat32 1MiB 512MiB \
   mkpart primary ext4 512MiB 2048MiB \
   mkpart primary ext4 2048MiB 100% \
   set 1 esp on \
-  print' || exit 1
+  print || exit 1
 partprobe "$DISK"
 mdev -s
 
