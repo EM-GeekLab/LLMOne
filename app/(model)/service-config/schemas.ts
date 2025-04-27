@@ -2,7 +2,7 @@ import { z } from '@/lib/zod'
 
 export const openWebuiConfigSchema = z.object({
   host: z.string(),
-  port: z.number().int().min(0).max(65535),
+  port: z.number().int().min(0).max(65535).default(9200),
   name: z.string().nonempty('名称不能为空'),
 })
 

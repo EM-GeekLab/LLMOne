@@ -28,7 +28,7 @@ import { useModelStore } from '@/stores/model-store-provider'
 
 import { HostSelectContent } from '../host-select-content'
 import { Hostname } from './hostname'
-import { openWebuiConfigSchema, OpenWebuiConfigType } from './schemas'
+import { openWebuiConfigSchema } from './schemas'
 import {
   AddedConfigsCard,
   AddedConfigsHeader,
@@ -146,7 +146,7 @@ function ConfigDialog({ hostId, children }: { hostId?: string; children?: ReactN
 function ConfigForm({ hostId, onSubmitted }: { hostId?: string; onSubmitted?: () => void }) {
   const defaultValues = useModelStore((s) => (hostId ? s.serviceDeploy.config.openWebui.get(hostId) : undefined))
 
-  const form = useForm<OpenWebuiConfigType>({
+  const form = useForm({
     resolver: zodResolver(openWebuiConfigSchema),
     defaultValues,
   })
@@ -193,6 +193,7 @@ function ConfigForm({ hostId, onSubmitted }: { hostId?: string; onSubmitted?: ()
                     value={value}
                     min={0}
                     max={65535}
+                    placeholder="9200"
                     onChange={(e) => onChange(Number(e.target.value))}
                     {...rest}
                   />

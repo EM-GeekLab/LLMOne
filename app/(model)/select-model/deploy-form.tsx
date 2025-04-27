@@ -32,7 +32,7 @@ import { AppRouter } from '@/trpc/router'
 
 import { HostSelectContent } from '../host-select-content'
 import { useModelDeployContext } from '../model-deploy-provider'
-import { modelDeployConfigSchema, ModelDeployConfigType } from './schemas'
+import { modelDeployConfigSchema } from './schemas'
 
 type ModelInfo = Awaited<ReturnType<AppRouter['resource']['getModels']>>[number]
 
@@ -107,7 +107,7 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
   const addDeployment = useModelStore((s) => s.addModelDeployment)
   const { deployMutation } = useModelDeployContext()
 
-  const form = useForm<ModelDeployConfigType>({
+  const form = useForm({
     resolver: zodResolver(modelDeployConfigSchema),
     defaultValues: { modelPath, apiKey: generateApiKey() },
   })
@@ -153,6 +153,7 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
                     value={value}
                     min={0}
                     max={65535}
+                    placeholder="9100"
                     onChange={(e) => onChange(Number(e.target.value))}
                     {...rest}
                   />
