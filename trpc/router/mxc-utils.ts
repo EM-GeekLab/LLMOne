@@ -1,6 +1,7 @@
 import { basename } from 'node:path'
 
 import { TRPCError } from '@trpc/server'
+import { diff } from 'radash'
 import { match } from 'ts-pattern'
 
 import { mxc } from '@/lib/metalx'
@@ -11,10 +12,35 @@ import { log } from './utils'
 /**
  * Create environment variables for the command
  * @param envs Environment variables, key-value pairs
+ * @param command Check for variables in the command
  * @returns Array of strings in the format of `export KEY="VALUE"`
  */
-export function makeEnvs(envs: Record<string, string | number>) {
+export function makeEnvs(envs: Record<string, string | number>, command?: string) {
+  if (command) {
+    const commandVars = extractVariables(command)
+    const nonExistingVars = diff(commandVars, Object.keys(envs))
+    if (nonExistingVars.length > 0) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `命令中 ${nonExistingVars.join(', ')} 变量未定义`,
+      })
+    }
+  }
+  return makeEnvsNoCheck(envs)
+}
+
+function makeEnvsNoCheck(envs: Record<string, string | number>) {
   return Object.entries(envs).map(([key, value]) => `export ${key}=${JSON.stringify(value)}`)
+}
+
+function extractVariables(command: string): string[] {
+  const regex = /\$\{([A-Z0-9_]+)}/g
+  const variables: string[] = []
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(command)) !== null) {
+    variables.push(match[1])
+  }
+  return variables
 }
 
 export async function executeCommand(host: string, command: string, interval = 2000) {

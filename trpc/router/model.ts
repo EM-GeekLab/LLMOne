@@ -2,7 +2,6 @@ import { basename, dirname } from 'node:path'
 
 import { TRPCError } from '@trpc/server'
 import type { Aria2RpcHTTPUrl } from 'maria2'
-import { diff } from 'radash'
 
 import { downloadFile, downloadWithMetalink } from '@/lib/aria2'
 import { mxc } from '@/lib/metalx'
@@ -41,28 +40,21 @@ export const modelRouter = createRouter({
 
       const modelTargetPath = `${MODEL_WORK_DIR}/${config.modelId}`
 
-      const envs = {
-        IMAGE_ID: config.docker.image,
-        WORK_DIR: MODEL_WORK_DIR,
-        MODEL_BASE_DIR: MODEL_WORK_DIR,
-        MODEL_PATH: config.modelId,
-        SERVED_MODEL_NAME: config.modelId,
-        GPU_COUNT: 1,
-        VLLM_PORT: port,
-        MODEL_PORT: port,
-        MODEL_API_KEY: apiKey,
-        CONFIG_JSON: `${modelTargetPath}/mindie_config.json`,
-      }
-      const envCommands = makeEnvs(envs)
-
-      const dockerCommandVars = extractVariables(config.docker.command)
-      const nonExistingVars = diff(dockerCommandVars, Object.keys(envs))
-      if (nonExistingVars.length > 0) {
-        throw new TRPCError({
-          message: `命令中 ${nonExistingVars.join(', ')} 变量未定义`,
-          code: 'BAD_REQUEST',
-        })
-      }
+      const envCommands = makeEnvs(
+        {
+          IMAGE_ID: config.docker.image,
+          WORK_DIR: MODEL_WORK_DIR,
+          MODEL_BASE_DIR: MODEL_WORK_DIR,
+          MODEL_PATH: config.modelId,
+          SERVED_MODEL_NAME: config.modelId,
+          GPU_COUNT: 1,
+          VLLM_PORT: port,
+          MODEL_PORT: port,
+          MODEL_API_KEY: apiKey,
+          CONFIG_JSON: `${modelTargetPath}/mindie_config.json`,
+        },
+        config.docker.command,
+      )
 
       const actorDockerTrans = createActor({
         name: '传输 Docker 镜像',
@@ -157,6 +149,19 @@ export const modelRouter = createRouter({
         const modelInfo = await readModelInfo(modelConfig.modelPath)
         const aria2RpcUrl: Aria2RpcHTTPUrl = `http://${matchedAddr}:6800/jsonrpc`
 
+        const envCommands = makeEnvs(
+          {
+            MODEL_NAMES: modelInfo.modelId,
+            MODEL_HOST_IP: matchedAddr,
+            MODEL_PORT: modelConfig.port,
+            MODEL_API_KEY: modelConfig.apiKey,
+            HOST_IP: matchedAddr,
+            TARGET_PORT: port,
+            WEBUI_NAME: name,
+          },
+          openWebuiContainer.command,
+        )
+
         const actorDockerTrans = createActor({
           name: '传输 Docker 镜像',
           type: 'real',
@@ -195,16 +200,6 @@ export const modelRouter = createRouter({
           formatResult: () => 'Open WebUI 服务已启动',
           formatError: (error) => `Open WebUI 服务启动失败: ${error.message}`,
           execute: async () => {
-            const envCommands = makeEnvs({
-              MODEL_NAMES: modelInfo.modelId,
-              MODEL_HOST_IP: matchedAddr,
-              MODEL_PORT: modelConfig.port,
-              MODEL_API_KEY: modelConfig.apiKey,
-              HOST_IP: matchedAddr,
-              TARGET_PORT: port,
-              WEBUI_NAME: name,
-            })
-
             const command = [...envCommands, openWebuiContainer.command].join('\n')
             await executeCommand(host, command)
           },
@@ -216,13 +211,3 @@ export const modelRouter = createRouter({
       }),
   },
 })
-
-function extractVariables(command: string): string[] {
-  const regex = /\$\{([A-Z0-9_]+)}/g
-  const variables: string[] = []
-  let match: RegExpExecArray | null
-  while ((match = regex.exec(command)) !== null) {
-    variables.push(match[1])
-  }
-  return variables
-}
