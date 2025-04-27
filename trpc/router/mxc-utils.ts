@@ -1,7 +1,7 @@
 import { basename } from 'node:path'
 
 import { TRPCError } from '@trpc/server'
-import { diff } from 'radash'
+import { pick } from 'radash'
 import { match } from 'ts-pattern'
 
 import { mxc } from '@/lib/metalx'
@@ -11,20 +11,23 @@ import { log } from './utils'
 
 /**
  * Create environment variables for the command
- * @param envs Environment variables, key-value pairs
- * @param command Check for variables in the command
+ * @param envs Environment variables, key-value pairs. If command is provided, only variables used in the command will be selected
+ * @param command Check for variables in the command. If provided, validation will be performed
+ * @param extraEnvs Extra environment variables that are not related to what's actually used in the command
  * @returns Array of strings in the format of `export KEY="VALUE"`
  */
-export function makeEnvs(envs: Record<string, string | number>, command?: string) {
+export function makeEnvs(envs: Record<string, string | number>, command?: string, extraEnvs?: Record<string, string>) {
   if (command) {
-    const commandVars = extractVariables(command)
-    const nonExistingVars = diff(commandVars, Object.keys(envs))
-    if (nonExistingVars.length > 0) {
+    const envVars = new Set(Object.keys(envs))
+    const commandVars = new Set(extractVariables(command))
+    const nonExistingVars = commandVars.difference(envVars)
+    if (nonExistingVars.size > 0) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: `命令中 ${nonExistingVars.join(', ')} 变量未定义`,
+        message: `命令中 ${Array.from(nonExistingVars).join(', ')} 变量未定义`,
       })
     }
+    return makeEnvsNoCheck({ ...pick(envs, Array.from(commandVars)), ...extraEnvs })
   }
   return makeEnvsNoCheck(envs)
 }
@@ -34,7 +37,7 @@ function makeEnvsNoCheck(envs: Record<string, string | number>) {
 }
 
 function extractVariables(command: string): string[] {
-  const regex = /\$\{([A-Z0-9_]+)}/g
+  const regex = /\$\{([A-Z][A-Z0-9_]*)}/g
   const variables: string[] = []
   let match: RegExpExecArray | null
   while ((match = regex.exec(command)) !== null) {
