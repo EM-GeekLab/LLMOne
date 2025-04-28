@@ -81,7 +81,7 @@ function ModelInfo({ modelPath, deployments = [] }: { modelPath: string; deploym
         </div>
       </div>
       {deployments.length > 0 && (
-        <div className="">
+        <div className="grid gap-2">
           {deployments.map((deploy) => (
             <ModelHostDeployment key={deploy.host} deployment={deploy} />
           ))}
