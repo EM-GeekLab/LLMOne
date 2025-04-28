@@ -12,12 +12,10 @@ import { modelDeployConfigSchema } from '@/app/(model)/select-model/schemas'
 import { openWebuiConfigSchema } from '@/app/(model)/service-config/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
+import { DOCKER_IMAGES_DIR, MODEL_WORK_DIR } from './constants'
 import { applyLocalDockerImage } from './docker-utils'
 import { addDirMap, addFileMap, executeCommand, getHostArch, getHostIp, makeEnvs } from './mxc-utils'
 import { getContainers, readModelInfo, readModelInfoAbsolute } from './resource-utils'
-
-const MODEL_WORK_DIR = '/srv/models'
-const DOCKER_IMAGES_DIR = '/srv/images'
 
 export const modelRouter = createRouter({
   deployModel: baseProcedure
@@ -69,7 +67,7 @@ export const modelRouter = createRouter({
           execute: async ({ onProgress }) => {
             const containerUrl = await addFileMap(host, matchedContainer.file)
             const fileSha1 = await mxc.getFileHash(basename(matchedContainer.file), 'sha1')
-            await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`)
+            await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`, 100)
             await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
               onProgress: async ({ overallProgress }) => onProgress(overallProgress),
             })
@@ -173,7 +171,7 @@ export const modelRouter = createRouter({
             execute: async ({ onProgress }) => {
               const containerUrl = await addFileMap(host, openWebuiContainer.file)
               const fileSha1 = await mxc.getFileHash(basename(openWebuiContainer.file), 'sha1')
-              await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`)
+              await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`, 100)
               await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
                 onProgress: async ({ overallProgress }) => onProgress(overallProgress),
               })
