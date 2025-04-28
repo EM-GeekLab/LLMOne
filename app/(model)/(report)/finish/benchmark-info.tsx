@@ -22,7 +22,7 @@ export function BenchmarkInfo() {
     <AppCardSection>
       <AppCardSectionTitle>性能测试报告</AppCardSectionTitle>
       <div className="mb-1 flex items-center gap-4">
-        <NavButton variant="outline" className="text-primary hover:text-primary" to="/model-test">
+        <NavButton variant="outline" className="text-primary hover:text-primary" to="/performance-test">
           <ArrowRightIcon />
           进入完整测试
         </NavButton>

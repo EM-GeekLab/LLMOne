@@ -5,7 +5,7 @@ export default function Page() {
   return (
     <AppFrame title="完成部署" current="finish">
       <AppCardHeader>
-        <AppCardTitle>完成部署</AppCardTitle>
+        <AppCardTitle>性能测试</AppCardTitle>
       </AppCardHeader>
       <AppCardContent></AppCardContent>
     </AppFrame>
