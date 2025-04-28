@@ -1,4 +1,4 @@
-import { executeCommand } from './mxc-utils'
+import { executeCommand, executeInlineCommand } from './mxc-utils'
 
 export async function applyDockerImage(host: string, imageUrl: string) {
   let script = `curl -Ls "${imageUrl}" | docker load | sed -E 's/^.* (.*)$/\\1/'`
@@ -22,4 +22,16 @@ export async function fetchDockerImageList(host: string) {
     RepoTags: string[]
     Id: string
   }[]
+}
+
+export async function imageExists(host: string, imageName: string) {
+  const script = `docker image inspect "${imageName}" 1>/dev/null 2>&1`
+  const { code } = await executeInlineCommand(host, script)
+  return code === 0
+}
+
+export async function containerExists(host: string, containerName: string) {
+  const script = `docker container inspect "${containerName}" 1>/dev/null 2>&1`
+  const { code } = await executeInlineCommand(host, script)
+  return code === 0
 }

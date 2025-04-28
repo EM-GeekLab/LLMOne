@@ -32,6 +32,11 @@ export function makeEnvs(envs: Record<string, string | number>, command?: string
   return makeEnvsNoCheck(envs)
 }
 
+export function withEnv(command: string, envs: Record<string, string | number>, extraEnvs?: Record<string, string>) {
+  const envCommands = makeEnvs(envs, command, extraEnvs)
+  return [...envCommands, command].join('\n')
+}
+
 function makeEnvsNoCheck(envs: Record<string, string | number>) {
   return Object.entries(envs).map(([key, value]) => `export ${key}=${JSON.stringify(value)}`)
 }
@@ -46,7 +51,7 @@ function extractVariables(command: string): string[] {
   return variables
 }
 
-export async function executeCommand(host: string, command: string, interval = 2000) {
+export async function executeInlineCommand(host: string, command: string, interval = 100) {
   const [res, status] = await mxc.commandExec(host, command)
   if (!res.ok) {
     throw new TRPCError({
@@ -73,6 +78,13 @@ export async function executeCommand(host: string, command: string, interval = 2
       cause: 'ReturnTypeMismatch',
     })
   }
+
+  return payload
+}
+
+export async function executeCommand(host: string, command: string, interval = 2000) {
+  const payload = await executeInlineCommand(host, command, interval)
+
   if (payload.code !== 0) {
     log.error(payload, 'Command execution failed')
     throw new TRPCError({
