@@ -6,18 +6,23 @@ import { cn } from '@/lib/utils'
 export function DescriptionsList({
   entries,
   className,
+  omitNull = false,
   ...props
 }: ComponentProps<'div'> & {
-  entries: { id: string; key: ReactNode; value: ReactNode }[]
+  entries: { id: string; key?: ReactNode; value: ReactNode }[]
+  omitNull?: boolean
 }) {
   return (
-    <div className={cn('grid grid-cols-[auto_1fr] gap-x-4 gap-y-1', className)} {...props}>
-      {entries.map(({ id, key, value }) => (
-        <div key={id} className="contents text-sm">
-          <div className="text-muted-foreground text-right font-medium">{key}</div>
-          {typeof value !== 'object' ? <div>{value}</div> : value}
-        </div>
-      ))}
+    <div className={cn('grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1', className)} {...props}>
+      {entries.map(
+        ({ id, key, value }) =>
+          !(value == null && omitNull) && (
+            <div key={id} className="contents text-sm">
+              <div className="text-muted-foreground text-right font-medium">{key || id}</div>
+              {typeof value !== 'object' ? <div>{value}</div> : value}
+            </div>
+          ),
+      )}
     </div>
   )
 }
