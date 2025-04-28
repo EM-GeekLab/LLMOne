@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useSyncExternalStore } from 'react'
-import { useRouter } from 'next/navigation'
 import { QueryObserver, useQueryClient } from '@tanstack/react-query'
 import { pick } from 'radash'
 import { toast } from 'sonner'
@@ -11,6 +10,7 @@ import { NavButton } from '@/components/base/nav-button'
 import { NavButtonGuard } from '@/components/base/nav-button-guard'
 import { Button } from '@/components/ui/button'
 import { hostsConfigSchema } from '@/app/host-info/schemas'
+import { useNavigate } from '@/hooks/use-navigate'
 import { useGlobalStore, useGlobalStoreApi } from '@/stores'
 import { useTRPC } from '@/trpc/client'
 
@@ -28,7 +28,7 @@ export function Footer() {
 }
 
 function NextStepButton() {
-  const { push } = useRouter()
+  const navigate = useNavigate()
   const storeApi = useGlobalStoreApi()
   const bmcHosts = useGlobalStore((s) => s.finalBmcHosts)
   const setFinalHosts = useGlobalStore((s) => s.setFinalHosts)
@@ -67,7 +67,7 @@ function NextStepButton() {
             return
           }
           setFinalHosts(parseResult.data.map((d) => pick(d, ['id', 'ip', 'hostname'])))
-          push('/install-env')
+          navigate('/install-env')
         }}
       >
         下一步

@@ -1,7 +1,6 @@
 'use client'
 
 import { ComponentProps, ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react'
 
@@ -12,13 +11,14 @@ import { DistroLogo } from '@/components/base/distro-logo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { ResourceOsInfoType } from '@/app/select-os/rescource-schema'
+import { useNavigate } from '@/hooks/use-navigate'
 import { useGlobalStore } from '@/stores'
 import { useTRPC } from '@/trpc/client'
 
 import { useBmcLocalInstallContext } from './context'
 
 export function ConfirmCard() {
-  const { push } = useRouter()
+  const navigate = useNavigate()
 
   const osInfoPath = useGlobalStore((s) => s.osInfoPath)
   const trpc = useTRPC()
@@ -43,7 +43,7 @@ export function ConfirmCard() {
           <ConfirmCardContentInfo osInfo={data} />
         </CardContent>
         <CardFooter className="justify-center gap-4">
-          <Button disabled={isPending} variant="outline" onClick={() => push('/host-info')}>
+          <Button disabled={isPending} variant="outline" onClick={() => navigate('/host-info')}>
             <ArrowLeftIcon />
             返回配置
           </Button>
@@ -59,7 +59,7 @@ export function ConfirmCard() {
 }
 
 export function ConfirmCardPlaceholder() {
-  const { push } = useRouter()
+  const navigate = useNavigate()
 
   const osInfoPath = useGlobalStore((s) => s.osInfoPath)
   const trpc = useTRPC()
@@ -78,7 +78,7 @@ export function ConfirmCardPlaceholder() {
         <ConfirmCardContentInfo osInfo={data} />
       </CardContent>
       <CardFooter className="justify-center gap-4">
-        <Button variant="outline" onClick={() => push('/host-info')}>
+        <Button variant="outline" onClick={() => navigate('/host-info')}>
           <ArrowLeftIcon />
           返回配置
         </Button>

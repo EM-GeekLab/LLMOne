@@ -1,7 +1,6 @@
 'use client'
 
 import { Fragment, useCallback, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -21,6 +20,7 @@ import {
 } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
 import { ConnectModeIf } from '@/app/_shared/condition'
+import { useNavigate } from '@/hooks/use-navigate'
 import { useGlobalStore, useGlobalStoreApi } from '@/stores'
 import { useTRPC, useTRPCClient } from '@/trpc/client'
 
@@ -76,7 +76,7 @@ function BmcNextStepButton() {
 }
 
 function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
-  const { push } = useRouter()
+  const navigate = useNavigate()
 
   const hosts = useGlobalStore((s) => s.bmcHosts)
   const storeApi = useGlobalStoreApi()
@@ -103,7 +103,7 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
           await trpcClient.connection.bmc.bootVirtualMedia.mutate({ bmcHosts: filteredHosts })
 
           onClose()
-          push('/select-os')
+          navigate('/select-os')
           return
         }
 
@@ -115,7 +115,7 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
 
         if (kvmUrls.length === 0) {
           onClose()
-          push('/select-os')
+          navigate('/select-os')
         }
 
         setManualList(kvmUrls)

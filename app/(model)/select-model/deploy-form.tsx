@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { ReactNode, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ModelIcon } from '@lobehub/icons'
 import { useClipboard } from '@mantine/hooks'
@@ -26,6 +25,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useNavigate } from '@/hooks/use-navigate'
 import { CredentialType } from '@/stores'
 import { useModelStore } from '@/stores/model-store-provider'
 import { AppRouter } from '@/trpc/router'
@@ -38,7 +38,7 @@ type ModelInfo = Awaited<ReturnType<AppRouter['resource']['getModels']>>[number]
 
 export function DeployButton({ model }: { model: ModelInfo }) {
   const [open, setOpen] = useState(false)
-  const { push } = useRouter()
+  const navigate = useNavigate()
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -55,7 +55,7 @@ export function DeployButton({ model }: { model: ModelInfo }) {
           modelPath={model.modelInfoPath}
           onSubmitted={() => {
             setOpen(false)
-            push('/deploy-model')
+            navigate('/deploy-model')
           }}
         />
       </DialogContent>
