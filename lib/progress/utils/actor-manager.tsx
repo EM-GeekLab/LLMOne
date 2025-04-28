@@ -211,3 +211,29 @@ export class ActorManager {
     }
   }
 }
+
+export function flowActors(options: ActorManagerCreateOptions = {}): ActorManagerHelper {
+  return new ActorManagerHelper(options)
+}
+
+export class ActorManagerHelper {
+  private actors: ActorCreateParams[] = []
+  private readonly options: ActorManagerCreateOptions
+
+  constructor(options: ActorManagerCreateOptions = {}) {
+    this.options = options
+  }
+
+  actor<Result>(params: ActorCreateParams<Result>): this {
+    this.actors.push(params)
+    return this
+  }
+
+  end(): ActorManager {
+    return new ActorManager(this.actors, this.options)
+  }
+
+  async *run(index = 0) {
+    yield* this.end().runFromIndex(index)
+  }
+}

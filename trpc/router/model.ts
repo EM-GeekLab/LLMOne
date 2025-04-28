@@ -6,7 +6,7 @@ import type { Aria2RpcHTTPUrl } from 'maria2'
 
 import { downloadFile, downloadWithMetalink } from '@/lib/aria2'
 import { mxc } from '@/lib/metalx'
-import { createActor, createActorManager } from '@/lib/progress/utils/server'
+import { flowActors } from '@/lib/progress/utils/server'
 import { z } from '@/lib/zod'
 import { modelDeployConfigSchema } from '@/app/(model)/select-model/schemas'
 import { openWebuiConfigSchema } from '@/app/(model)/service-config/schemas'
@@ -57,68 +57,66 @@ export const modelRouter = createRouter({
         config.docker.command,
       )
 
-      const actorDockerTrans = createActor({
-        name: '传输 Docker 镜像',
-        type: 'real',
-        ratio: 30,
-        runningMessage: '正在传输 Docker 镜像',
-        formatProgress: (progress) => `正在传输 Docker 镜像 ${progress.toFixed(1)}%`,
-        formatResult: () => 'Docker 镜像传输完成',
-        formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
-        execute: async ({ onProgress }) => {
-          const containerUrl = await addFileMap(host, matchedContainer.file)
-          const fileSha1 = await mxc.getFileHash(basename(matchedContainer.file), 'sha1')
-          await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`)
-          await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
-            onProgress: async ({ overallProgress }) => onProgress(overallProgress),
-          })
-        },
-      })
-
-      const actorDockerLoad = createActor({
-        name: '载入 Docker 镜像',
-        type: 'fake',
-        ratio: 15,
-        runningMessage: '正在读取载入 Docker 镜像',
-        formatResult: () => 'Docker 镜像载入完成',
-        formatError: (error) => `Docker 镜像载入失败: ${error.message}`,
-        execute: async () => {
-          await applyLocalDockerImage(host, join(DOCKER_IMAGES_DIR, basename(matchedContainer.file)))
-        },
-      })
-
-      const actorModel = createActor({
-        name: '传输模型文件',
-        type: 'real',
-        ratio: 50,
-        runningMessage: '正在传输模型文件',
-        formatProgress: (progress) => `正在传输模型文件 ${progress.toFixed(1)}%`,
-        formatResult: () => '模型文件传输完成',
-        formatError: (error) => `模型文件传输失败: ${error.message}`,
-        execute: async ({ onProgress }) => {
-          await executeCommand(host, `mkdir -p ${modelTargetPath}`, 100)
-          await downloadWithMetalink(`${metalinkUrl}/${basename(config.metaLinkFile)}`, aria2RpcUrl, modelTargetPath, {
-            onProgress: async ({ overallProgress }) => onProgress(overallProgress),
-          })
-        },
-      })
-
-      const actorRun = createActor({
-        name: '启动模型服务',
-        type: 'fake',
-        ratio: 5,
-        runningMessage: '正在部署模型服务',
-        formatResult: () => '模型服务已启动',
-        formatError: (error) => `模型服务启动失败: ${error.message}`,
-        execute: async () => {
-          const command = [...envCommands, config.docker.command].join('\n')
-          await executeCommand(host, command)
-        },
-      })
-
-      yield* createActorManager([actorDockerTrans, actorDockerLoad, actorModel, actorRun], {
-        formatInit: () => '等待部署',
-      }).runFromIndex(from)
+      yield* flowActors({ formatInit: () => '等待部署' })
+        .actor({
+          name: '传输 Docker 镜像',
+          type: 'real',
+          ratio: 30,
+          runningMessage: '正在传输 Docker 镜像',
+          formatProgress: (progress) => `正在传输 Docker 镜像 ${progress.toFixed(1)}%`,
+          formatResult: () => 'Docker 镜像传输完成',
+          formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
+          execute: async ({ onProgress }) => {
+            const containerUrl = await addFileMap(host, matchedContainer.file)
+            const fileSha1 = await mxc.getFileHash(basename(matchedContainer.file), 'sha1')
+            await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`)
+            await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
+              onProgress: async ({ overallProgress }) => onProgress(overallProgress),
+            })
+          },
+        })
+        .actor({
+          name: '载入 Docker 镜像',
+          type: 'fake',
+          ratio: 15,
+          runningMessage: '正在读取载入 Docker 镜像',
+          formatResult: () => 'Docker 镜像载入完成',
+          formatError: (error) => `Docker 镜像载入失败: ${error.message}`,
+          execute: async () => {
+            await applyLocalDockerImage(host, join(DOCKER_IMAGES_DIR, basename(matchedContainer.file)))
+          },
+        })
+        .actor({
+          name: '传输模型文件',
+          type: 'real',
+          ratio: 50,
+          runningMessage: '正在传输模型文件',
+          formatProgress: (progress) => `正在传输模型文件 ${progress.toFixed(1)}%`,
+          formatResult: () => '模型文件传输完成',
+          formatError: (error) => `模型文件传输失败: ${error.message}`,
+          execute: async ({ onProgress }) => {
+            await executeCommand(host, `mkdir -p ${modelTargetPath}`, 100)
+            await downloadWithMetalink(
+              `${metalinkUrl}/${basename(config.metaLinkFile)}`,
+              aria2RpcUrl,
+              modelTargetPath,
+              { onProgress: async ({ overallProgress }) => onProgress(overallProgress) },
+            )
+          },
+        })
+        .actor({
+          name: '启动模型服务',
+          type: 'fake',
+          ratio: 5,
+          runningMessage: '正在部署模型服务',
+          formatResult: () => '模型服务已启动',
+          formatError: (error) => `模型服务启动失败: ${error.message}`,
+          execute: async () => {
+            const command = [...envCommands, config.docker.command].join('\n')
+            await executeCommand(host, command)
+          },
+        })
+        .run(from)
     }),
   deployService: {
     openWebui: baseProcedure
@@ -163,52 +161,48 @@ export const modelRouter = createRouter({
           openWebuiContainer.command,
         )
 
-        const actorDockerTrans = createActor({
-          name: '传输 Docker 镜像',
-          type: 'real',
-          ratio: 75,
-          runningMessage: '正在传输 Docker 镜像',
-          formatProgress: (progress) => `正在传输 Docker 镜像 ${progress.toFixed(1)}%`,
-          formatResult: () => 'Docker 镜像传输完成',
-          formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
-          execute: async ({ onProgress }) => {
-            const containerUrl = await addFileMap(host, openWebuiContainer.file)
-            const fileSha1 = await mxc.getFileHash(basename(openWebuiContainer.file), 'sha1')
-            await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`)
-            await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
-              onProgress: async ({ overallProgress }) => onProgress(overallProgress),
-            })
-          },
-        })
-
-        const actorDockerLoad = createActor({
-          name: '载入 Docker 镜像',
-          type: 'fake',
-          ratio: 15,
-          runningMessage: '正在读取载入 Docker 镜像',
-          formatResult: () => 'Docker 镜像载入完成',
-          formatError: (error) => `Docker 镜像载入失败: ${error.message}`,
-          execute: async () => {
-            await applyLocalDockerImage(host, join(DOCKER_IMAGES_DIR, basename(openWebuiContainer.file)))
-          },
-        })
-
-        const actorRun = createActor({
-          name: '启动 Open WebUI 服务',
-          type: 'fake',
-          ratio: 10,
-          runningMessage: '正在部署 Open WebUI 服务',
-          formatResult: () => 'Open WebUI 服务已启动',
-          formatError: (error) => `Open WebUI 服务启动失败: ${error.message}`,
-          execute: async () => {
-            const command = [...envCommands, openWebuiContainer.command].join('\n')
-            await executeCommand(host, command)
-          },
-        })
-
-        yield* createActorManager([actorDockerTrans, actorDockerLoad, actorRun], {
-          formatInit: () => '等待部署',
-        }).runFromIndex(from)
+        yield* flowActors({ formatInit: () => '等待部署' })
+          .actor({
+            name: '传输 Docker 镜像',
+            type: 'real',
+            ratio: 75,
+            runningMessage: '正在传输 Docker 镜像',
+            formatProgress: (progress) => `正在传输 Docker 镜像 ${progress.toFixed(1)}%`,
+            formatResult: () => 'Docker 镜像传输完成',
+            formatError: (error) => `Docker 镜像传输失败: ${error.message}`,
+            execute: async ({ onProgress }) => {
+              const containerUrl = await addFileMap(host, openWebuiContainer.file)
+              const fileSha1 = await mxc.getFileHash(basename(openWebuiContainer.file), 'sha1')
+              await executeCommand(host, `mkdir -p ${DOCKER_IMAGES_DIR}`)
+              await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
+                onProgress: async ({ overallProgress }) => onProgress(overallProgress),
+              })
+            },
+          })
+          .actor({
+            name: '载入 Docker 镜像',
+            type: 'fake',
+            ratio: 15,
+            runningMessage: '正在读取载入 Docker 镜像',
+            formatResult: () => 'Docker 镜像载入完成',
+            formatError: (error) => `Docker 镜像载入失败: ${error.message}`,
+            execute: async () => {
+              await applyLocalDockerImage(host, join(DOCKER_IMAGES_DIR, basename(openWebuiContainer.file)))
+            },
+          })
+          .actor({
+            name: '启动 Open WebUI 服务',
+            type: 'fake',
+            ratio: 10,
+            runningMessage: '正在部署 Open WebUI 服务',
+            formatResult: () => 'Open WebUI 服务已启动',
+            formatError: (error) => `Open WebUI 服务启动失败: ${error.message}`,
+            execute: async () => {
+              const command = [...envCommands, openWebuiContainer.command].join('\n')
+              await executeCommand(host, command)
+            },
+          })
+          .run(from)
       }),
   },
 })
