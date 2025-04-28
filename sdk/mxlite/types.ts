@@ -60,10 +60,10 @@ export type HostExtraInfo = {
     name: Option<string>
     hostname: Option<string>
     kernel_version: Option<string>
-    cpu: {
+    cpus: {
       names: string[]
       vendor_id: string
-      brand: number
+      brand: string
     }[]
     mnts: {
       kind: 'HDD' | 'SSD' | 'Unknown'
