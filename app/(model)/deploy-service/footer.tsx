@@ -12,7 +12,7 @@ export function Footer() {
   const { deployMutation } = useServiceDeployContext()
   const isSuccess = useModelStore(
     (s) =>
-      Object.keys(s.serviceDeploy.progress).length > 0 &&
+      Object.values(s.serviceDeploy.progress).some((service) => service.size > 0) &&
       Object.values(s.serviceDeploy.progress).every((progress) => progress.values().every(isCompleted)),
   )
 
