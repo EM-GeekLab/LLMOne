@@ -168,7 +168,7 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
           name="apiKey"
           render={({ field: { value = '', ...rest } }) => (
             <FormItem className="basis-[92px]">
-              <FormLabel>API Key</FormLabel>
+              <FormLabel>API 密钥</FormLabel>
               <div className="join join-with-input flex">
                 <FormControl>
                   <Input className="pr-0" readOnly value={value} {...rest} />
@@ -206,7 +206,7 @@ function CopyButton({ value }: { value: string }) {
         className={cn(error && '!text-destructive', copied && '!text-success')}
         onClick={() => {
           copy(value)
-          toast.success('已复制 API Key')
+          toast.success('已复制 API 密钥')
         }}
       >
         {copied ? <CheckIcon /> : error ? <AlertCircleIcon /> : <CopyIcon />}

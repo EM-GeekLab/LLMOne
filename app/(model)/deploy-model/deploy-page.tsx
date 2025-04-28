@@ -137,9 +137,9 @@ function HostStatusCard({ hostId }: { hostId: string }) {
               </dd>
             </dl>
             <dl className="contents">
-              <dt className="text-muted-foreground">API key</dt>
+              <dt className="text-muted-foreground">API 密钥</dt>
               <dd>
-                <CopyButton value={deployment.apiKey} message="已复制 API key">
+                <CopyButton value={deployment.apiKey} message="已复制 API 密钥">
                   {deployment.apiKey}
                 </CopyButton>
               </dd>

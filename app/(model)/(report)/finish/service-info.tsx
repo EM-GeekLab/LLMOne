@@ -35,7 +35,7 @@ function ModelsInfo() {
   const groupedDeployment = group(deploymentValues, (d) => d.modelPath)
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4">
       {modelPaths.map((path) => (
         <ModelInfo key={path} modelPath={path} deployments={groupedDeployment[path]} />
       ))}
@@ -73,15 +73,15 @@ function ModelInfo({ modelPath, deployments = [] }: { modelPath: string; deploym
   ]
 
   return (
-    <div className="rounded-lg border">
+    <div className="grid gap-2 rounded-lg border p-2 xl:grid-cols-2">
       <div className="grid grid-cols-[1fr_auto]">
-        <DescriptionsList className="px-4 pt-3" entries={entries} />
-        <div className="pt-4 pr-4">
+        <DescriptionsList className="px-2 py-1" entries={entries} />
+        <div className="p-2 pl-0">
           <ModelIcon type="color" model={model.logoKey} size={32} />
         </div>
       </div>
       {deployments.length > 0 && (
-        <div className="p-2">
+        <div className="">
           {deployments.map((deploy) => (
             <ModelHostDeployment key={deploy.host} deployment={deploy} />
           ))}
@@ -115,9 +115,9 @@ function ModelHostDeployment({ deployment }: { deployment: ModelDeployConfigType
             ) : null,
           },
           {
-            id: 'API key',
+            id: 'API 密钥',
             value: (
-              <CopyButton value={deployment.apiKey} message="已复制 API key">
+              <CopyButton value={deployment.apiKey} message="已复制 API 密钥">
                 {deployment.apiKey}
               </CopyButton>
             ),
