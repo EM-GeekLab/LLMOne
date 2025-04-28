@@ -1,0 +1,177 @@
+'use client'
+
+import { ReactNode } from 'react'
+import { ModelIcon, OpenWebUI } from '@lobehub/icons'
+import { useQuery } from '@tanstack/react-query'
+import { group } from 'radash'
+
+import { AppCardSection, AppCardSectionTitle } from '@/components/app/app-card'
+import { DescriptionsList } from '@/components/base/descriptions-list'
+import { CopyButton } from '@/app/(model)/(report)/copy-button'
+import { ModelDeployConfigType } from '@/app/(model)/select-model/schemas'
+import { OpenWebuiConfigType } from '@/app/(model)/service-config/schemas'
+import { useModelStore } from '@/stores/model-store-provider'
+import { useTRPC } from '@/trpc/client'
+
+export function ServiceInfo() {
+  return (
+    <>
+      <AppCardSection>
+        <AppCardSectionTitle>模型信息</AppCardSectionTitle>
+        <ModelsInfo />
+      </AppCardSection>
+      <AppCardSection>
+        <AppCardSectionTitle>服务信息</AppCardSectionTitle>
+        <OpenWebuiServicesInfo />
+      </AppCardSection>
+    </>
+  )
+}
+
+function ModelsInfo() {
+  const deployment = useModelStore((s) => s.modelDeploy.config)
+  const deploymentValues = Array.from(deployment.values())
+  const modelPaths = deploymentValues.map((d) => d.modelPath)
+  const groupedDeployment = group(deploymentValues, (d) => d.modelPath)
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {modelPaths.map((path) => (
+        <ModelInfo key={path} modelPath={path} deployments={groupedDeployment[path]} />
+      ))}
+    </div>
+  )
+}
+
+function ModelInfo({ modelPath, deployments = [] }: { modelPath: string; deployments?: ModelDeployConfigType[] }) {
+  const trpc = useTRPC()
+  const { data: model } = useQuery(trpc.resource.getModelInfo.queryOptions(modelPath))
+
+  if (!model) return null
+
+  const entries: { id: string; key: ReactNode; value: ReactNode }[] = [
+    {
+      id: 'name',
+      key: '名称',
+      value: model.displayName,
+    },
+    {
+      id: 'parameters',
+      key: '参数量',
+      value: `${model.parameters} B`,
+    },
+    {
+      id: 'weightType',
+      key: '精度',
+      value: <div className="font-mono">{model.weightType}</div>,
+    },
+    {
+      id: 'storageSize',
+      key: '存储大小',
+      value: `${model.storageSize} GB`,
+    },
+  ]
+
+  return (
+    <div className="rounded-lg border">
+      <div className="grid grid-cols-[1fr_auto]">
+        <DescriptionsList className="px-4 pt-3" entries={entries} />
+        <div className="pt-4 pr-4">
+          <ModelIcon type="color" model={model.logoKey} size={32} />
+        </div>
+      </div>
+      {deployments.length > 0 && (
+        <div className="p-2">
+          {deployments.map((deploy) => (
+            <ModelHostDeployment key={deploy.host} deployment={deploy} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ModelHostDeployment({ deployment }: { deployment: ModelDeployConfigType }) {
+  const trpc = useTRPC()
+  const { data: host } = useQuery(trpc.connection.getHostInfo.queryOptions(deployment.host))
+
+  if (!host) return null
+
+  const ipAddr = host.ip[0]
+  const url = ipAddr ? `http://${ipAddr}:${deployment.port}` : undefined
+
+  return (
+    <div className="bg-muted/50 rounded-md px-3.5 py-2.5">
+      <div className="mb-1 text-sm font-medium">{host.info.system_info.hostname || ipAddr}</div>
+      <DescriptionsList
+        omitNull
+        entries={[
+          {
+            id: 'API 端点',
+            value: url ? (
+              <CopyButton value={url} message="已复制 API 端点">
+                {url}
+              </CopyButton>
+            ) : null,
+          },
+          {
+            id: 'API key',
+            value: (
+              <CopyButton value={deployment.apiKey} message="已复制 API key">
+                {deployment.apiKey}
+              </CopyButton>
+            ),
+          },
+        ]}
+      />
+    </div>
+  )
+}
+
+function OpenWebuiServicesInfo() {
+  const deployment = useModelStore((s) => s.serviceDeploy.config.openWebui)
+  const openWebuiInfo = Array.from(deployment.values())
+
+  if (deployment.size === 0) return null
+
+  return (
+    <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-lg border px-4 py-3">
+      <div className="row-span-2 pt-1">
+        <OpenWebUI size={20} />
+      </div>
+      <h2 className="text-base font-semibold">Open WebUI</h2>
+      {openWebuiInfo.map((info) => (
+        <OpenWebuiInfo key={info.host} info={info} />
+      ))}
+    </div>
+  )
+}
+
+function OpenWebuiInfo({ info }: { info: OpenWebuiConfigType }) {
+  const trpc = useTRPC()
+  const { data: host } = useQuery(trpc.connection.getHostInfo.queryOptions(info.host))
+
+  if (!host) return null
+
+  const ipAddr = host?.ip[0]
+  const url = ipAddr ? `http://${ipAddr}:${info.port}` : undefined
+
+  return (
+    <div className="col-start-2">
+      <div className="mb-1 text-sm font-medium">{host.info.system_info.hostname || ipAddr}</div>
+      <DescriptionsList
+        entries={[
+          {
+            id: 'url',
+            key: '访问地址',
+            value: (
+              <a href={url} target="_blank" className="text-primary font-medium hover:underline">
+                {url}
+              </a>
+            ),
+          },
+        ]}
+      />
+    </div>
+  )
+}
