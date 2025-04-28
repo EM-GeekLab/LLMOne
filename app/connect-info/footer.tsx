@@ -144,7 +144,7 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
             {manualList.map((host) => (
               <Fragment key={host.ip}>
                 <div>{host.ip}</div>
-                <a href={host.url} target="_blank" className="text-primary hover:text-primary/80 truncate">
+                <a href={host.url} target="_blank" className="text-primary truncate hover:underline">
                   {host.url}
                 </a>
               </Fragment>
