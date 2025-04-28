@@ -22,7 +22,6 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CredentialType } from '@/stores'
 import { StoreOpenWebuiConfig } from '@/stores/model-store'
 import { useModelStore } from '@/stores/model-store-provider'
 
@@ -169,7 +168,7 @@ function ConfigForm({ hostId, onSubmitted }: { hostId?: string; onSubmitted?: ()
             render={({ field: { value, onChange, ...rest } }) => (
               <FormItem className="flex-1">
                 <FormLabel>部署主机</FormLabel>
-                <Select value={value} onValueChange={(v: CredentialType) => onChange(v)} {...rest}>
+                <Select value={value} onValueChange={(v: string) => onChange(v)} {...rest}>
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="选择主机" />

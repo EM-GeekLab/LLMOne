@@ -3,6 +3,7 @@ import { ReactNode, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ModelIcon } from '@lobehub/icons'
 import { useClipboard } from '@mantine/hooks'
+import { useQueryClient } from '@tanstack/react-query'
 import { AlertCircleIcon, CheckIcon, CopyIcon, DicesIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -26,8 +27,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Select, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNavigate } from '@/hooks/use-navigate'
-import { CredentialType } from '@/stores'
 import { useModelStore } from '@/stores/model-store-provider'
+import { useTRPC } from '@/trpc/client'
 import { AppRouter } from '@/trpc/router'
 
 import { HostSelectContent } from '../host-select-content'
@@ -112,6 +113,9 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
     defaultValues: { modelPath, apiKey: generateApiKey() },
   })
 
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+
   return (
     <Form {...form}>
       <form
@@ -129,7 +133,14 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
             render={({ field: { value, onChange, ...rest } }) => (
               <FormItem className="flex-1">
                 <FormLabel>部署主机</FormLabel>
-                <Select value={value} onValueChange={(v: CredentialType) => onChange(v)} {...rest}>
+                <Select
+                  value={value}
+                  onValueChange={(v: string) => {
+                    onChange(v)
+                    queryClient.prefetchQuery(trpc.host.getFullInfo.queryOptions(v))
+                  }}
+                  {...rest}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="选择主机" />
