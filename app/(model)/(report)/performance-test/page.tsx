@@ -12,7 +12,7 @@ export default function Page() {
   return (
     <AppFrame title="完成部署" current="finish">
       <ForceSyncStateButton />
-      <AppCardHeader>
+      <AppCardHeader className="bg-muted/50 border-border/50 gap-4 border-b">
         <div className="flex items-center gap-4">
           <NavButton to="/finish" variant="outline" size="xs">
             <ArrowLeftIcon />
@@ -20,9 +20,9 @@ export default function Page() {
           </NavButton>
           <AppCardTitle>性能测试</AppCardTitle>
         </div>
+        <ActionPanel />
       </AppCardHeader>
       <AppCardContent>
-        <ActionPanel />
         <ResultReport />
       </AppCardContent>
     </AppFrame>

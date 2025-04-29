@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { useQuery } from '@tanstack/react-query'
 
-import { AppCardSection } from '@/components/app/app-card'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useModelStore } from '@/stores/model-store-provider'
@@ -19,16 +19,23 @@ export function ActionPanel() {
   const { data, isSuccess, isError, isPending } = useBenchmarkResultQuery(hostId, mode)
   const { mutate } = useBenchmarkMutation(hostId, mode)
 
+  const success = isSuccess && data
+
   return (
-    <AppCardSection className="flex flex-row items-center gap-2">
+    <section className="flex flex-row items-center gap-2">
       <div className="grid w-96 grid-cols-[1fr_9rem] gap-2">
         <HostSelect />
         <ModeSelect />
       </div>
-      <Button disabled={isPending} onClick={() => mutate()}>
-        {isSuccess && data ? '重新测试' : isError ? '重试性能测试' : '开始性能测试'}
+      <Button
+        disabled={isPending}
+        className={cn(success && 'text-primary hover:text-primary')}
+        variant={success ? 'outline' : 'default'}
+        onClick={() => mutate()}
+      >
+        {success ? '重新测试' : isError ? '重试测试' : '开始测试'}
       </Button>
-    </AppCardSection>
+    </section>
   )
 }
 

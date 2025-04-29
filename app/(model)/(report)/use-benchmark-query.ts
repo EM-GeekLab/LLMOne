@@ -84,3 +84,15 @@ export function useBenchmarkStartupQuery(hostId: string, mode: BenchmarkMode = '
     ),
   )
 }
+
+export function useBenchmarkMetaQuery(hostId: string, mode: BenchmarkMode = 'standard') {
+  const modelStoreApi = useModelStoreApi()
+  const trpc = useTRPC()
+
+  return useQuery(
+    trpc.benchmark.getMeta.queryOptions(
+      { host: hostId, mode },
+      { enabled: !!modelStoreApi.getState().modelDeploy.config.get(hostId) },
+    ),
+  )
+}
