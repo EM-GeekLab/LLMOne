@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query'
 import { useGlobalStoreApi } from '@/stores'
 import { useModelStoreApi } from '@/stores/model-store-provider'
 import { useTRPC } from '@/trpc/client'
-import { RunBenchmarkInput } from '@/trpc/inputs/benchmark'
+import { BenchmarkMode } from '@/trpc/inputs/benchmark'
 
-export function useBenchmarkQuery(hostId: string, mode: RunBenchmarkInput['mode'] = 'standard') {
+export function useBenchmarkQuery(hostId: string, mode: BenchmarkMode = 'standard') {
   const storeApi = useGlobalStoreApi()
   const modelStoreApi = useModelStoreApi()
   const trpc = useTRPC()
@@ -26,7 +26,7 @@ export function useBenchmarkQuery(hostId: string, mode: RunBenchmarkInput['mode'
   )
 }
 
-export function useBenchmarkStartupQuery(hostId: string, mode: RunBenchmarkInput['mode'] = 'standard') {
+export function useBenchmarkStartupQuery(hostId: string, mode: BenchmarkMode = 'standard') {
   const modelStoreApi = useModelStoreApi()
   const trpc = useTRPC()
 

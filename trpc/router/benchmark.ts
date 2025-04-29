@@ -9,7 +9,7 @@ import { mxc } from '@/lib/metalx'
 import { z } from '@/lib/zod'
 import { BenchmarkPercentile, BenchmarkResult, BenchmarkSummary } from '@/app/(model)/(report)/performance-test/types'
 import { baseProcedure, createRouter } from '@/trpc/init'
-import { benchmarkModeEnum, RunBenchmarkInput, runBenchmarkSchema } from '@/trpc/inputs/benchmark'
+import { BenchmarkMode, benchmarkModeEnum, RunBenchmarkInput, runBenchmarkSchema } from '@/trpc/inputs/benchmark'
 import { applyLocalDockerImage, imageExists } from '@/trpc/router/docker-utils'
 
 import { DOCKER_IMAGES_DIR } from './constants'
@@ -17,28 +17,28 @@ import { addFileMap, executeCommand, getHostArch, getHostIp, withEnv } from './m
 import { getContainers, readModelInfo } from './resource-utils'
 
 class BenchmarkResultCache {
-  cache = new Map<string, Map<RunBenchmarkInput['mode'], { startup: Date; promise: Promise<BenchmarkResult> }>>()
+  cache = new Map<string, Map<BenchmarkMode, { startup: Date; promise: Promise<BenchmarkResult> }>>()
 
-  add(host: string, mode: RunBenchmarkInput['mode'], promise: Promise<BenchmarkResult>) {
+  add(host: string, mode: BenchmarkMode, promise: Promise<BenchmarkResult>) {
     if (!this.cache.has(host)) {
       this.cache.set(host, new Map())
     }
     this.cache.get(host)!.set(mode, { startup: new Date(), promise })
   }
 
-  remove(host: string, mode: RunBenchmarkInput['mode']) {
+  remove(host: string, mode: BenchmarkMode) {
     this.cache.get(host)?.delete(mode)
   }
 
-  get(host: string, mode: RunBenchmarkInput['mode']): Promise<BenchmarkResult> | undefined {
+  get(host: string, mode: BenchmarkMode): Promise<BenchmarkResult> | undefined {
     return this.cache.get(host)?.get(mode)?.promise
   }
 
-  getStartup(host: string, mode: RunBenchmarkInput['mode']): Date | undefined {
+  getStartup(host: string, mode: BenchmarkMode): Date | undefined {
     return this.cache.get(host)?.get(mode)?.startup
   }
 
-  has(host: string, mode: RunBenchmarkInput['mode']): boolean {
+  has(host: string, mode: BenchmarkMode): boolean {
     return this.cache.get(host)?.has(mode) ?? false
   }
 }

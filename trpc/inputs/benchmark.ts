@@ -1,7 +1,9 @@
 import { z } from '@/lib/zod'
 import { modelDeployConfigSchema } from '@/app/(model)/select-model/schemas'
 
-export const benchmarkModeEnum = z.enum(['standard', 'throughput', 'latency', 'high_concurrency', 'long_context'])
+export const benchmarkModes = ['standard', 'throughput', 'latency', 'high_concurrency', 'long_context'] as const
+
+export const benchmarkModeEnum = z.enum(benchmarkModes)
 
 export const runBenchmarkSchema = z.object({
   deployment: modelDeployConfigSchema,
@@ -10,3 +12,5 @@ export const runBenchmarkSchema = z.object({
 })
 
 export type RunBenchmarkInput = z.infer<typeof runBenchmarkSchema>
+
+export type BenchmarkMode = RunBenchmarkInput['mode']
