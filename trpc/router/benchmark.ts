@@ -16,14 +16,31 @@ import { DOCKER_IMAGES_DIR } from './constants'
 import { addFileMap, executeCommand, getHostArch, getHostIp, withEnv } from './mxc-utils'
 import { getContainers, readModelInfo } from './resource-utils'
 
+type BenchmarkTestMeta = { startedAt?: Date }
+
 class BenchmarkResultCache {
-  cache = new Map<string, Map<BenchmarkMode, { startup: Date; promise: Promise<BenchmarkResult> }>>()
+  cache = new Map<
+    string,
+    Map<
+      BenchmarkMode,
+      {
+        startup: Date
+        meta: BenchmarkTestMeta
+        promise: Promise<BenchmarkResult>
+      }
+    >
+  >()
 
   add(host: string, mode: BenchmarkMode, promise: Promise<BenchmarkResult>) {
     if (!this.cache.has(host)) {
       this.cache.set(host, new Map())
     }
-    this.cache.get(host)!.set(mode, { startup: new Date(), promise })
+    this.cache.get(host)!.set(mode, { startup: new Date(), meta: {}, promise })
+  }
+
+  updateMeta(host: string, mode: BenchmarkMode, update: (meta: BenchmarkTestMeta) => BenchmarkTestMeta) {
+    const benchmark = this.cache.get(host)?.get(mode)
+    if (benchmark) benchmark.meta = update(benchmark.meta)
   }
 
   remove(host: string, mode: BenchmarkMode) {
@@ -32,6 +49,10 @@ class BenchmarkResultCache {
 
   get(host: string, mode: BenchmarkMode): Promise<BenchmarkResult> | undefined {
     return this.cache.get(host)?.get(mode)?.promise
+  }
+
+  getMeta(host: string, mode: BenchmarkMode): BenchmarkTestMeta | undefined {
+    return this.cache.get(host)?.get(mode)?.meta
   }
 
   getStartup(host: string, mode: BenchmarkMode): Date | undefined {
@@ -46,28 +67,27 @@ class BenchmarkResultCache {
 const resultCache = new BenchmarkResultCache()
 
 export const benchmarkRouter = createRouter({
-  runQuickTest: baseProcedure.input(runBenchmarkSchema).query(async function ({ input }): Promise<BenchmarkResult> {
+  runQuickTest: baseProcedure
+    .input(runBenchmarkSchema.extend({ refresh: z.boolean().default(false) }))
+    .query(async function ({ input }): Promise<BenchmarkResult> {
+      const { deployment, mode, refresh } = input
+
+      if (!refresh && resultCache.has(deployment.host, mode)) {
+        return await resultCache.get(deployment.host, mode)!
+      }
+
+      const promise = runBenchmark(input)
+      resultCache.add(deployment.host, mode, promise)
+      return await promise.catch((err) => {
+        resultCache.remove(deployment.host, mode)
+        throw err
+      })
+    }),
+  runTest: baseProcedure.input(runBenchmarkSchema).mutation(async function ({ input }) {
     const { deployment, mode } = input
-
-    if (resultCache.has(deployment.host, mode)) {
-      return await resultCache.get(deployment.host, mode)!
-    }
-
     const promise = runBenchmark(input)
     resultCache.add(deployment.host, mode, promise)
-    return await promise.catch((err) => {
-      resultCache.remove(deployment.host, mode)
-      throw err
-    })
-  }),
-  runTest: baseProcedure.input(runBenchmarkSchema).mutation(async function ({ input }): Promise<BenchmarkResult> {
-    const { deployment, mode } = input
-    const promise = runBenchmark(input)
-    resultCache.add(deployment.host, mode, promise)
-    return await promise.catch((err) => {
-      resultCache.remove(deployment.host, mode)
-      throw err
-    })
+    promise.catch(() => resultCache.remove(deployment.host, mode))
   }),
   getTestStartup: baseProcedure
     .input(z.object({ host: z.string(), mode: benchmarkModeEnum }))
@@ -75,6 +95,9 @@ export const benchmarkRouter = createRouter({
   getResult: baseProcedure
     .input(z.object({ host: z.string(), mode: benchmarkModeEnum }))
     .query(async ({ input: { host, mode } }) => resultCache.get(host, mode) ?? null),
+  getMeta: baseProcedure
+    .input(z.object({ host: z.string(), mode: benchmarkModeEnum }))
+    .query(async ({ input: { host, mode } }) => resultCache.getMeta(host, mode) ?? null),
 })
 
 async function runBenchmark({ deployment, mode, manifestPath }: RunBenchmarkInput): Promise<BenchmarkResult> {
@@ -132,6 +155,11 @@ jq -c '.' ./out/\${TEST_MODE}/benchmark_percentile.json`,
       })
     }
   }
+
+  resultCache.updateMeta(deployment.host, mode, (meta) => {
+    meta.startedAt = new Date()
+    return meta
+  })
 
   // Run benchmark
   const { stdout } = await executeCommand(deployment.host, benchmarkCommand).catch((err) => {

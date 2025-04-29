@@ -5,11 +5,7 @@ import { executeCommand, getHostInfo, getHostIp } from './mxc-utils'
 
 export const hostRouter = createRouter({
   getFullInfo: baseProcedure.input(z.string()).query(async ({ input: host }) => {
-    const [info, ip, version] = await Promise.all([
-      await getHostInfo(host),
-      await getHostIp(host),
-      await getHostDistroVersion(host),
-    ])
+    const [info, ip, version] = await Promise.all([getHostInfo(host), getHostIp(host), getHostDistroVersion(host)])
     return { info, ip, version }
   }),
 })
