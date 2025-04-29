@@ -11,10 +11,11 @@ import { NavButton } from '@/components/base/nav-button'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Spinner } from '@/components/ui/spinner'
-import { Counter } from '@/app/(model)/(report)/counter'
-import { useBenchmarkQuery, useBenchmarkStartupQuery } from '@/app/(model)/(report)/use-benchmark-query'
 import { useModelStore } from '@/stores/model-store-provider'
 import { useTRPC } from '@/trpc/client'
+
+import { Counter } from '../counter'
+import { useBenchmarkMutation, useBenchmarkQuery, useBenchmarkStartupQuery } from '../use-benchmark-query'
 
 export function BenchmarkInfo() {
   const deployments = useModelStore((s) => s.modelDeploy.config)
@@ -63,7 +64,8 @@ function QuickTestData({ hostId }: { hostId: string }) {
 }
 
 function QuickTextOverview({ hostId, query }: { hostId: string; query: ReturnType<typeof useBenchmarkQuery> }) {
-  const { data, isPending, isError, error, refetch } = query
+  const { data, isPending, isError, error } = query
+  const { mutate } = useBenchmarkMutation(hostId, 'standard')
   const { data: startup } = useBenchmarkStartupQuery(hostId, 'standard')
 
   if (isPending) {
@@ -81,7 +83,7 @@ function QuickTextOverview({ hostId, query }: { hostId: string; query: ReturnTyp
       <Callout
         size="card"
         action={
-          <Button variant="outline" size="xs" onClick={() => refetch()}>
+          <Button variant="outline" size="xs" onClick={() => mutate()}>
             重试
           </Button>
         }
