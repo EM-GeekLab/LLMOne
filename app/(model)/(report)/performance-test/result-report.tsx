@@ -23,6 +23,17 @@ export function ResultReport() {
   const { mutate } = useBenchmarkMutation(hostId, mode)
 
   if (isPending) {
+    if (!startup) {
+      return (
+        <ReportContainer>
+          <div className="text-muted-foreground flex items-center justify-center gap-2 py-6 text-center text-sm [&_svg]:size-4">
+            <Spinner />
+            载入中
+          </div>
+        </ReportContainer>
+      )
+    }
+
     return (
       <ReportContainer>
         <div className="text-muted-foreground flex items-center justify-center gap-2 py-6 text-center text-sm [&_svg]:size-4">
