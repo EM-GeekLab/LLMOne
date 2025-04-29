@@ -9,14 +9,18 @@ import { mxc } from '@/lib/metalx'
 import { z } from '@/lib/zod'
 import { BenchmarkPercentile, BenchmarkResult, BenchmarkSummary } from '@/app/(model)/(report)/performance-test/types'
 import { baseProcedure, createRouter } from '@/trpc/init'
-import { BenchmarkMode, benchmarkModeEnum, RunBenchmarkInput, runBenchmarkSchema } from '@/trpc/inputs/benchmark'
+import {
+  BenchmarkMode,
+  benchmarkModeEnum,
+  BenchmarkTestMeta,
+  RunBenchmarkInput,
+  runBenchmarkSchema,
+} from '@/trpc/inputs/benchmark'
 import { applyLocalDockerImage, imageExists } from '@/trpc/router/docker-utils'
 
 import { DOCKER_IMAGES_DIR } from './constants'
 import { addFileMap, executeCommand, getHostArch, getHostIp, withEnv } from './mxc-utils'
 import { getContainers, readModelInfo } from './resource-utils'
-
-type BenchmarkTestMeta = { startedAt?: Date }
 
 class BenchmarkResultCache {
   cache = new Map<

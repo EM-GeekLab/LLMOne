@@ -14,3 +14,5 @@ export const runBenchmarkSchema = z.object({
 export type RunBenchmarkInput = z.infer<typeof runBenchmarkSchema>
 
 export type BenchmarkMode = RunBenchmarkInput['mode']
+
+export type BenchmarkTestMeta = { startedAt?: Date }
