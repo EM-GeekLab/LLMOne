@@ -2,7 +2,6 @@
 
 import { AppCardFooter } from '@/components/app/app-card'
 import { NavButton } from '@/components/base/nav-button'
-import { Button } from '@/components/ui/button'
 
 export function Footer() {
   return (
@@ -10,7 +9,7 @@ export function Footer() {
       <NavButton variant="outline" to="/deploy-service">
         上一步
       </NavButton>
-      <Button>完成</Button>
+      <NavButton to="/performance-test">性能测试</NavButton>
     </AppCardFooter>
   )
 }
