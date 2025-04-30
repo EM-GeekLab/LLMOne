@@ -211,10 +211,26 @@ export const connectionRouter = createRouter({
     scanHosts: baseProcedure.input(inputType<BmcFinalConnectionInfo[]>).query(async ({ input, signal }) => {
       const bmcClients = await BmcClients.create(input)
       try {
-        const networkInterface = await bmcClients.map(async ({ defaultId, ip, client }) => {
-          const nics = await client.getNetworkInterfaceInfo(defaultId)
-          return { ip, mac: nics.flatMap((nic) => nic.ports.map((p) => p.macAddress.toLowerCase())) }
+        const systemInfo = await bmcClients.map(async ({ defaultId, ip, client }) => {
+          const [nics, systemInfo] = await Promise.all([
+            client.getNetworkInterfaceInfo(defaultId),
+            client.getSystemInfo(defaultId),
+          ])
+          return {
+            ip,
+            uuid: systemInfo.UUID,
+            mac: nics.flatMap((nic) => nic.ports.map((p) => p.macAddress.toLowerCase())),
+          }
         })
+
+        const uuidsLength = systemInfo.filter(({ uuid }) => Boolean(uuid)).length
+        const nicsLength = systemInfo.filter(({ mac }) => Boolean(mac.length)).length
+        if (uuidsLength === 0 && nicsLength === 0) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: '无法从 BMC 获取主机信息',
+          })
+        }
 
         let count = 0
         const MAX_SCAN_COUNT = 1800
@@ -244,14 +260,14 @@ export const connectionRouter = createRouter({
           })
 
           for (const { id, disks, mac } of hostList) {
-            for (const { ip: bmcIp, mac: bmcMac } of networkInterface) {
-              if (intersects(mac, bmcMac)) {
+            for (const { ip: bmcIp, mac: bmcMac, uuid } of systemInfo) {
+              if (id === uuid || intersects(mac, bmcMac)) {
                 matchedHost.push({ id, bmcIp, disks })
                 break
               }
             }
           }
-          if (matchedHost.length === networkInterface.length) break
+          if (matchedHost.length === systemInfo.length) break
 
           count++
           if (count >= MAX_SCAN_COUNT) {
