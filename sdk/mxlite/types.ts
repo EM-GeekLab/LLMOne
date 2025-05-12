@@ -16,6 +16,8 @@ export type TaskResult =
   | {
       ok: true
       payload: {
+        ok: boolean
+        id: number
         payload:
           | {
               type: 'None'
@@ -30,6 +32,15 @@ export type TaskResult =
               type: 'FileOperationResponse'
               hash: Option<string>
               success: boolean
+            }
+          | {
+              type: 'ScriptEvalResponse'
+              ok: boolean
+            }
+          | {
+              type: 'Error'
+              code: string
+              message: string
             }
       }
     }
