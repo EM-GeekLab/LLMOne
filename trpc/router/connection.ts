@@ -93,8 +93,8 @@ export const connectionRouter = createRouter({
 
             try {
               const { status } = await client.bootVirtualMedia(urls[0], defaultId)
-              log.error({ ip, url: urls[0], status }, `${ip} 引导失败`)
-              if (!status)
+              if (!status) {
+                log.error({ ip, url: urls[0], status }, `${ip} 引导失败`)
                 return {
                   type: 'iDRAC',
                   ip,
@@ -103,6 +103,7 @@ export const connectionRouter = createRouter({
                     message: `${ip} 引导失败`,
                   }),
                 }
+              }
             } catch (err) {
               log.error({ ip, url: urls[0], err }, `${ip} 引导失败`)
               return {
