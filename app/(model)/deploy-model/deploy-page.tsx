@@ -1,21 +1,18 @@
 'use client'
 
 import * as React from 'react'
-import { ReactNode } from 'react'
 import { ModelIcon } from '@lobehub/icons'
-import { useClipboard } from '@mantine/hooks'
 import { useQuery } from '@tanstack/react-query'
-import { AlertCircleIcon, CheckCircle2Icon, CheckIcon, CopyIcon } from 'lucide-react'
-import { toast } from 'sonner'
+import { AlertCircleIcon, CheckCircle2Icon, CheckIcon } from 'lucide-react'
 import { match } from 'ts-pattern'
 
 import { isCompleted, useProgress } from '@/lib/progress/utils'
-import { cn } from '@/lib/utils'
 import { AppCardSection } from '@/components/app/app-card'
 import { Callout } from '@/components/base/callout'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
+import { TextCopyButton } from '@/app/(model)/text-copy-button'
 import { useModelStore } from '@/stores/model-store-provider'
 import { useTRPC } from '@/trpc/client'
 
@@ -131,17 +128,9 @@ function HostStatusCard({ hostId }: { hostId: string }) {
             <dl className="contents">
               <dt className="text-muted-foreground">API 端点</dt>
               <dd>
-                <CopyButton value={url} message="已复制 API 端点">
+                <TextCopyButton value={url} message="已复制 API 端点">
                   {url}
-                </CopyButton>
-              </dd>
-            </dl>
-            <dl className="contents">
-              <dt className="text-muted-foreground">API 密钥</dt>
-              <dd>
-                <CopyButton value={deployment.apiKey} message="已复制 API 密钥">
-                  {deployment.apiKey}
-                </CopyButton>
+                </TextCopyButton>
               </dd>
             </dl>
           </div>
@@ -156,27 +145,5 @@ function DeploySuccessCallout() {
     <Callout size="card" variant="success" icon={<CheckCircle2Icon />}>
       模型部署完成
     </Callout>
-  )
-}
-
-function CopyButton({ value, message, children }: { value: string; message: string; children?: ReactNode }) {
-  const { copy, copied, error } = useClipboard()
-
-  return (
-    <button
-      className={cn(
-        '[&>svg]:text-primary hover:[&_svg]:text-primary/80 hover:text-foreground/90 inline-flex items-center gap-2 [&>svg]:size-3.5',
-        error && '[&>svg]:text-destructive',
-        copied && '[&>svg]:text-success',
-      )}
-      onClick={() => {
-        copy(value)
-        toast.success(message)
-      }}
-    >
-      {children}
-      {copied ? <CheckIcon /> : error ? <AlertCircleIcon /> : <CopyIcon />}
-      <span className="sr-only">复制</span>
-    </button>
   )
 }
