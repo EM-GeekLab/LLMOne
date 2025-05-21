@@ -12,7 +12,9 @@ export function ServiceConfigCard({ className, ...props }: ComponentProps<'div'>
 }
 
 export function ServiceConfigCardLogo({ className, ...props }: ComponentProps<'div'>) {
-  return <div className={cn('col-start-1 row-span-2 pt-0.5 [&_svg]:size-5', className)} {...props} />
+  return (
+    <div className={cn('col-start-1 row-span-2 pt-0.5 [&_svg:not([class*="size-"])]:size-5', className)} {...props} />
+  )
 }
 
 export function ServiceConfigCardTitle({ className, ...props }: ComponentProps<'h4'>) {

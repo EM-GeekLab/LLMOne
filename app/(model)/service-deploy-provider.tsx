@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react'
 import { useMutation, UseMutationResult } from '@tanstack/react-query'
+import { match } from 'ts-pattern'
 
 import { createSafeContext } from '@/lib/react/create-safe-context'
 import { useGlobalStore } from '@/stores'
@@ -24,15 +25,22 @@ export function ServiceDeployProvider({ children }: { children: ReactNode }) {
     if (!manifestPath) throw new Error('未选择配置文件')
     const modelConfig = storeApi.getState().modelDeploy.config.get(config.host)
     if (!modelConfig) throw new Error('请先在主机上部署模型')
-    const iter = await trpcClient.model.deployService[config.service].mutate(
-      {
-        ...config,
-        modelConfig,
-        manifestPath,
-        from,
-      },
-      { context: { stream: true } },
-    )
+
+    const iter = await match(config)
+      .with({ service: 'openWebui' }, (config) =>
+        trpcClient.model.deployService.openWebui.mutate(
+          { ...config, modelConfig, manifestPath, from },
+          { context: { stream: true } },
+        ),
+      )
+      .with({ service: 'nexusGate' }, (config) =>
+        trpcClient.model.deployService.nexusGate.mutate(
+          { ...config, modelConfig, manifestPath, from },
+          { context: { stream: true } },
+        ),
+      )
+      .exhaustive()
+
     for await (const progress of iter) {
       setDeployProgress({ host: config.host, service: config.service, ...progress })
     }
@@ -41,10 +49,11 @@ export function ServiceDeployProvider({ children }: { children: ReactNode }) {
   const deployMutation = useMutation({
     mutationFn: async () => {
       if (!manifestPath) throw new Error('未选择配置文件')
-      const values = Object.values(storeApi.getState().serviceDeploy.config)
+      const { nexusGate, ...restServices } = storeApi.getState().serviceDeploy.config
+      await Promise.all(nexusGate.values().map((config) => updateProgress(config)))
       await Promise.all(
-        values.map(async (configMap) => {
-          await Promise.all(configMap.values().map(updateProgress))
+        Object.values(restServices).map(async (configMap) => {
+          await Promise.all(configMap.values().map((config) => updateProgress(config)))
         }),
       )
     },

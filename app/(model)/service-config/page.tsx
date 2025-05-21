@@ -2,6 +2,7 @@ import { AppCardContent, AppCardHeader, AppCardSection, AppCardTitle } from '@/c
 import { AppFrame } from '@/components/app/app-frame'
 
 import { Footer } from './footer'
+import { NexusGateConfig, NexusGateConfigs } from './nexus-gate-config'
 import { OpenWebuiConfig, OpenWebuiConfigs } from './open-webui-config'
 
 export default function Page() {
@@ -12,9 +13,11 @@ export default function Page() {
       </AppCardHeader>
       <AppCardContent>
         <AppCardSection>
+          <NexusGateConfig />
           <OpenWebuiConfig />
         </AppCardSection>
         <AppCardSection>
+          <NexusGateConfigs />
           <OpenWebuiConfigs />
         </AppCardSection>
       </AppCardContent>

@@ -1,5 +1,6 @@
 'use client'
 
+import * as React from 'react'
 import { ReactNode } from 'react'
 import { ModelIcon, OpenWebUI } from '@lobehub/icons'
 import { useQuery } from '@tanstack/react-query'
@@ -9,7 +10,8 @@ import { AppCardSection, AppCardSectionTitle } from '@/components/app/app-card'
 import { DescriptionsList } from '@/components/base/descriptions-list'
 import { CopyButton } from '@/app/(model)/(report)/copy-button'
 import { ModelDeployConfigType } from '@/app/(model)/select-model/schemas'
-import { OpenWebuiConfigType } from '@/app/(model)/service-config/schemas'
+import { NexusGateConfigType, OpenWebuiConfigType } from '@/app/(model)/service-config/schemas'
+import NexusGateLogo from '@/public/icons/nexus-gate.svg'
 import { useModelStore } from '@/stores/model-store-provider'
 import { useTRPC } from '@/trpc/client'
 
@@ -22,6 +24,7 @@ export function ServiceInfo() {
       </AppCardSection>
       <AppCardSection>
         <AppCardSectionTitle>服务信息</AppCardSectionTitle>
+        <NexusGateServicesInfo />
         <OpenWebuiServicesInfo />
       </AppCardSection>
     </>
@@ -114,14 +117,6 @@ function ModelHostDeployment({ deployment }: { deployment: ModelDeployConfigType
               </CopyButton>
             ) : null,
           },
-          {
-            id: 'API 密钥',
-            value: (
-              <CopyButton value={deployment.apiKey} message="已复制 API 密钥">
-                {deployment.apiKey}
-              </CopyButton>
-            ),
-          },
         ]}
       />
     </div>
@@ -168,6 +163,62 @@ function OpenWebuiInfo({ info }: { info: OpenWebuiConfigType }) {
               <a href={url} target="_blank" className="text-primary font-medium hover:underline">
                 {url}
               </a>
+            ),
+          },
+        ]}
+      />
+    </div>
+  )
+}
+
+function NexusGateServicesInfo() {
+  const deployment = useModelStore((s) => s.serviceDeploy.config.nexusGate)
+  const info = Array.from(deployment.values())
+
+  if (deployment.size === 0) return null
+
+  return (
+    <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-lg border px-4 py-3">
+      <div className="row-span-2 pt-1">
+        <NexusGateLogo className="-mx-0.5 size-6" />
+      </div>
+      <h2 className="text-base font-semibold">Open WebUI</h2>
+      {info.map((info) => (
+        <NexusGateInfo key={info.host} info={info} />
+      ))}
+    </div>
+  )
+}
+
+function NexusGateInfo({ info }: { info: NexusGateConfigType }) {
+  const trpc = useTRPC()
+  const { data: host } = useQuery(trpc.connection.getHostInfo.queryOptions(info.host))
+
+  if (!host) return null
+
+  const ipAddr = host?.ip[0]
+  const url = ipAddr ? `http://${ipAddr}:${info.port}` : undefined
+
+  return (
+    <div className="col-start-2">
+      <div className="mb-1 text-sm font-medium">{host.info.system_info.hostname || ipAddr}</div>
+      <DescriptionsList
+        entries={[
+          {
+            id: 'url',
+            key: '访问地址',
+            value: (
+              <a href={url} target="_blank" className="text-primary font-medium hover:underline">
+                {url}
+              </a>
+            ),
+          },
+          {
+            id: '管理员密钥',
+            value: (
+              <CopyButton value={info.adminKey} message="已复制管理员密钥">
+                {info.adminKey}
+              </CopyButton>
             ),
           },
         ]}

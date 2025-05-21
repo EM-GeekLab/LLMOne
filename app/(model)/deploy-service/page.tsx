@@ -2,6 +2,7 @@ import { AppCardContent, AppCardHeader, AppCardTitle } from '@/components/app/ap
 import { AppFrame } from '@/components/app/app-frame'
 
 import { Footer } from './footer'
+import { NexusGateDeployPage } from './nexus-gate-deploy-page'
 import { OpenWebuiDeployPage } from './open-webui-deploy-page'
 
 export default function Page() {
@@ -11,6 +12,7 @@ export default function Page() {
         <AppCardTitle>部署预置服务</AppCardTitle>
       </AppCardHeader>
       <AppCardContent>
+        <NexusGateDeployPage />
         <OpenWebuiDeployPage />
       </AppCardContent>
       <Footer />
