@@ -178,7 +178,7 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
           control={form.control}
           name="apiKey"
           render={({ field: { value = '', ...rest } }) => (
-            <FormItem className="basis-[92px]">
+            <FormItem className="hidden basis-[92px]">
               <FormLabel>API 密钥</FormLabel>
               <div className="join join-with-input flex">
                 <FormControl>
