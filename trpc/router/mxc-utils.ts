@@ -51,6 +51,7 @@ function extractVariables(command: string): string[] {
   return variables
 }
 
+// Execute a command on the host and wait for it to complete, without checking the return code
 export async function executeInlineCommand(host: string, command: string, interval = 100) {
   const [res, status] = await mxc.commandExec(host, command)
   if (!res.ok) {
@@ -82,6 +83,7 @@ export async function executeInlineCommand(host: string, command: string, interv
   return payload
 }
 
+// Execute a command on the host and wait for it to complete, checking the return code
 export async function executeCommand(host: string, command: string, interval = 2000) {
   const payload = await executeInlineCommand(host, command, interval)
 
