@@ -19,6 +19,7 @@ import { useHostInfo } from '../use-host-info'
 
 export function OpenWebuiDeployPage() {
   const { deployMutation } = useServiceDeployContext()
+  const hasOpenWebuiConfig = useModelStore((s) => s.serviceDeploy.config.openWebui.size > 0)
   const isSuccess = useModelStore(
     (s) =>
       s.serviceDeploy.progress.openWebui.size > 0 && s.serviceDeploy.progress.openWebui.values().every(isCompleted),
@@ -42,10 +43,12 @@ export function OpenWebuiDeployPage() {
   }
 
   return (
-    <AppCardSection>
-      <HostsList />
-      {isSuccess && <DeploySuccessCallout />}
-    </AppCardSection>
+    hasOpenWebuiConfig && (
+      <AppCardSection>
+        <HostsList />
+        {isSuccess && <DeploySuccessCallout />}
+      </AppCardSection>
+    )
   )
 }
 

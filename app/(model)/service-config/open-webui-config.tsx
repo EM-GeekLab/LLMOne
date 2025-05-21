@@ -49,7 +49,8 @@ export function OpenWebuiConfig() {
       <ServiceConfigCardTitle>Open WebUI</ServiceConfigCardTitle>
       <ServiceConfigCardContent>
         <p>
-          OpenWebUI是一个开源的网页界面，为大语言模型提供直观的交互体验，支持聊天历史管理、文件上传、多模型切换等功能，让用户可以方便地与您部署的大模型进行对话。
+          OpenWebUI
+          是一个开源的网页界面，为大语言模型提供直观的交互体验，支持聊天历史管理、文件上传、多模型切换等功能，让用户可以方便地与您部署的大模型进行对话。
         </p>
         <div className="pt-2.5">
           <ConfigDialog>
@@ -192,7 +193,7 @@ function ConfigForm({ hostId, onSubmitted }: { hostId?: string; onSubmitted?: ()
                     value={value}
                     min={0}
                     max={65535}
-                    placeholder="9200"
+                    placeholder="9300"
                     onChange={(e) => onChange(Number(e.target.value))}
                     {...rest}
                   />
