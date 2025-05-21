@@ -1,10 +1,11 @@
 import { enableMapSet } from 'immer'
+import { match } from 'ts-pattern'
 import { immer } from 'zustand/middleware/immer'
 import { createStore } from 'zustand/vanilla'
 
 import { PartialProgress } from '@/lib/progress/utils'
 import { ModelDeployConfigType } from '@/app/(model)/select-model/schemas'
-import { OpenWebuiConfigType } from '@/app/(model)/service-config/schemas'
+import { NexusGateConfigType, OpenWebuiConfigType } from '@/app/(model)/service-config/schemas'
 
 enableMapSet()
 
@@ -14,9 +15,11 @@ type DeployProgress = {
 
 export type StoreOpenWebuiConfig = { service: 'openWebui' } & OpenWebuiConfigType
 export type StoreOpenWebuiProgress = { service: 'openWebui' } & DeployProgress
+export type StoreNexusGateConfig = { service: 'nexusGate' } & NexusGateConfigType
+export type StoreNexusGateProgress = { service: 'nexusGate' } & DeployProgress
 
-export type ServiceConfigType = StoreOpenWebuiConfig
-export type ServiceDeployProgress = StoreOpenWebuiProgress
+export type ServiceConfigType = StoreOpenWebuiConfig | StoreNexusGateConfig
+export type ServiceDeployProgress = StoreOpenWebuiProgress | StoreNexusGateProgress
 
 export type DeployService = ServiceDeployProgress['service']
 
@@ -28,9 +31,11 @@ export type ModelStoreState = {
   serviceDeploy: {
     config: {
       openWebui: Map<string, StoreOpenWebuiConfig>
+      nexusGate: Map<string, StoreNexusGateConfig>
     }
     progress: {
       openWebui: Map<string, StoreOpenWebuiProgress>
+      nexusGate: Map<string, StoreNexusGateProgress>
     }
   }
 }
@@ -54,8 +59,8 @@ export const defaultModelStoreState: ModelStoreState = {
     progress: new Map(),
   },
   serviceDeploy: {
-    config: { openWebui: new Map() },
-    progress: { openWebui: new Map() },
+    config: { openWebui: new Map(), nexusGate: new Map() },
+    progress: { openWebui: new Map(), nexusGate: new Map() },
   },
 }
 
@@ -84,9 +89,11 @@ export const createModelStore = (
         }),
       addServiceDeployment: (config) =>
         set((state) => {
-          const { host, service } = config
-          const serviceConfig = state.serviceDeploy.config[service]
-          serviceConfig.set(host, config)
+          const { host } = config
+          match(config)
+            .with({ service: 'openWebui' }, (config) => state.serviceDeploy.config.openWebui.set(host, config))
+            .with({ service: 'nexusGate' }, (config) => state.serviceDeploy.config.nexusGate.set(host, config))
+            .exhaustive()
         }),
       removeServiceDeployment: (hostId, service) =>
         set((state) => {
@@ -95,9 +102,11 @@ export const createModelStore = (
         }),
       setServiceDeployProgress: (progress) =>
         set((state) => {
-          const { host, service } = progress
-          const serviceProgress = state.serviceDeploy.progress[service]
-          serviceProgress.set(host, progress)
+          const { host } = progress
+          match(progress)
+            .with({ service: 'openWebui' }, (progress) => state.serviceDeploy.progress.openWebui.set(host, progress))
+            .with({ service: 'nexusGate' }, (progress) => state.serviceDeploy.progress.nexusGate.set(host, progress))
+            .exhaustive()
         }),
       clearServiceDeployProgress: (hostId, service) =>
         set((state) => {
