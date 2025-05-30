@@ -27,7 +27,7 @@ const geistMono = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'ModelMachine',
+  title: 'LLMOne',
   description: '大模型一体机装机工具',
 }
 

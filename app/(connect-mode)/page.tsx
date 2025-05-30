@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <AppFrame title="基础系统部署" current="connect-mode">
       <AppCardHeader>
-        <AppCardTitle>欢迎使用 ModelMachine 一体机部署工具</AppCardTitle>
+        <AppCardTitle>欢迎使用 LLMOne 一体机部署工具</AppCardTitle>
         <AppCardDescription>仅需 10 步，助您快速完成 DeepSeek 一体机从开箱到使用全流程</AppCardDescription>
       </AppCardHeader>
       <AppCardContent>

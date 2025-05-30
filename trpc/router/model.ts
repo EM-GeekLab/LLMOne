@@ -365,7 +365,7 @@ export const modelRouter = createRouter({
               try {
                 const apiKey = await fetch(`http://${matchedAddr}:${port}/api/admin/apiKey`, {
                   method: 'POST',
-                  body: JSON.stringify({ comment: 'ModelMachine 自动创建' }),
+                  body: JSON.stringify({ comment: 'LLMOne 自动创建' }),
                   headers: { Authorization: `Bearer ${adminKey}`, 'Content-Type': 'application/json' },
                 })
                   .then((res): Promise<{ key: string }> => res.json())

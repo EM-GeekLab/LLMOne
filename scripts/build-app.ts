@@ -23,7 +23,7 @@ async function afterPack(context: AfterPackContext): Promise<void> {
  */
 const config: Configuration = {
   appId: 'com.geek-tech.model-machine',
-  productName: 'ModelMachine',
+  productName: 'LLMOne',
   asar: true,
   directories: {
     output: 'release',

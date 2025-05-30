@@ -59,7 +59,7 @@ process.on('uncaughtException', (e) => {
     return
   }
 
-  const title = 'ModelMachine 发生了意外错误'
+  const title = 'LLMOne 发生了意外错误'
   const stack = e.stack ?? `${e.name}:${e.message}`
   if (app.isReady()) {
     const buttons = ['关闭', '重新打开', '复制错误信息']
@@ -85,7 +85,7 @@ process.on('uncaughtException', (e) => {
 })
 
 if (!singletonLock) {
-  console.warn('Another instance of ModelMachine is running. Exiting...')
+  console.warn('Another instance of LLMOne is running. Exiting...')
   app.quit()
 } else {
   app.on('second-instance', () => {
