@@ -36,9 +36,9 @@ LLMOne 是一款开源、轻量的 **企业级大语言模型及应用** 部署�
 ## ✨ 主要特点
 
 - **开箱即用**：系统自动化安装，10 步操作，1 小时极速上线
-- **一站式构建**：完整配套全栈 AI服务，算力、模型、应用统一纳管
-- **国产适配**：支持国产昇腾等主流国产GPU芯片
-- **集成主流大模型**：支持DeepSeek、千问、书生浦语等多种开源大模型
+- **一站式构建**：完整配套全栈 AI 服务，算力、模型、应用统一纳管
+- **国产适配**：支持国产昇腾等主流国产 GPU 芯片
+- **集成主流大模型**：支持 DeepSeek、千问、书生浦语等多种开源大模型
 
 
 ## ⬇️ 软件下载
@@ -49,9 +49,9 @@ LLMOne 是一款开源、轻量的 **企业级大语言模型及应用** 部署�
 
 [![Windows](https://img.shields.io/badge/Windows-10-blue?logo=windows&logoColor=white)](https://github.com/EM-GeekLab/LLMOne/releases)
 [![Windows](https://img.shields.io/badge/Windows-11-blue?logo=windows&logoColor=white)](https://github.com/EM-GeekLab/LLMOne/releases)
-[![MacOS](https://img.shields.io/badge/MacOS-12-blue?logo=apple&logoColor=white)](https://github.com/EM-GeekLab/LLMOne/releases)
+[![macOS](https://img.shields.io/badge/macOS-12-blue?logo=apple&logoColor=white)](https://github.com/EM-GeekLab/LLMOne/releases)
 
-> 由于开发组目前设备有限，我们主要支持 Windows X86 和 M 处理器的 MacOS 平台的打包与测试，如您有其他国产芯片平台的支持需求，请在 [Issues](https://github.com/EM-GeekLab/LLMOne/issues) 中反馈。
+> 由于开发组目前设备有限，我们主要支持 Windows x86 和 Apple Silicon 的 macOS 平台的打包与测试，如您有其他国产芯片平台的支持需求，请在 [Issues](https://github.com/EM-GeekLab/LLMOne/issues) 中反馈。
 
 ## 🚀 快速开始
 
@@ -66,7 +66,7 @@ LLMOne 是一款开源、轻量的 **企业级大语言模型及应用** 部署�
 
    注意，Windows 平台使用的是无需安装的便携式应用，您只需解压并运行“LLMOne.exe” 即可。
    
-   MacOS 平台使用的是 DMG 安装包。您需要将 LLMOne.app 拖入应用程序文件夹中。
+   macOS 平台使用的是 DMG 安装包。您需要将 LLMOne.app 拖入应用程序文件夹中。
 
 2. 获取 LLMOne 部署资源包：
 
@@ -81,7 +81,7 @@ LLMOne 是一款开源、轻量的 **企业级大语言模型及应用** 部署�
 - [ ] 标准化应用模板，方便厂商快速将自己的应用集成到 LLMOne 中，实现一键部署
 - [ ] 支持更多主流大模型的集成
 - [ ] 增强模型管理功能，支持模型版本控制和多模型部署
-- [ ] 支持 openGrass 等开源数据库集成
+- [ ] 支持 openGauss 等开源数据库集成
 
 ## 📝 许可证
 
