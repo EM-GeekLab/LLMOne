@@ -23,7 +23,7 @@
 
 <div align="center">
 
-[软件下载]([#️-软件下载](https://github.com/EM-GeekLab/LLMOne/releases)) | [快速开始](#-快速开始) | [发展路线图](#️-发展路线图) | [用户文档](#-文档)
+[软件下载](https://github.com/EM-GeekLab/LLMOne/releases) | [快速开始](#-快速开始) | [发展路线图](#️-发展路线图) | [用户文档](https://geektechstudio.feishu.cn/wiki/UqP4w82n7ipacukdXe6cclL5nlb)
 
 </div>
 
