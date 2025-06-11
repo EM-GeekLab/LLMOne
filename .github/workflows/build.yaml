@@ -52,17 +52,17 @@ jobs:
         run: bun run build ${{ matrix.target }}
       - name: Get version from package.json
         id: get_version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
+        uses: stevenbenitez/get-package-version-action@v1
       - name: Upload release assets
         uses: actions/upload-release-asset@v1
         if: github.event_name == 'release' && github.event.action == 'created'
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./release/LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.current-version }}-${{ matrix.arch }}.${{ matrix.ext }}
-          asset_name: LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.current-version }}-${{ matrix.arch }}.${{ matrix.ext }}
+          asset_path: ./release/LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.version }}-${{ matrix.arch }}.${{ matrix.ext }}
+          asset_name: LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.version }}-${{ matrix.arch }}.${{ matrix.ext }}
           asset_content_type: ${{ matrix.target == 'linux' && 'application/vnd.appimage' || matrix.target == 'mac' && 'application/x-apple-diskimage' || 'application/zip' }}
       - name: Upload assets
         uses: actions/upload-artifact@v4
         with:
-          name: LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.current-version }}-${{ matrix.arch }}.zip
-          path: ./release/LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.current-version }}-${{ matrix.arch }}.${{ matrix.ext }}
+          name: LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.version }}-${{ matrix.arch }}.zip
+          path: ./release/LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.version }}-${{ matrix.arch }}.${{ matrix.ext }}
