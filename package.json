@@ -1,7 +1,7 @@
 {
-  "name": "model-machine",
+  "name": "llmone",
   "description": "LLMOne - 大模型一体机部署工具",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "author": {
     "name": "EM GeekLab",
@@ -121,6 +121,7 @@
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.1.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "octokit": "^5.0.3"
   }
 }

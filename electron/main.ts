@@ -20,7 +20,7 @@ const singletonLock = app.requestSingleInstanceLock()
 async function createWindow() {
   const win = new BrowserWindow({
     width: 1280,
-    height: 840,
+    height: 860,
     webPreferences: {
       preload: join(__dirname, 'preload.mjs'),
       contextIsolation: true,
@@ -38,15 +38,16 @@ async function createWindow() {
       mode: 'undocked',
       activate: false,
     })
-    // Open external links in the default browser
-    win.webContents.setWindowOpenHandler(({ url }) => {
-      if (url.startsWith('app://')) {
-        return { action: 'allow' }
-      }
-      shell.openExternal(url)
-      return { action: 'deny' }
-    })
   }
+
+  // Open external links in the default browser
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('app://')) {
+      return { action: 'allow' }
+    }
+    shell.openExternal(url)
+    return { action: 'deny' }
+  })
 }
 
 process.on('uncaughtException', (e) => {
