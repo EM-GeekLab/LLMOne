@@ -23,9 +23,9 @@ import { exit } from 'node:process'
 
 import { Octokit } from 'octokit'
 
-const commit = process.env.COMMIT || exit(2)
-const platform = (process.env.PLATFORM || exit(2)) as 'windows' | 'linux-gnu' | 'linux-musl' | 'darwin'
-const arch = (process.env.ARCH || exit(2)) as 'x86_64' | 'aarch64'
+const commit = process.env.MXD_COMMIT || exit(2)
+const platform = (process.env.MXD_PLATFORM || exit(2)) as 'windows' | 'linux-gnu' | 'linux-musl' | 'darwin'
+const arch = (process.env.MXD_ARCH || exit(2)) as 'x86_64' | 'aarch64'
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
