@@ -99,6 +99,7 @@
         "electron-serve": "^2.1.1",
         "eslint": "^9.25.1",
         "eslint-config-next": "15.3.1",
+        "extract-zip": "^2.0.1",
         "nextjs-node-loader": "^1.1.9",
         "octokit": "^5.0.3",
         "prettier": "^3.5.3",

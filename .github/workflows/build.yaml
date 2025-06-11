@@ -52,11 +52,11 @@ jobs:
         if: github.event_name == 'release' && github.event.action == 'created'
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./release/LLMOne-${{ matrix.target }}-${{ fromJson(steps.read_package_json.outputs.package_json).version }}.${{ matrix.target == 'linux' && 'AppImage' || matrix.target == 'win' && 'exe' || 'dmg' }}
-          asset_name: LLMOne-${{ matrix.target }}-${{ fromJson(steps.read_package_json.outputs.package_json).version }}.${{ matrix.target == 'linux' && 'AppImage' || matrix.target == 'win' && 'exe' || 'dmg' }}
-          asset_content_type: ${{ matrix.target == 'linux' && 'application/vnd.appimage' || matrix.target == 'win' && 'application/vnd.microsoft.portable-executable' || 'application/x-apple-diskimage' }}
+          asset_path: ./release/LLMOne-${{ matrix.target }}-${{ fromJson(steps.read_package_json.outputs.package_json).version }}.${{ matrix.target == 'linux' && 'AppImage' || matrix.target == 'mac' && 'dmg' || 'zip' }}
+          asset_name: LLMOne-${{ matrix.target }}-${{ fromJson(steps.read_package_json.outputs.package_json).version }}.${{ matrix.target == 'linux' && 'AppImage' || matrix.target == 'mac' && 'dmg' || 'zip' }}
+          asset_content_type: ${{ matrix.target == 'linux' && 'application/vnd.appimage' || matrix.target == 'mac' && 'application/x-apple-diskimage' || 'application/zip' }}
       - name: Upload assets
         uses: actions/upload-artifact@v4
         with:
           name: LLMOne-${{ matrix.target }}-${{ fromJson(steps.read_package_json.outputs.package_json).version }}.zip
-          path: ./release/LLMOne-${{ matrix.target }}-${{ fromJson(steps.read_package_json.outputs.package_json).version }}.${{ matrix.target == 'linux' && 'AppImage' || matrix.target == 'win' && 'exe' || 'dmg' }}
+          path: ./release/LLMOne-${{ matrix.target }}-${{ fromJson(steps.read_package_json.outputs.package_json).version }}.${{ matrix.target == 'linux' && 'AppImage' || matrix.target == 'mac' && 'dmg' || 'zip' }}

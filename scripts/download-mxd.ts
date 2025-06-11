@@ -18,9 +18,11 @@
  * ```
  */
 
+import { mkdirSync, rmSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import { exit } from 'node:process'
 
+import extractZip from 'extract-zip'
 import { Octokit } from 'octokit'
 
 const commit = process.env.MXD_COMMIT || exit(2)
@@ -73,7 +75,10 @@ if (runs.data.workflow_runs.length > 0) {
     const binary = response.data as ArrayBuffer
     await writeFile('artifact.zip', new Uint8Array(binary))
     console.log('Artifact downloaded successfully')
-    exit(0)
+    const targetDir = `${process.cwd()}/bin/`
+    mkdirSync(targetDir, { recursive: true })
+    await extractZip('artifact.zip', { dir: targetDir })
+    rmSync('artifact.zip')
   } else {
     console.error('No matching artifact found.')
   }
