@@ -17,14 +17,20 @@ jobs:
         include:
           - os: ubuntu-latest
             target: linux
+            arch: x64
+            ext: AppImage
             mxd-platform: linux-musl
             mxd-arch: x86_64
           - os: windows-latest
             target: win
+            arch: x64
+            ext: zip
             mxd-platform: windows
             mxd-arch: x86_64
           - os: macos-latest
             target: mac
+            arch: arm64
+            ext: dmg
             mxd-platform: darwin
             mxd-arch: aarch64
       fail-fast: false
@@ -44,19 +50,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build the app
         run: bun run build ${{ matrix.target }}
-      - name: Read package.json
-        id: read_package_json
-        run: echo "::set-output name=package_json::$(cat package.json)"
+      - name: Get version from package.json
+        id: get_version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
       - name: Upload release assets
         uses: actions/upload-release-asset@v1
         if: github.event_name == 'release' && github.event.action == 'created'
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./release/LLMOne-${{ matrix.target }}-${{ fromJson(steps.read_package_json.outputs.package_json).version }}.${{ matrix.target == 'linux' && 'AppImage' || matrix.target == 'mac' && 'dmg' || 'zip' }}
-          asset_name: LLMOne-${{ matrix.target }}-${{ fromJson(steps.read_package_json.outputs.package_json).version }}.${{ matrix.target == 'linux' && 'AppImage' || matrix.target == 'mac' && 'dmg' || 'zip' }}
+          asset_path: ./release/LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.current-version }}-${{ matrix.arch }}.${{ matrix.ext }}
+          asset_name: LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.current-version }}-${{ matrix.arch }}.${{ matrix.ext }}
           asset_content_type: ${{ matrix.target == 'linux' && 'application/vnd.appimage' || matrix.target == 'mac' && 'application/x-apple-diskimage' || 'application/zip' }}
       - name: Upload assets
         uses: actions/upload-artifact@v4
         with:
-          name: LLMOne-${{ matrix.target }}-${{ fromJson(steps.read_package_json.outputs.package_json).version }}.zip
-          path: ./release/LLMOne-${{ matrix.target }}-${{ fromJson(steps.read_package_json.outputs.package_json).version }}.${{ matrix.target == 'linux' && 'AppImage' || matrix.target == 'mac' && 'dmg' || 'zip' }}
+          name: LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.current-version }}-${{ matrix.arch }}.zip
+          path: ./release/LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.current-version }}-${{ matrix.arch }}.${{ matrix.ext }}

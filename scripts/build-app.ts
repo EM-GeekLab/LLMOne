@@ -29,7 +29,7 @@ const config: Configuration = {
     output: 'release',
   },
   compression: 'maximum',
-
+  artifactName: '${productName}-${platform}-${version}-${arch}.${ext}',
   files: [
     'dist-electron/**/*',
     '!dist-electron/**/*.map',

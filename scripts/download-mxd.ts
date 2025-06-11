@@ -79,6 +79,7 @@ if (runs.data.workflow_runs.length > 0) {
     mkdirSync(targetDir, { recursive: true })
     await extractZip('artifact.zip', { dir: targetDir })
     rmSync('artifact.zip')
+    exit(0)
   } else {
     console.error('No matching artifact found.')
   }
