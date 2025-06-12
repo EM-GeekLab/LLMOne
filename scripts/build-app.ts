@@ -11,9 +11,13 @@ const config: Configuration = {
   asar: true,
   directories: {
     output: 'release',
+    buildResources: 'resources',
+  },
+  extraMetadata: {
+    name: 'LLMOne',
   },
   compression: 'maximum',
-  artifactName: '${productName}-${platform}-${version}-${arch}.${ext}',
+  artifactName: '${productName}-${version}-${os}-${arch}.${ext}',
   files: [
     'dist-electron/**/*',
     '!dist-electron/**/*.map',

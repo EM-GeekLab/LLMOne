@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/img/logo.svg" alt="LLMOne Logo" width="100"/>
+<img src="./assets/logo.png" alt="LLMOne Logo" width="100"/>
 
 # LLMOne
 

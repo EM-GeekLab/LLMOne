@@ -58,11 +58,11 @@ jobs:
         if: github.event_name == 'release' && github.event.action == 'created'
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./release/LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.version }}-${{ matrix.arch }}.${{ matrix.ext }}
-          asset_name: LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.version }}-${{ matrix.arch }}.${{ matrix.ext }}
+          asset_path: ./release/LLMOne-${{ steps.get_version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}.${{ matrix.ext }}
+          asset_name: LLMOne-${{ steps.get_version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}.${{ matrix.ext }}
           asset_content_type: ${{ matrix.target == 'linux' && 'application/vnd.appimage' || matrix.target == 'mac' && 'application/x-apple-diskimage' || 'application/zip' }}
       - name: Upload assets
         uses: actions/upload-artifact@v4
         with:
-          name: LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.version }}-${{ matrix.arch }}.zip
-          path: ./release/LLMOne-${{ matrix.target }}-${{ steps.get_version.outputs.version }}-${{ matrix.arch }}.${{ matrix.ext }}
+          name: LLMOne-${{ steps.get_version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}.zip
+          path: ./release/LLMOne-${{ steps.get_version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}.${{ matrix.ext }}

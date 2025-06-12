@@ -68,3 +68,5 @@ local-test
 
 # data
 /data
+
+/resources/extra/
