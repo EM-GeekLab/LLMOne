@@ -14,11 +14,11 @@ import {
 import { useGlobalStore } from '@/stores'
 import { useTRPCClient } from '@/trpc/client'
 
-export function ManifestSelect() {
+export function ManifestSelect({ localModeOnly = false }: { localModeOnly?: boolean }) {
   const mode = useGlobalStore((s) => s.deployMode)
 
   return (
-    mode === 'local' && (
+    (localModeOnly ? mode === 'local' : true) && (
       <AppCardSection>
         <AppCardSectionHeader>
           <AppCardSectionTitle>选择离线安装配置</AppCardSectionTitle>

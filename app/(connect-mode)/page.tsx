@@ -37,7 +37,7 @@ export default function Home() {
           </AppCardSectionHeader>
           <DeployModeSelect />
         </AppCardSection>
-        <ManifestSelect />
+        <ManifestSelect localModeOnly />
       </AppCardContent>
       <Footer />
     </AppFrame>
