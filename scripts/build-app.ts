@@ -1,22 +1,6 @@
-import { join } from 'node:path'
-
-import { $ } from 'bun'
-import { AfterPackContext, Arch, build, Configuration, Platform } from 'electron-builder'
+import { Arch, build, Configuration, Platform } from 'electron-builder'
 
 import { buildMain } from './build-main'
-
-async function afterPack(context: AfterPackContext): Promise<void> {
-  // remove this once you set up your own code signing for macOS
-  if (context.electronPlatformName === 'darwin') {
-    // check whether the app was already signed
-    const appPath = join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`)
-
-    // this is needed for the app to not appear as "damaged" on Apple Silicon Macs
-    // https://github.com/electron-userland/electron-builder/issues/5850#issuecomment-1821648559
-    console.log('Signing app with ad-hoc signature...')
-    await $`codesign --force --deep --sign - ${appPath}`
-  }
-}
 
 /**
  * @see https://www.electron.build/configuration
@@ -100,7 +84,6 @@ async function buildPlatform(platform: 'win' | 'mac' | 'linux'): Promise<void> {
     targets,
     config: {
       ...structuredClone(config),
-      afterPack,
     },
   })
   console.timeLog(message, '\n')
