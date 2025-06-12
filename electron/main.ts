@@ -30,6 +30,15 @@ async function createWindow() {
   })
   win.autoHideMenuBar = true
 
+  // Open external links in the default browser
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('app://')) {
+      return { action: 'allow' }
+    }
+    shell.openExternal(url)
+    return { action: 'deny' }
+  })
+
   if (app.isPackaged) {
     await loadUrl(win)
   } else {
@@ -39,15 +48,6 @@ async function createWindow() {
       activate: false,
     })
   }
-
-  // Open external links in the default browser
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('app://')) {
-      return { action: 'allow' }
-    }
-    shell.openExternal(url)
-    return { action: 'deny' }
-  })
 }
 
 process.on('uncaughtException', (e) => {
