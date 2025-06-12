@@ -49,7 +49,6 @@ export async function buildMain(platform: 'win' | 'mac' | 'linux', env: 'dev' | 
     target: 'node',
     outdir: './dist-electron',
     format: 'esm',
-    minify: !isDev,
     sourcemap: isDev ? 'linked' : 'none',
     external: ['electron'],
     define: toDefineObject(isDev ? environments.development : environments.production),
