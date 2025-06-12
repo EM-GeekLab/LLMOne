@@ -17,11 +17,11 @@ import {
   runBenchmarkSchema,
 } from '@/trpc/inputs/benchmark'
 import { applyLocalDockerImage, imageExists } from '@/trpc/router/docker-utils'
-import { hostApiKeyStore } from '@/trpc/router/host-api-key-store'
+import { gatewayConfigStore } from '@/trpc/router/gateway-config-store'
 
 import { DOCKER_IMAGES_DIR } from './constants'
 import { addFileMap, executeCommand, getHostArch, getHostIp, withEnv } from './mxc-utils'
-import { getContainers, readModelInfo } from './resource-utils'
+import { getContainers } from './resource-utils'
 
 class BenchmarkResultCache {
   cache = new Map<
@@ -107,7 +107,6 @@ export const benchmarkRouter = createRouter({
 
 async function runBenchmark({ deployment, mode, manifestPath }: RunBenchmarkInput): Promise<BenchmarkResult> {
   const hostAddr = await getHostIp(deployment.host)
-  const model = await readModelInfo(deployment.modelPath)
 
   const benchmarkImage = 'llm-pref-test'
   const containers = await getContainers(manifestPath)
@@ -120,7 +119,7 @@ async function runBenchmark({ deployment, mode, manifestPath }: RunBenchmarkInpu
     })
   }
 
-  const modelApiKey = hostApiKeyStore.get(deployment.host)
+  const gatewayConfig = gatewayConfigStore.get(deployment.host)
   const benchmarkCommand = withEnv(
     `
 nohup docker run -e MODEL_HOST_IP=\${MODEL_HOST_IP} -e MODEL_PORT=\${MODEL_PORT} -e MODEL_NAME=\${MODEL_NAME} -e MODEL_API_KEY=\${MODEL_API_KEY} -e TEST_MODE=\${TEST_MODE} -v ./out:/app/out llm-pref-test > test.log 2>&1 &
@@ -130,10 +129,10 @@ wait $docker_pid
 jq -c '.' ./out/\${TEST_MODE}/benchmark_summary.json
 jq -c '.' ./out/\${TEST_MODE}/benchmark_percentile.json`,
     {
-      MODEL_HOST_IP: hostAddr,
-      MODEL_PORT: deployment.port,
-      MODEL_NAME: model.modelId,
-      MODEL_API_KEY: modelApiKey,
+      MODEL_HOST_IP: gatewayConfig.address,
+      MODEL_PORT: gatewayConfig.port,
+      MODEL_NAME: gatewayConfig.modelId,
+      MODEL_API_KEY: gatewayConfig.apiKey,
       TEST_MODE: mode,
     },
   )

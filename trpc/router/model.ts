@@ -3,6 +3,7 @@ import { join } from 'node:path/posix'
 
 import { TRPCError } from '@trpc/server'
 import type { Aria2RpcHTTPUrl } from 'maria2'
+import { retry } from 'radash'
 import yaml from 'yaml'
 
 import { downloadFile, downloadWithMetalink } from '@/lib/aria2'
@@ -12,7 +13,7 @@ import { z } from '@/lib/zod'
 import { modelDeployConfigSchema } from '@/app/(model)/select-model/schemas'
 import { nexusGateConfigSchema, openWebuiConfigSchema } from '@/app/(model)/service-config/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
-import { hostApiKeyStore } from '@/trpc/router/host-api-key-store'
+import { gatewayConfigStore } from '@/trpc/router/gateway-config-store'
 
 import { DOCKER_COMPOSE_DIR, DOCKER_IMAGES_DIR, MODEL_WORK_DIR } from './constants'
 import { applyLocalDockerImage, imageExists } from './docker-utils'
@@ -22,7 +23,7 @@ import { getContainers, readModelInfo, readModelInfoAbsolute } from './resource-
 export const modelRouter = createRouter({
   deployModel: baseProcedure
     .input(modelDeployConfigSchema.extend({ manifestPath: z.string(), from: z.number().default(0) }))
-    .mutation(async function* ({ input: { host, modelPath, port, apiKey, manifestPath, from } }) {
+    .mutation(async function* ({ input: { host, modelPath, port, manifestPath, from } }) {
       const config = await readModelInfoAbsolute(modelPath)
 
       const containers = await getContainers(manifestPath)
@@ -51,7 +52,6 @@ export const modelRouter = createRouter({
           GPU_COUNT: 1,
           VLLM_PORT: port,
           MODEL_PORT: port,
-          MODEL_API_KEY: apiKey,
           CONFIG_JSON: join(modelTargetPath, 'mindie_config.json'),
         },
         config.docker.command,
@@ -129,10 +129,12 @@ export const modelRouter = createRouter({
           from: z.number().default(0),
         }),
       )
-      .mutation(async function* ({ input: { host, manifestPath, modelConfig, name, port, from } }) {
+      .mutation(async function* ({ input: { host, manifestPath, name, port, from } }) {
         const containers = await getContainers(manifestPath)
         const hostArch = await getHostArch(host)
-        const openWebuiContainer = containers.find((c) => c.repo === 'open-webui' && c.arch === hostArch)
+        const openWebuiContainer = containers.find(
+          (c) => c.repo === 'ghcr.io/open-webui/open-webui' && c.arch === hostArch,
+        )
         if (!openWebuiContainer) {
           throw new TRPCError({
             message: '没有找到 open-webui 的镜像',
@@ -147,17 +149,16 @@ export const modelRouter = createRouter({
         }
 
         const matchedAddr = await getHostIp(host)
-        const modelInfo = await readModelInfo(modelConfig.modelPath)
         const aria2RpcUrl: Aria2RpcHTTPUrl = `http://${matchedAddr}:6800/jsonrpc`
-        const modelApiKey = hostApiKeyStore.get(host)
+        const gatewayConfig = gatewayConfigStore.get(host)
 
         const envCommands = makeEnvs(
           {
-            MODEL_NAMES: modelInfo.modelId,
-            MODEL_HOST_IP: matchedAddr,
-            MODEL_PORT: modelConfig.port,
-            MODEL_API_KEY: modelApiKey,
-            HOST_IP: matchedAddr,
+            MODEL_NAMES: gatewayConfig.modelId,
+            MODEL_HOST_IP: gatewayConfig.address,
+            MODEL_PORT: gatewayConfig.port,
+            MODEL_API_KEY: gatewayConfig.apiKey,
+            HOST_IP: gatewayConfig.address,
             TARGET_PORT: port,
             WEBUI_NAME: name,
           },
@@ -254,8 +255,8 @@ export const modelRouter = createRouter({
                 await downloadFile(containerUrl, aria2RpcUrl, DOCKER_IMAGES_DIR, fileSha1, {
                   onProgress: async ({ overallProgress }) =>
                     onProgress(
-                      overallProgress,
-                      `正在传输 Docker 镜像 ${overallProgress.toFixed(1)}% (${index}/${matchedContainers.length})`,
+                      (overallProgress + index * 100) / matchedContainers.length,
+                      `正在传输 Docker 镜像 ${overallProgress.toFixed(1)}% (${index + 1}/${matchedContainers.length})`,
                     ),
                 })
               }
@@ -290,11 +291,10 @@ export const modelRouter = createRouter({
               const initConfigContent = {
                 upstreams: [
                   {
-                    name: modelInfo.modelId,
-                    url: `http://${matchedAddr}:${modelConfig.port}`,
+                    name: 'LLMOne',
+                    url: `http://${matchedAddr}:${modelConfig.port}/v1`,
                     model: modelInfo.modelId,
                     upstreamModel: modelInfo.modelId,
-                    apiKey: modelConfig.apiKey,
                     weight: 1,
                   },
                 ],
@@ -363,14 +363,17 @@ export const modelRouter = createRouter({
               )
 
               try {
-                const apiKey = await fetch(`http://${matchedAddr}:${port}/api/admin/apiKey`, {
-                  method: 'POST',
-                  body: JSON.stringify({ comment: 'LLMOne 自动创建' }),
-                  headers: { Authorization: `Bearer ${adminKey}`, 'Content-Type': 'application/json' },
-                })
-                  .then((res): Promise<{ key: string }> => res.json())
-                  .then(({ key }) => key)
-                hostApiKeyStore.set(host, apiKey)
+                const getInitKey = async () => {
+                  const apiKey = await fetch(`http://${matchedAddr}:${port}/api/admin/apiKey`, {
+                    method: 'POST',
+                    body: JSON.stringify({ comment: 'LLMOne 自动创建' }),
+                    headers: { Authorization: `Bearer ${adminKey}`, 'Content-Type': 'application/json' },
+                  })
+                    .then((res): Promise<{ key: string }> => res.json())
+                    .then(({ key }) => key)
+                  gatewayConfigStore.set(host, { apiKey, address: matchedAddr, port, modelId: modelInfo.modelId })
+                }
+                await retry({ backoff: (i) => 10 ** i, times: 4 }, getInitKey)
               } catch (error) {
                 throw new Error(`获取 NexusGate API 密钥失败: ${error}`)
               }
