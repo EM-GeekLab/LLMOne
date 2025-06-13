@@ -62,10 +62,11 @@ export async function buildMain(platform: 'win' | 'mac' | 'linux', env: 'dev' | 
   console.log()
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.main) {
   const env = (process.argv[2] || 'prod') as 'dev' | 'prod'
+  const inputPlatform = process.argv[3] as 'win' | 'mac' | 'linux' | undefined
   const platform =
-    process.platform === 'darwin' ? 'mac' : process.platform === 'win32' ? 'win' : ('linux' as 'win' | 'mac' | 'linux')
+    inputPlatform || (process.platform === 'darwin' ? 'mac' : process.platform === 'win32' ? 'win' : 'linux')
 
   await buildMain(platform, env)
 }

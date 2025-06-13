@@ -1,6 +1,4 @@
-import { Arch, build, Configuration, Platform } from 'electron-builder'
-
-import { buildMain } from './build-main'
+import { Arch, build, Platform, type Configuration } from 'electron-builder'
 
 /**
  * @see https://www.electron.build/configuration
@@ -16,6 +14,7 @@ const config: Configuration = {
   extraMetadata: {
     name: 'LLMOne',
   },
+  publish: null,
   compression: 'maximum',
   artifactName: '${productName}-${version}-${os}-${arch}.${ext}',
   files: [
@@ -81,8 +80,7 @@ async function buildPlatform(platform: 'win' | 'mac' | 'linux'): Promise<void> {
       return
   }
 
-  await buildMain(platform, 'prod')
-  const message = `Application for ${platform} is built.`
+  const message = `Application for ${platform} is built`
   console.time(message)
   await build({
     targets,
@@ -93,14 +91,13 @@ async function buildPlatform(platform: 'win' | 'mac' | 'linux'): Promise<void> {
   console.timeLog(message, '\n')
 }
 
-const platforms = process.argv.slice(2) as ('win' | 'mac' | 'linux')[]
+const inputPlatforms = process.argv.slice(2) as ('win' | 'mac' | 'linux')[]
+const platforms: ('win' | 'mac' | 'linux')[] =
+  inputPlatforms.length > 0
+    ? inputPlatforms
+    : [process.platform === 'darwin' ? 'mac' : process.platform === 'win32' ? 'win' : 'linux']
 
-if (platforms.length === 0) {
-  console.info('Please specify a platform or platforms: win, mac, or linux.')
-  process.exit(1)
-}
-
-const message = 'Build completed.'
+const message = 'Build completed'
 console.time(message)
 for (const platform of platforms) {
   await buildPlatform(platform)

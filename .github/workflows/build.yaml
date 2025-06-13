@@ -17,7 +17,7 @@ jobs:
         include:
           - os: ubuntu-latest
             target: linux
-            arch: x64
+            arch: x86_64
             ext: AppImage
             mxd-platform: linux-musl
             mxd-arch: x86_64
@@ -39,6 +39,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Bun
         uses: oven-sh/setup-bun@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - name: Install dependencies
         run: bun install
       - name: Download mxd
@@ -49,7 +53,7 @@ jobs:
           MXD_COMMIT: ${{ vars.MXD_COMMIT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build the app
-        run: bun run build ${{ matrix.target }}
+        run: bun run build
       - name: Get version from package.json
         id: get_version
         uses: stevenbenitez/get-package-version-action@v1
