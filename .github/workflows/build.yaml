@@ -1,9 +1,10 @@
 name: Build App
 
 on:
-  release:
-    types: [created]
   workflow_dispatch:
+  push:
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -56,17 +57,9 @@ jobs:
         run: bun run build
       - name: Get version from package.json
         id: get_version
-        uses: stevenbenitez/get-package-version-action@v1
-      - name: Upload release assets
-        uses: actions/upload-release-asset@v1
-        if: github.event_name == 'release' && github.event.action == 'created'
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./release/LLMOne-${{ steps.get_version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}.${{ matrix.ext }}
-          asset_name: LLMOne-${{ steps.get_version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}.${{ matrix.ext }}
-          asset_content_type: ${{ matrix.target == 'linux' && 'application/vnd.appimage' || matrix.target == 'mac' && 'application/x-apple-diskimage' || 'application/zip' }}
+        uses: koitococo/get-npm-version@v1
       - name: Upload assets
         uses: actions/upload-artifact@v4
         with:
-          name: LLMOne-${{ steps.get_version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}.zip
+          name: LLMOne-${{ steps.get_version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}
           path: ./release/LLMOne-${{ steps.get_version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}.${{ matrix.ext }}
