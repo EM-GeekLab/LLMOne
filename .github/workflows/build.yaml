@@ -63,3 +63,33 @@ jobs:
         with:
           name: LLMOne-${{ steps.get_version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}
           path: ./release/LLMOne-${{ steps.get_version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}.${{ matrix.ext }}
+
+  release:
+    name: Create Release
+    needs: build
+    permissions:
+      contents: write
+      actions: read
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'tag'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: LLMOne-*
+          path: ./LLMOne-artifacts/
+          merge-multiple: true
+      - name: Create Release
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: LLMOne ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            ./LLMOne-artifacts/*
+          draft: true
+          prerelease: false
+          fail_on_unmatched_files: true
