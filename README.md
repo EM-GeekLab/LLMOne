@@ -99,7 +99,7 @@ LLMOne 不仅支持大模型的便捷部署，更强调开放的应用生态集�
     macOS 平台使用的是 DMG 安装包。您需要将 LLMOne.app 拖入应用程序文件夹中。
 
 2.  获取 LLMOne 部署资源包：
-    我们目前提供了一个资源包示例和一个资源包构建工具，您可以从魔乐社区下载 [LLMOne 示例资源包](https://modelers.cn/EM-GeekLab/LLMOne-Resource-example) 或者使用 [LLMOne 资源包构建工具]()（开发中，即将上线） 来创建自己的资源包。
+    我们目前提供了一个资源包示例和一个资源包构建工具，您可以从魔乐社区下载 [LLMOne 示例资源包](https://modelers.cn/models/EM-GeekLab/LLMOne-Resource-example) 或者使用 [LLMOne 资源包构建工具]()（开发中，即将上线） 来创建自己的资源包。
 
 3.  启动 LLMOne 客户端，按照[用户手册](https://geektechstudio.feishu.cn/wiki/UqP4w82n7ipacukdXe6cclL5nlb)的提示，完成配置与安装过程。
 

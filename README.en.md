@@ -98,7 +98,7 @@ To quickly start using LLMOne, please follow these steps:
     The macOS platform uses a DMG installer package. You need to drag LLMOne.app into the Applications folder.
 
 2.  Obtain LLMOne deployment resource package:
-    We currently provide a resource package example and a resource package building tool. You can download the [LLMOne example resource package](https://modelers.cn/EM-GeekLab/LLMOne-Resource-example) from the Modelers community or use the [LLMOne resource package building tool]() (in development, coming soon) to create your own resource package.
+    We currently provide a resource package example and a resource package building tool. You can download the [LLMOne example resource package](https://modelers.cn/models/EM-GeekLab/LLMOne-Resource-example) from the Modelers community or use the [LLMOne resource package building tool]() (in development, coming soon) to create your own resource package.
 
 3.  Start the LLMOne client and follow the prompts in the [user manual](https://geektechstudio.feishu.cn/wiki/UqP4w82n7ipacukdXe6cclL5nlb) to complete the configuration and installation process.
 
