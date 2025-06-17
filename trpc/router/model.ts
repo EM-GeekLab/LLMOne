@@ -150,7 +150,7 @@ export const modelRouter = createRouter({
 
         const matchedAddr = await getHostIp(host)
         const aria2RpcUrl: Aria2RpcHTTPUrl = `http://${matchedAddr}:6800/jsonrpc`
-        const gatewayConfig = gatewayConfigStore.get(host)
+        const gatewayConfig = await gatewayConfigStore.get(host)
 
         const envCommands = makeEnvs(
           {

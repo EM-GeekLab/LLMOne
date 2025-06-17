@@ -108,7 +108,8 @@ export const benchmarkRouter = createRouter({
 async function runBenchmark({ deployment, mode, manifestPath }: RunBenchmarkInput): Promise<BenchmarkResult> {
   const hostAddr = await getHostIp(deployment.host)
 
-  const benchmarkImage = 'llm-pref-test'
+  const benchmarkImage = 'llm-perf-test'
+  const resultDirectory = '/tmp/llm-perf-test'
   const containers = await getContainers(manifestPath)
   const hostArch = await getHostArch(deployment.host)
   const matchedContainer = containers.find((c) => c.repo === benchmarkImage && c.arch === hostArch)
@@ -119,12 +120,22 @@ async function runBenchmark({ deployment, mode, manifestPath }: RunBenchmarkInpu
     })
   }
 
-  const gatewayConfig = gatewayConfigStore.get(deployment.host)
+  const gatewayConfig = await gatewayConfigStore.get(deployment.host)
   const benchmarkCommand = withEnv(
     `
-nohup docker run -e MODEL_HOST_IP=\${MODEL_HOST_IP} -e MODEL_PORT=\${MODEL_PORT} -e MODEL_NAME=\${MODEL_NAME} -e MODEL_API_KEY=\${MODEL_API_KEY} -e TEST_MODE=\${TEST_MODE} -v ./out:/app/out llm-pref-test > test.log 2>&1 &
-docker_pid=$!
-wait $docker_pid
+mkdir -p \${RESULT_DIR}
+cd \${RESULT_DIR}
+  
+docker run \
+  --rm \
+  --name \${REPO}-\${TEST_MODE} \
+  -e MODEL_HOST_IP=\${MODEL_HOST_IP} \
+  -e MODEL_PORT=\${MODEL_PORT} \
+  -e MODEL_NAME=\${MODEL_NAME} \
+  -e MODEL_API_KEY=\${MODEL_API_KEY} \
+  -e TEST_MODE=\${TEST_MODE} \
+  -v ./out:/app/out \
+  \${REPO} > ./test.log 2>&1
 
 jq -c '.' ./out/\${TEST_MODE}/benchmark_summary.json
 jq -c '.' ./out/\${TEST_MODE}/benchmark_percentile.json`,
@@ -133,6 +144,8 @@ jq -c '.' ./out/\${TEST_MODE}/benchmark_percentile.json`,
       MODEL_PORT: gatewayConfig.port,
       MODEL_NAME: gatewayConfig.modelId,
       MODEL_API_KEY: gatewayConfig.apiKey,
+      RESULT_DIR: resultDirectory,
+      REPO: matchedContainer.repo,
       TEST_MODE: mode,
     },
   )
