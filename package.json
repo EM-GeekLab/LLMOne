@@ -110,7 +110,7 @@
     "@types/react-dom": "^19.1.2",
     "colorette": "^2.0.20",
     "concurrently": "^9.1.2",
-    "electron": "^36.4.0",
+    "electron": "^35.5.1",
     "electron-builder": "^26.0.12",
     "electron-serve": "^2.1.1",
     "eslint": "^9.25.1",
