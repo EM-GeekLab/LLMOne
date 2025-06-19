@@ -14,24 +14,27 @@ const log = logger.child({ module: 'mxd' })
 export const mxc = new Mxc(httpEndpoint, token)
 
 let mxdProcess: ChildProcess | undefined
-let abortController: AbortController | undefined
+let abortController: AbortController
 
-export async function startMxd() {
+export interface RunMxdOptions {
+  staticPath?: string
+  disableDiscovery?: boolean
+}
+
+export async function startMxd(options: RunMxdOptions = {}) {
   if (executable && !mxdProcess) {
+    abortController = new AbortController()
     log.info(`Using mxd executable: ${executable}`)
-    mxdProcess = await runMxd()
+    mxdProcess = await runMxd({ ...options, signal: abortController.signal })
   }
 }
 
-async function runMxd(staticPath?: string) {
+async function runMxd({ staticPath, disableDiscovery, signal }: RunMxdOptions & { signal: AbortSignal }) {
   if (!executable) {
     log.warn(`No mxd executable found, skipping mxd`)
     return
   }
 
-  if (abortController) killMxd()
-
-  abortController = new AbortController()
   const httpUrl = new URL(httpEndpoint)
   const httpsUrl = new URL(httpsEndpoint)
 
@@ -44,6 +47,7 @@ async function runMxd(staticPath?: string) {
     [
       ...(token ? ['-k', token] : []),
       ...(staticPath ? ['-s', staticPath] : []),
+      ...(disableDiscovery ? ['-d'] : []),
       ...['-p', httpUrl.port, '--http'],
       ...['-P', httpsUrl.port, '--https'],
       '--generate-cert',
@@ -53,7 +57,7 @@ async function runMxd(staticPath?: string) {
       ...['--ca-key', join(certsDir, 'ca.key')],
       ...(process.env.NODE_ENV !== 'production' ? ['-v'] : []),
     ],
-    { signal: abortController.signal },
+    { signal },
     (error) => {
       if (error && error.name !== 'AbortError') {
         log.error(error, `Error executing mxd`)
@@ -76,16 +80,26 @@ async function runMxd(staticPath?: string) {
   })
   childProcess.on('exit', (code) => {
     log.info(`Process exited with code: ${code}`)
-    abortController = undefined
   })
   return childProcess
 }
 
 export function killMxd() {
-  if (abortController) {
+  if (executable && mxdProcess) {
     log.info(`Stopping mxd...`)
     abortController.abort()
-    abortController = undefined
+    mxdProcess = undefined
+  }
+}
+
+export async function restartMxd(options: RunMxdOptions = {}) {
+  if (executable && mxdProcess) {
+    log.info('Restarting mxd...')
+    abortController.abort()
+    abortController = new AbortController()
+    mxdProcess.once('exit', async () => {
+      mxdProcess = await runMxd({ ...options, signal: abortController.signal })
+    })
   }
 }
 

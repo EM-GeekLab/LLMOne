@@ -321,9 +321,8 @@ export const connectionRouter = createRouter({
     check: baseProcedure
       .input(inputType<SshFinalConnectionInfo>)
       .mutation(async ({ input: { ip, port, username, ...credential } }): Promise<[boolean, Error | null]> => {
+        const ssh = new NodeSSH()
         try {
-          const ssh = new NodeSSH()
-
           const sharedConfig: Config = {
             host: ip,
             port,
@@ -349,6 +348,8 @@ export const connectionRouter = createRouter({
         } catch (err) {
           log.error({ ip, username, err }, '连接 SSH 失败')
           return [false, err instanceof Error ? err : new Error('连接时发生未知错误', { cause: err })]
+        } finally {
+          ssh.dispose()
         }
       }),
   },

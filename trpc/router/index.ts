@@ -7,6 +7,7 @@ import { environmentRouter } from './environment'
 import { fileRouter } from './file'
 import { hostRouter } from './host'
 import { modelRouter } from './model'
+import { mxdRouter } from './mxd-controller'
 import { resourceRouter } from './resource'
 import { stateStoreRouter } from './state-store'
 
@@ -20,6 +21,7 @@ export const appRouter = createRouter({
   model: modelRouter,
   host: hostRouter,
   benchmark: benchmarkRouter,
+  mxdController: mxdRouter,
 })
 
 export type AppRouter = typeof appRouter

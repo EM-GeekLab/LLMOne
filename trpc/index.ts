@@ -18,6 +18,6 @@ export async function createServer() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  await startMxd()
+  await startMxd({ disableDiscovery: true })
   await createServer()
 }

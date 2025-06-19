@@ -100,7 +100,7 @@ if (!singletonLock) {
   })
 
   app.whenReady().then(async () => {
-    await startMxd()
+    await startMxd({ disableDiscovery: true })
     const { port } = await createServer()
     process.env.TRPC_REAL_PORT = String(port)
 
