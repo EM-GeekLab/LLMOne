@@ -75,7 +75,35 @@ export function StepSidebar({ current }: { current?: StepId }) {
             </p>
           </PopoverContent>
         </Popover>
-        <div className="text-muted-foreground text-sm">版本 {pkg.version}</div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="text-muted-foreground hover:text-accent-foreground inline-flex items-center gap-1 text-sm [&_svg]:size-3.5">
+              版本 {pkg.version}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" className="flex w-68 flex-col gap-y-1 p-2.5">
+            <div className="flex flex-wrap items-baseline gap-2">
+              <p className="text-sm font-medium">LLMOne {pkg.version}</p>
+              <a
+                className="text-primary hover:text-primary/80 text-xs"
+                target="_blank"
+                href="https://github.com/EM-GeekLab/LLMOne"
+              >
+                GitHub
+              </a>
+            </div>
+            <p className="text-muted-foreground text-xs">
+              本项目使用了 AGPL-3.0 协议的组件{' '}
+              <a className="hover:text-accent-foreground" target="_blank" href="https://github.com/koitococo/mxlite">
+                mxlite
+              </a>
+              。
+            </p>
+            <p className="text-muted-foreground text-xs">
+              &copy; {new Date().getFullYear()} {pkg.author.name}.
+            </p>
+          </PopoverContent>
+        </Popover>
       </footer>
     </AppCardSidebar>
   )
