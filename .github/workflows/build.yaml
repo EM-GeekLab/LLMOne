@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             platform: linux
             arch: x86_64
             ext: AppImage
@@ -26,26 +26,26 @@ jobs:
             arch: arm64
             ext: AppImage
             mxd-platform: linux-musl
-            mxd-arch: arm64
-          - os: windows-latest
+            mxd-arch: aarch64
+          - os: windows-2025
             platform: win
             arch: x64
             ext: exe
             mxd-platform: windows
             mxd-arch: x86_64
-          - os: windows-latest
+          - os: windows-11-arm
             platform: win
             arch: arm64
             ext: exe
             mxd-platform: windows
-            mxd-arch: arm64
-          - os: macos-latest
+            mxd-arch: aarch64
+          - os: macos-15
             platform: mac
             arch: arm64
             ext: dmg
             mxd-platform: darwin
             mxd-arch: aarch64
-          - os: macos-latest
+          - os: macos-13
             platform: mac
             arch: x64
             ext: dmg
