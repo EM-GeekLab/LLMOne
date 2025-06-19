@@ -136,19 +136,6 @@ function BmcForm({
             )}
           />
         </div>
-        <FormField
-          control={form.control}
-          name="bmcIp"
-          render={({ field: { value = '', ...rest } }) => (
-            <FormItem>
-              <FormLabel>BMC IP</FormLabel>
-              <FormControl>
-                <Input value={value} placeholder="可选" {...rest} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <CredentialFormPart
           control={form.control}
           watch={form.watch}

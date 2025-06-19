@@ -17,7 +17,6 @@ export type SshConnectionInfo = {
   password?: string
   privateKey?: string
   port?: number
-  bmcIp?: string
 }
 
 export type DefaultCredentials = {

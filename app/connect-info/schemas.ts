@@ -56,14 +56,12 @@ export const sshConnectionInfoSchema = z.object({
   password: z.string().optional(),
   privateKey: z.string().optional(),
   port: z.number().min(0, '端口号范围必须为 0-65535').max(65535, '端口号范围必须为 0-65535').default(22),
-  bmcIp: z.string().ip().optional(),
 })
 
 export const sshFinalConnectionInfoSchema = z
   .object({
     ip: z.string({ message: 'IP 地址不能为空' }).nonempty('IP 地址不能为空').ip(),
     port: z.number().min(0, '端口号范围必须为 0-65535').max(65535, '端口号范围必须为 0-65535').default(22),
-    bmcIp: z.string().ip().optional(),
     username: z.string({ message: '用户名不能为空' }).nonempty('用户名不能为空'),
   })
   .and(

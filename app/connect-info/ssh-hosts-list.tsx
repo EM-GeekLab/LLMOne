@@ -33,14 +33,13 @@ function HostsList() {
   const hosts = useGlobalStore((s) => s.sshHosts)
 
   return (
-    <div className="grid grid-cols-[auto_1fr_80px_1fr_1fr_1fr_auto] rounded-md border">
+    <div className="grid grid-cols-[auto_1fr_80px_1fr_1fr_auto] rounded-md border">
       <div className="text-muted-foreground col-span-full grid grid-cols-subgrid items-center border-b *:px-3 *:py-1.5 *:font-medium">
         <div></div>
         <div>IP</div>
         <div>端口</div>
         <div>用户名</div>
         <div>凭据</div>
-        <div>BMC IP</div>
         <div>操作</div>
       </div>
       {hosts.length > 0 ? (
@@ -70,7 +69,6 @@ function HostsList() {
                   <DefaultOrUnsetMessage useDefault={useDefaultCredentials} showType />
                 ))}
             </div>
-            <div>{host.bmcIp}</div>
             <div className="flex items-center gap-0.5 px-2">
               <SshFormDialog id={host.id}>
                 <SshFormDialogTrigger variant="ghost" className="size-7 !p-0">
