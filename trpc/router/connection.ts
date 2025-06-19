@@ -1,13 +1,14 @@
 import { basename } from 'node:path'
 
 import { TRPCError } from '@trpc/server'
+import { Config, NodeSSH } from 'node-ssh'
 import { intersects } from 'radash'
 import { autoDetect, iBMCRedfishClient, iDRACRedfishClient } from 'redfish-client'
 
 import { BmcClients } from '@/lib/bmc-clients'
 import { mxc } from '@/lib/metalx'
 import { z } from '@/lib/zod'
-import { BmcFinalConnectionInfo, bmcHostsListSchema } from '@/app/connect-info/schemas'
+import { BmcFinalConnectionInfo, bmcHostsListSchema, SshFinalConnectionInfo } from '@/app/connect-info/schemas'
 import { HostExtraInfo } from '@/sdk/mxlite/types'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
@@ -316,39 +317,39 @@ export const connectionRouter = createRouter({
     }
     return { info: res.info, ip: await getHostIp(input) }
   }),
-  // ssh: {
-  //   check: baseProcedure
-  //     .input(inputType<SshFinalConnectionInfo>)
-  //     .mutation(async ({ input: { ip, port, username, ...credential } }): Promise<[boolean, Error | null]> => {
-  //       try {
-  //         const ssh = new NodeSSH()
-  //
-  //         const sharedConfig: Config = {
-  //           host: ip,
-  //           port,
-  //           username,
-  //         }
-  //
-  //         switch (credential.credentialType) {
-  //           case 'no-password': {
-  //             const session = await ssh.connect({ ...sharedConfig })
-  //             return [session.isConnected(), null]
-  //           }
-  //           case 'password': {
-  //             const { password } = credential
-  //             const session = await ssh.connect({ ...sharedConfig, password })
-  //             return [session.isConnected(), null]
-  //           }
-  //           case 'key': {
-  //             const { privateKey } = credential
-  //             const session = await ssh.connect({ ...sharedConfig, privateKey })
-  //             return [session.isConnected(), null]
-  //           }
-  //         }
-  //       } catch (err) {
-  //         log.error({ ip, username, err }, '连接 SSH 失败')
-  //         return [false, err instanceof Error ? err : new Error('连接时发生未知错误', { cause: err })]
-  //       }
-  //     }),
-  // },
+  ssh: {
+    check: baseProcedure
+      .input(inputType<SshFinalConnectionInfo>)
+      .mutation(async ({ input: { ip, port, username, ...credential } }): Promise<[boolean, Error | null]> => {
+        try {
+          const ssh = new NodeSSH()
+
+          const sharedConfig: Config = {
+            host: ip,
+            port,
+            username,
+          }
+
+          switch (credential.credentialType) {
+            case 'no-password': {
+              const session = await ssh.connect({ ...sharedConfig })
+              return [session.isConnected(), null]
+            }
+            case 'password': {
+              const { password } = credential
+              const session = await ssh.connect({ ...sharedConfig, password })
+              return [session.isConnected(), null]
+            }
+            case 'key': {
+              const { privateKey } = credential
+              const session = await ssh.connect({ ...sharedConfig, privateKey })
+              return [session.isConnected(), null]
+            }
+          }
+        } catch (err) {
+          log.error({ ip, username, err }, '连接 SSH 失败')
+          return [false, err instanceof Error ? err : new Error('连接时发生未知错误', { cause: err })]
+        }
+      }),
+  },
 })

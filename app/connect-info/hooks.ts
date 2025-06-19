@@ -6,7 +6,13 @@ import { findById } from '@/lib/id'
 import { useDebouncedGlobalStore, useGlobalStore, useGlobalStoreApi } from '@/stores'
 import { useTRPCClient } from '@/trpc/client'
 
-import { validateBmcHostConnectionInfo, validateBmcHosts, validateDefaultCredentials, validateSshHosts } from './utils'
+import {
+  validateBmcHostConnectionInfo,
+  validateBmcHosts,
+  validateDefaultCredentials,
+  validateSshHostConnectionInfo,
+  validateSshHosts,
+} from './utils'
 
 function showErrorMessage(message?: string) {
   toast.error('连接配置不完整', {
@@ -53,13 +59,12 @@ export function useAutoCheckConnection(id: string) {
             return await trpc.connection.bmc.check.mutate(result.data, { signal, context: { stream: true } })
           }
           case 'ssh': {
-            // const result = validateSshHostConnectionInfo(host, parsedDefault)
-            // if (!result.success) {
-            //   console.warn(result.error)
-            //   throw new Error('连接配置不完整', { cause: result.error })
-            // }
-            // return await trpc.connection.ssh.check.mutate(result.data, { signal, context: { stream: true } })
-            return [false, new Error('SSH 连接检查未实现')]
+            const result = validateSshHostConnectionInfo(host, parsedDefault)
+            if (!result.success) {
+              console.warn(result.error)
+              throw new Error('连接配置不完整', { cause: result.error })
+            }
+            return await trpc.connection.ssh.check.mutate(result.data, { signal, context: { stream: true } })
           }
         }
       })()

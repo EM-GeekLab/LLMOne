@@ -1,11 +1,11 @@
 'use client'
 
 import { ComponentProps } from 'react'
-import { Slot } from '@radix-ui/react-slot'
-import { ServerIcon, SquareTerminalIcon } from 'lucide-react'
+import { ServerIcon, SquareTerminalIcon, TriangleAlertIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { CardSelectGroup, CardSelectIndicator, CardSelectItem } from '@/components/base/card-select'
+import { EasyTooltip } from '@/components/base/easy-tooltip'
 import { Badge } from '@/components/ui/badge'
 import { ConnectMode, useGlobalStore } from '@/stores'
 
@@ -37,7 +37,7 @@ export function ConnectModeSelect({ ...props }: ComponentProps<typeof CardSelect
           </ul>
         </div>
       </CardSelectItem>
-      <CardSelectItem disabled value="ssh">
+      <CardSelectItem value="ssh">
         <CardSelectIndicator />
         <ModeSelectHeader>
           <ModelSelectorIcon>
@@ -49,12 +49,12 @@ export function ConnectModeSelect({ ...props }: ComponentProps<typeof CardSelect
             的主机，无需重新安装系统，快速部署应用和环境。
           </ModeSelectDescription>
         </ModeSelectHeader>
-        {/* <EasyTooltip content="对已有操作系统会产生不可逆的修改，仅建议专业用户选择" asChild> */}
-        {/*   <Badge className="absolute top-3.5 right-3.5" color="warning"> */}
-        {/*     <TriangleAlertIcon /> */}
-        {/*     仅专业用户 */}
-        {/*   </Badge> */}
-        {/* </EasyTooltip> */}
+        <EasyTooltip content="对已有操作系统会产生不可逆的修改，仅建议专业用户选择" asChild>
+          <Badge className="absolute top-3.5 right-3.5" color="warning">
+            <TriangleAlertIcon />
+            仅专业用户
+          </Badge>
+        </EasyTooltip>
         <div className="flex-1" />
         <div className="mt-5 pl-10">
           <h5 className="mb-1.5 font-semibold">适用场景</h5>
@@ -64,9 +64,6 @@ export function ConnectModeSelect({ ...props }: ComponentProps<typeof CardSelect
             <li>快速部署模型与服务</li>
           </ul>
         </div>
-        <Slot className="not-disabled absolute top-3.5 right-3.5">
-          <Badge color="secondary">暂未上线</Badge>
-        </Slot>
       </CardSelectItem>
     </CardSelectGroup>
   )
