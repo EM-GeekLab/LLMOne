@@ -27,10 +27,13 @@ const config: Configuration = {
     '!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}',
     '!.{git,hg,svn,cache,DS_Store}',
   ],
+  extraResources: ['bin/mxa/**/*', '!.DS_Store'],
 
   nsis: {
     oneClick: false,
     perMachine: false,
+    selectPerMachineByDefault: true,
+    allowToChangeInstallationDirectory: true,
     deleteAppDataOnUninstall: true,
     artifactName: '${productName}-${version}-${os}-${arch}.${ext}',
   },
@@ -71,7 +74,7 @@ async function buildPlatform(platform: 'win' | 'mac' | 'linux', architecture: 'x
       return
   }
 
-  const message = `Application for ${platform} is built`
+  const message = `Application for ${platform} (${architecture}) is built`
   console.time(message)
   await build({
     targets,

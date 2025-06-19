@@ -64,7 +64,7 @@ jobs:
       - name: Install dependencies
         run: bun install
       - name: Download mxd
-        run: bun run ./scripts/download-mxd.ts
+        run: bun run ./scripts/download-bin.ts
         env:
           MXD_PLATFORM: ${{ matrix.mxd-platform }}
           MXD_ARCH: ${{ matrix.mxd-arch }}
