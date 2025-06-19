@@ -33,12 +33,12 @@ jobs:
             ext: exe
             mxd-platform: windows
             mxd-arch: x86_64
-          - os: windows-11-arm
-            platform: win
-            arch: arm64
-            ext: exe
-            mxd-platform: windows
-            mxd-arch: aarch64
+          # - os: windows-11-arm
+          #   platform: win
+          #   arch: arm64
+          #   ext: exe
+          #   mxd-platform: windows
+          #   mxd-arch: aarch64
           - os: macos-15
             platform: mac
             arch: arm64
