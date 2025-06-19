@@ -32,6 +32,7 @@ const config: Configuration = {
     oneClick: false,
     perMachine: false,
     deleteAppDataOnUninstall: true,
+    artifactName: '${productName}-${version}-${os}-${arch}.${ext}',
   },
 
   mac: {
@@ -85,8 +86,10 @@ const params = (await yargs(hideBin(process.argv))
   .scriptName('build-app')
   .choices('platform', ['win', 'mac', 'linux'])
   .default('platform', process.platform === 'darwin' ? 'mac' : process.platform === 'win32' ? 'win' : 'linux')
+  .alias('platform', 'p')
   .choices('arch', ['x64', 'arm64'])
   .default('arch', process.arch === 'arm64' ? 'arm64' : 'x64')
+  .alias('arch', 'a')
   .help()
   .parse()) as {
   platform: 'win' | 'mac' | 'linux'
