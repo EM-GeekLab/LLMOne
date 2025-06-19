@@ -110,6 +110,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@types/ssh2": "^1.15.5",
+    "@types/yargs": "^17.0.33",
     "colorette": "^2.0.20",
     "concurrently": "^9.1.2",
     "electron": "^35.5.1",
@@ -124,6 +125,7 @@
     "prettier-plugin-tailwindcss": "^0.6.12",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.1.10",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "yargs": "^18.0.0"
   }
 }

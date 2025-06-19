@@ -1,4 +1,6 @@
 import { Arch, build, Platform, type Configuration } from 'electron-builder'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
 /**
  * @see https://www.electron.build/configuration
@@ -26,54 +28,42 @@ const config: Configuration = {
     '!.{git,hg,svn,cache,DS_Store}',
   ],
 
+  nsis: {
+    oneClick: false,
+    perMachine: false,
+    deleteAppDataOnUninstall: true,
+  },
+
   mac: {
     extraResources: ['bin/mxd'],
     category: 'public.app-category.developer-tools',
-    target: [
-      {
-        target: 'dmg',
-        arch: ['arm64'],
-      },
-    ],
   },
-
   win: {
     extraResources: ['bin/mxd.exe'],
-    target: [
-      {
-        target: 'zip',
-        arch: ['x64'],
-      },
-    ],
   },
-
   linux: {
     extraResources: ['bin/mxd'],
-    target: [
-      {
-        target: 'AppImage',
-        arch: ['x64'],
-      },
-    ],
   },
 }
 
 /**
  * Build the application for the specified platform
  * @param platform The target platform to build for
+ * @param architecture The target architecture to build for
  */
-async function buildPlatform(platform: 'win' | 'mac' | 'linux'): Promise<void> {
+async function buildPlatform(platform: 'win' | 'mac' | 'linux', architecture: 'x64' | 'arm64'): Promise<void> {
   let targets: Map<Platform, Map<Arch, string[]>>
+  const arch = architecture === 'arm64' ? Arch.arm64 : Arch.x64
 
   switch (platform) {
     case 'win':
-      targets = Platform.WINDOWS.createTarget()
+      targets = Platform.WINDOWS.createTarget('nsis', arch)
       break
     case 'mac':
-      targets = Platform.MAC.createTarget()
+      targets = Platform.MAC.createTarget('dmg', arch)
       break
     case 'linux':
-      targets = Platform.LINUX.createTarget()
+      targets = Platform.LINUX.createTarget('AppImage', arch)
       break
     default:
       console.info(`Unsupported platform: ${platform}.\nSkipping...`)
@@ -91,15 +81,19 @@ async function buildPlatform(platform: 'win' | 'mac' | 'linux'): Promise<void> {
   console.timeLog(message, '\n')
 }
 
-const inputPlatforms = process.argv.slice(2) as ('win' | 'mac' | 'linux')[]
-const platforms: ('win' | 'mac' | 'linux')[] =
-  inputPlatforms.length > 0
-    ? inputPlatforms
-    : [process.platform === 'darwin' ? 'mac' : process.platform === 'win32' ? 'win' : 'linux']
+const params = (await yargs(hideBin(process.argv))
+  .scriptName('build-app')
+  .choices('platform', ['win', 'mac', 'linux'])
+  .default('platform', process.platform === 'darwin' ? 'mac' : process.platform === 'win32' ? 'win' : 'linux')
+  .choices('arch', ['x64', 'arm64'])
+  .default('arch', process.arch === 'arm64' ? 'arm64' : 'x64')
+  .help()
+  .parse()) as {
+  platform: 'win' | 'mac' | 'linux'
+  arch: 'x64' | 'arm64'
+}
 
 const message = 'Build completed'
 console.time(message)
-for (const platform of platforms) {
-  await buildPlatform(platform)
-}
+await buildPlatform(params.platform, params.arch)
 console.timeLog(message, '\n')
