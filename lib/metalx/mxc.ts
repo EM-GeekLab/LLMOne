@@ -3,11 +3,12 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { mkdir } from 'fs-extra'
-import { match } from 'ts-pattern'
 
 import { certificatesDir as certsDir, executable, httpEndpoint, httpsEndpoint, rootDir, token } from '@/lib/env/mxc'
 import { logger } from '@/lib/logger'
 import { Mxc } from '@/sdk/mxlite'
+
+import { formatMxliteLog } from './format-mxlite-log'
 
 const log = logger.child({ module: 'mxd' })
 
@@ -64,7 +65,7 @@ async function runMxd({ staticPath, disableDiscovery, signal }: RunMxdOptions & 
       }
     },
   )
-  childProcess.stdout?.on('data', handleLog)
+  childProcess.stdout?.on('data', (data) => formatMxliteLog(log, data.toString()))
   childProcess.stderr?.on('data', (data) => {
     data
       .toString()
@@ -101,23 +102,4 @@ export async function restartMxd(options: RunMxdOptions = {}) {
       mxdProcess = await runMxd({ ...options, signal: abortController.signal })
     })
   }
-}
-
-function handleLog(data: string) {
-  const patternRfc3339 = /^((\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?)(Z|[+-]\d{2}:\d{2})?)/
-  data
-    .split('\n')
-    .filter(Boolean)
-    .map((v: string) => {
-      const text = v.replace(patternRfc3339, '').trim()
-      const level = text.slice(0, 6).trim()
-      const message = text.slice(6).trim()
-      match(level)
-        .with('INFO', () => log.info(message))
-        .with('ERROR', () => log.error(message))
-        .with('WARN', () => log.warn(message))
-        .with('DEBUG', () => log.debug(message))
-        .with('TRACE', () => log.trace(message))
-        .otherwise(() => log.info(text))
-    })
 }
