@@ -17,6 +17,7 @@ export const enabledDefaultCredentialsSchema = z
         z.object({
           type: z.literal('key'),
           privateKey: z.string({ message: '默认凭据密钥不能为空' }).nonempty('默认凭据密钥不能为空'),
+          password: z.string().optional(),
         }),
         z.object({
           type: z.literal('no-password'),
@@ -75,6 +76,7 @@ export const sshFinalConnectionInfoSchema = z
         z.object({
           credentialType: z.literal('key'),
           privateKey: z.string({ message: '密钥不能为空' }).nonempty('密钥不能为空'),
+          password: z.string().optional(),
         }),
         z.object({
           credentialType: z.literal('no-password'),

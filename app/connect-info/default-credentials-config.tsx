@@ -36,7 +36,7 @@ export function DefaultCredentialsConfig({ ref }: { ref?: Ref<{ validate: () => 
   return (
     <Form {...form}>
       <AppCardSection asChild>
-        <form>
+        <form onSubmit={form.handleSubmit(() => undefined)}>
           <FormField
             control={form.control}
             name="enabled"
@@ -116,6 +116,7 @@ export function DefaultCredentialsConfig({ ref }: { ref?: Ref<{ validate: () => 
               </div>
             </div>
           )}
+          <button className="hidden" type="submit" />
         </form>
       </AppCardSection>
     </Form>

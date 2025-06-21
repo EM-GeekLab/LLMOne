@@ -1,67 +1,28 @@
 import * as React from 'react'
 import { ComponentProps, useState } from 'react'
-import { Control, useFormState, useWatch } from 'react-hook-form'
+import { Control, useFormContext, useFormState, useWatch } from 'react-hook-form'
 
 import { cn } from '@/lib/utils'
 import { PasswordInput } from '@/components/base/password-input'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { FormControl, FormField, FormItem } from '@/components/ui/form'
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useFieldsHasAnyValue } from '@/app/connect-info/custom-credentials-section'
 import { CredentialType } from '@/stores'
 import { DefaultCredentials } from '@/stores/slices/connection-info-slice'
 
 import { PrivateKeyInputContent } from './private-key-input'
-
-export function PasswordKeyInput({
-  id,
-  type = 'password',
-  password,
-  privateKey,
-  onTypeChange,
-  onPasswordChange,
-  onPrivateKeyChange,
-  className,
-  ...props
-}: {
-  type?: CredentialType
-  password?: string
-  privateKey?: string
-  onTypeChange?: (type: CredentialType) => void
-  onPasswordChange?: (password: string) => void
-  onPrivateKeyChange?: (key: string) => void
-} & ComponentProps<'div'>) {
-  return (
-    <div className={cn('join join-with-input flex items-stretch', className)} {...props}>
-      <Select value={type} onValueChange={onTypeChange}>
-        <SelectTrigger className="w-[78px] shrink-0">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="password">密码</SelectItem>
-          <SelectItem value="key">密钥</SelectItem>
-        </SelectContent>
-      </Select>
-      {type === 'password' && (
-        <PasswordInput
-          id={id}
-          className="bg-background"
-          value={password}
-          onChange={(e) => onPasswordChange?.(e.target.value)}
-        />
-      )}
-      {type === 'key' && <PrivateKeyInputDialog id={id} defaultValue={privateKey} onValueChange={onPrivateKeyChange} />}
-    </div>
-  )
-}
 
 export function FormPasswordKeyInput({
   id,
@@ -93,13 +54,14 @@ export function FormPasswordKeyInput({
         <FormField
           control={control}
           name="type"
-          render={({ field: { value, onChange, ...rest } }) => (
+          render={({ field: { value, onChange, onBlur, ...rest } }) => (
             <FormItem passChild>
               <Select
                 value={value}
                 onValueChange={(v: CredentialType) => {
                   onTypeChange?.(v)
                   onChange(v)
+                  onBlur()
                 }}
                 {...rest}
               >
@@ -140,25 +102,10 @@ export function FormPasswordKeyInput({
           />
         )}
         {type === 'key' && (
-          <FormField
-            control={control}
-            name="privateKey"
-            render={({ field: { value, onChange, onBlur, ...rest } }) => (
-              <FormItem passChild>
-                <FormControl>
-                  <PrivateKeyInputDialog
-                    id={id}
-                    defaultValue={value}
-                    onValueChange={(v) => {
-                      onPrivateKeyChange?.(v)
-                      onChange(v)
-                    }}
-                    onClose={onBlur}
-                    {...rest}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
+          <FormPrivateKeyInputDialog
+            id={id}
+            onPrivateKeyChange={onPrivateKeyChange}
+            onPasswordChange={onPasswordChange}
           />
         )}
       </div>
@@ -171,25 +118,22 @@ export function FormPasswordKeyInput({
   )
 }
 
-function PrivateKeyInputDialog({
-  defaultValue,
-  onValueChange,
-  onClose,
+function FormPrivateKeyInputDialog({
+  onPrivateKeyChange,
+  onPasswordChange,
   className,
   ...props
 }: {
-  defaultValue?: string
-  onValueChange?: (value: string) => void
-  onClose?: () => void
+  onPasswordChange?: (password: string) => void
+  onPrivateKeyChange?: (key: string) => void
 } & ComponentProps<typeof Button>) {
-  const [open, _setOpen] = useState(false)
-
-  const setOpen = (open: boolean) => {
-    _setOpen(open)
-    if (!open) {
-      onClose?.()
-    }
-  }
+  const [open, setOpen] = useState(false)
+  const form = useFormContext<DefaultCredentials>()
+  const hasKeyValue = useFieldsHasAnyValue({
+    watch: form.watch,
+    fields: ['privateKey'],
+    defaultHasAnyValue: !!form.getValues().privateKey,
+  })
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -198,29 +142,106 @@ function PrivateKeyInputDialog({
           variant="outline"
           className={cn(
             'flex-1 justify-start px-3 text-left font-normal',
-            !defaultValue && 'text-muted-foreground',
+            !hasKeyValue && 'text-muted-foreground',
             'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
             className,
           )}
           {...props}
         >
-          {defaultValue ? '已设置密钥' : '设置密钥'}
+          {hasKeyValue ? '已设置密钥' : '设置密钥'}
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>设置密钥</DialogTitle>
-          <DialogDescription className="sr-only">输入或选择私钥</DialogDescription>
-        </DialogHeader>
-        <PrivateKeyInputContent
-          defaultValue={defaultValue}
-          onSubmit={(v) => {
-            onValueChange?.(v)
-            setOpen(false)
-          }}
-          autoFocus
+        <FormPrivateKeyInputDialogContent
+          onPrivateKeyChange={onPrivateKeyChange}
+          onPasswordChange={onPasswordChange}
+          onFinish={() => setOpen(false)}
         />
       </DialogContent>
     </Dialog>
+  )
+}
+
+function FormPrivateKeyInputDialogContent({
+  onFinish,
+  onPasswordChange,
+  onPrivateKeyChange,
+}: {
+  onFinish?: () => void
+  onPasswordChange?: (password: string) => void
+  onPrivateKeyChange?: (key: string) => void
+}) {
+  const form = useFormContext<DefaultCredentials>()
+  const [privateKey, setPrivateKey] = useState(form.getValues().privateKey || '')
+  const [password, setPassword] = useState(form.getValues().password || '')
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>设置密钥</DialogTitle>
+        <DialogDescription className="sr-only">输入或选择私钥</DialogDescription>
+      </DialogHeader>
+      <form
+        className="grid gap-4"
+        onSubmit={(e) => {
+          e.preventDefault()
+          form.setValue('privateKey', privateKey)
+          onPrivateKeyChange?.(privateKey)
+          form.setValue('password', password)
+          onPasswordChange?.(password)
+          onFinish?.()
+        }}
+      >
+        <FormField
+          control={form.control}
+          name="privateKey"
+          render={({ field: { ...rest } }) => (
+            <FormItem>
+              <FormLabel>密钥</FormLabel>
+              <FormControl>
+                <PrivateKeyInputContent
+                  autoFocus
+                  className="gap-2 [&_textarea]:h-[280px]"
+                  {...rest}
+                  value={privateKey}
+                  onValueChange={(v) => {
+                    if (v) form.clearErrors('privateKey')
+                    setPrivateKey(v)
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field: { ...rest } }) => (
+            <FormItem>
+              <FormLabel>密码</FormLabel>
+              <FormControl>
+                <PasswordInput
+                  placeholder="可选"
+                  {...rest}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                  }}
+                />
+              </FormControl>
+              <FormDescription>即使是密钥登录，某些主机执行 sudo 命令时仍需要提供密码。</FormDescription>
+            </FormItem>
+          )}
+        />
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">取消</Button>
+          </DialogClose>
+          <Button type="submit" variant="default">
+            保存
+          </Button>
+        </DialogFooter>
+      </form>
+    </>
   )
 }

@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { ComponentProps, useRef } from 'react'
 import { useControllableState } from '@radix-ui/react-use-controllable-state'
 import { ClipboardPasteIcon, FileInputIcon, FileUpIcon, Trash2Icon } from 'lucide-react'
@@ -8,14 +9,13 @@ import { cn } from '@/lib/utils'
 import { FileSelector, FileSelectorTrigger } from '@/components/base/file-selector'
 import { useEnvContext } from '@/components/env-provider'
 import { Button } from '@/components/ui/button'
-import { DialogFooter } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { useTRPCClient } from '@/trpc/client'
 
 export function PrivateKeyInputContent({
+  disabled,
   defaultValue,
   value,
-  onSubmit,
   onValueChange,
   className,
   autoFocus,
@@ -25,20 +25,22 @@ export function PrivateKeyInputContent({
   defaultValue?: string
   value?: string
   onValueChange?: (value: string) => void
-  onSubmit?: (value: string) => void
   placeholder?: string
-} & Omit<ComponentProps<'div'>, 'onSubmit'>) {
+} & ComponentProps<'textarea'>) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const [key, setKey] = useControllableState({
-    defaultProp: defaultValue ?? '',
+  const [keyValue, setKeyValue] = useControllableState({
+    defaultProp: defaultValue ?? value ?? '',
     prop: value,
     onChange: onValueChange,
     caller: 'PrivateKeyInput',
   })
 
   return (
-    <div className={cn('grid gap-4', className)} {...props}>
+    <div
+      className={cn('grid gap-4 aria-disabled:pointer-events-none aria-disabled:opacity-50', className)}
+      aria-disabled={disabled}
+    >
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
@@ -47,7 +49,7 @@ export function PrivateKeyInputContent({
             const text = await navigator.clipboard.readText().catch((err) => {
               toast.error('读取剪贴板失败', { description: err.message })
             })
-            if (text) setKey(text)
+            if (text) setKeyValue(text)
           }}
         >
           <ClipboardPasteIcon />
@@ -60,19 +62,19 @@ export function PrivateKeyInputContent({
             const text = await selectFileAndRead({ maxSize: 100 * 1024 }).catch((err) => {
               toast.error('读取文件失败', { description: err.message })
             })
-            if (text) setKey(text)
+            if (text) setKeyValue(text)
           }}
         >
           <FileUpIcon />
           上传
         </Button>
-        <RemoteFileReader onRead={setKey} />
+        <RemoteFileReader onRead={setKeyValue} />
         <Button
           variant="outline"
           size="sm"
           className="ml-auto"
           onClick={() => {
-            setKey('')
+            setKeyValue('')
             inputRef.current?.focus()
           }}
         >
@@ -80,38 +82,20 @@ export function PrivateKeyInputContent({
           清空
         </Button>
       </div>
-      <WithForm
-        withForm={!onValueChange}
-        onSubmit={(e) => {
-          e.preventDefault()
-          const value = (e.currentTarget[0] as HTMLTextAreaElement).value
-          onSubmit?.(value)
-        }}
-      >
-        <Textarea
-          data-slot="textarea"
-          ref={inputRef}
-          value={key}
-          autoFocus={autoFocus}
-          onChange={(e) => setKey(e.target.value)}
-          className="h-[400px] font-mono"
-          placeholder={placeholder || '-----BEGIN RSA PRIVATE KEY-----'}
-        />
-      </WithForm>
+      <Textarea
+        disabled={disabled}
+        data-slot="textarea"
+        autoCapitalize="off"
+        spellCheck="false"
+        ref={inputRef}
+        value={keyValue}
+        autoFocus={autoFocus}
+        onChange={(e) => setKeyValue(e.target.value)}
+        className="font-mono"
+        placeholder={placeholder || '-----BEGIN RSA PRIVATE KEY-----'}
+        {...props}
+      />
     </div>
-  )
-}
-
-function WithForm({ withForm, className, children, ...props }: { withForm?: boolean } & ComponentProps<'form'>) {
-  return withForm ? (
-    <form className={cn('grid gap-4', className)} {...props}>
-      {children}
-      <DialogFooter>
-        <Button type="submit">保存</Button>
-      </DialogFooter>
-    </form>
-  ) : (
-    <>{children}</>
   )
 }
 

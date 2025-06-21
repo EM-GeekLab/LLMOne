@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { SshConnectionInfo, useGlobalStore } from '@/stores'
@@ -245,26 +245,41 @@ function CredentialFormPart({
         />
       )}
       {type === 'key' && (
-        <FormField
-          control={control}
-          name="privateKey"
-          render={({ field: { value, onChange, disabled, ...rest } }) => (
-            <FormItem>
-              <FormLabel>密钥</FormLabel>
-              <FormControl>
-                <PrivateKeyInputContent
-                  aria-disabled={disabled}
-                  className="gap-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_[data-slot='textarea']]:h-[200px]"
-                  value={value}
-                  onValueChange={onChange}
-                  placeholder={useDefaultCredentials ? '默认' : undefined}
-                  {...rest}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <>
+          <FormField
+            control={control}
+            name="privateKey"
+            render={({ field: { value, onChange, disabled, ...rest } }) => (
+              <FormItem>
+                <FormLabel>密钥</FormLabel>
+                <FormControl>
+                  <PrivateKeyInputContent
+                    aria-disabled={disabled}
+                    className="gap-2 [&_textarea]:h-[200px]"
+                    value={value}
+                    onValueChange={onChange}
+                    placeholder={useDefaultCredentials ? '默认' : undefined}
+                    {...rest}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="password"
+            render={({ field: { value = '', ...rest } }) => (
+              <FormItem>
+                <FormLabel>密码</FormLabel>
+                <FormControl>
+                  <PasswordInput placeholder="可选" value={value} {...rest} />
+                </FormControl>
+                <FormDescription>即使是密钥登录，某些主机执行 sudo 命令时仍需要提供密码。</FormDescription>
+              </FormItem>
+            )}
+          />
+        </>
       )}
     </CustomCredentialsSection>
   )
