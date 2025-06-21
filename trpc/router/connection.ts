@@ -1,12 +1,14 @@
 import { basename } from 'node:path'
 
 import { TRPCError } from '@trpc/server'
-import { Config, NodeSSH } from 'node-ssh'
+import { Config } from 'node-ssh'
 import { intersects } from 'radash'
 import { autoDetect, iBMCRedfishClient, iDRACRedfishClient } from 'redfish-client'
+import { match } from 'ts-pattern'
 
 import { BmcClients } from '@/lib/bmc-clients'
 import { mxc } from '@/lib/metalx'
+import { MxaCtl } from '@/lib/metalx/mxa'
 import { z } from '@/lib/zod'
 import { BmcFinalConnectionInfo, bmcHostsListSchema, SshFinalConnectionInfo } from '@/app/connect-info/schemas'
 import { HostExtraInfo } from '@/sdk/mxlite/types'
@@ -321,35 +323,35 @@ export const connectionRouter = createRouter({
     check: baseProcedure
       .input(inputType<SshFinalConnectionInfo>)
       .mutation(async ({ input: { ip, port, username, ...credential } }): Promise<[boolean, Error | null]> => {
-        const ssh = new NodeSSH()
-        try {
-          const sharedConfig: Config = {
-            host: ip,
-            port,
-            username,
-          }
+        const sharedConfig = {
+          host: ip,
+          port,
+          username,
+        } satisfies Config
 
-          switch (credential.credentialType) {
-            case 'no-password': {
-              const session = await ssh.connect({ ...sharedConfig })
-              return [session.isConnected(), null]
-            }
-            case 'password': {
-              const { password } = credential
-              const session = await ssh.connect({ ...sharedConfig, password })
-              return [session.isConnected(), null]
-            }
-            case 'key': {
-              const { privateKey } = credential
-              const session = await ssh.connect({ ...sharedConfig, privateKey })
-              return [session.isConnected(), null]
-            }
-          }
+        const config = match(credential)
+          .with({ credentialType: 'no-password' }, () => ({ ...sharedConfig }))
+          .with({ credentialType: 'password' }, ({ password }) => ({ ...sharedConfig, password }))
+          .with({ credentialType: 'key' }, ({ privateKey, password }) => ({ ...sharedConfig, privateKey, password }))
+          .exhaustive()
+        const ctl = new MxaCtl(config)
+
+        try {
+          await ctl.connect()
+          await ctl.check()
+          return [ctl.ssh.isConnected(), null]
         } catch (err) {
           log.error({ ip, username, err }, '连接 SSH 失败')
-          return [false, err instanceof Error ? err : new Error('连接时发生未知错误', { cause: err })]
+          return [
+            false,
+            err instanceof Error
+              ? err
+              : typeof err === 'string'
+                ? new Error(err)
+                : new Error('连接时发生未知错误', { cause: err }),
+          ]
         } finally {
-          ssh.dispose()
+          ctl.dispose()
         }
       }),
   },
