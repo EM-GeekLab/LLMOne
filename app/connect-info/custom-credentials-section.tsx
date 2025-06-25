@@ -26,17 +26,17 @@ export function CustomCredentialsSection({
               <div className="text-sm font-medium">使用自定义凭据</div>
               <ChevronRightIcon
                 data-state={useCustomCredentials ? 'open' : 'closed'}
-                className="text-muted-foreground data-[state=open]:text-primary size-4 data-[state=open]:rotate-90"
+                className="size-4 text-muted-foreground data-[state=open]:rotate-90 data-[state=open]:text-primary"
               />
             </div>
           </button>
           {useCustomCredentials && (
-            <div className="text-muted-foreground mt-1 flex gap-1.5 text-xs">
-              <span>留空以使用默认凭据</span>
+            <div className="mt-1 flex gap-1.5 text-xs text-muted-foreground">
+              <span>留空的字段将使用默认凭据</span>
               {showClearButton && (
                 <button
                   type="button"
-                  className="text-primary hover:text-primary/90 font-medium"
+                  className="font-medium text-primary hover:text-primary/90"
                   onClick={() => onClear?.()}
                 >
                   清空输入
