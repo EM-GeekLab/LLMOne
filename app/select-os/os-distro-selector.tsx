@@ -59,8 +59,8 @@ export function OsDistroSelector({
 function OsDescription({ info }: { info?: OsDistributionInfo }) {
   return (
     info?.description && (
-      <p className="text-muted-foreground text-sm">
-        <a className="hover:text-accent-foreground font-semibold" href={info?.url} target="_blank" rel="noreferrer">
+      <p className="text-sm text-muted-foreground">
+        <a className="font-semibold hover:text-accent-foreground" href={info?.url} target="_blank" rel="noreferrer">
           {info.name}
         </a>
         <span className="mx-1">·</span>

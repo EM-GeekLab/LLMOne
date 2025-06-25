@@ -59,7 +59,7 @@ function HostsConfigContent() {
 
   if (isPending) {
     return (
-      <div className="text-muted-foreground flex items-center gap-2 text-sm">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Spinner className="size-4" />
         <div>
           正在等待主机启动，这可能需要几分钟。
@@ -86,7 +86,7 @@ function HostsConfigContent() {
 
   return (
     <div className="grid max-w-4xl grid-cols-[auto_0.64fr_0.64fr_1fr] gap-x-3 gap-y-2.5">
-      <div className="text-muted-foreground col-span-full -mb-1 grid grid-cols-subgrid items-center *:font-medium">
+      <div className="col-span-full -mb-1 grid grid-cols-subgrid items-center text-muted-foreground *:font-medium">
         <div>BMC IP</div>
         <div>主机名</div>
         <div>IP/CIDR</div>
@@ -190,8 +190,8 @@ function HostConfigForm({ id, bmcIp, disks }: { id: string; bmcIp: string; disks
                     <SelectItem key={path} value={path}>
                       <div className="flex items-baseline gap-2">
                         <span>{path}</span>
-                        <span className="text-muted-foreground flex-1 truncate text-xs">{model}</span>
-                        <span className="text-muted-foreground -ml-1 text-xs">({readableSize(size)})</span>
+                        <span className="flex-1 truncate text-xs text-muted-foreground">{model}</span>
+                        <span className="-ml-1 text-xs text-muted-foreground">({readableSize(size)})</span>
                       </div>
                     </SelectItem>
                   ))}

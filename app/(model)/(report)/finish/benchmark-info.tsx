@@ -44,13 +44,13 @@ function QuickTestData({ hostId }: { hostId: string }) {
   return (
     <Collapsible>
       <div className="mb-1.5 flex items-center gap-1">
-        <h3 className="text-muted-foreground flex gap-2 font-medium">
+        <h3 className="flex gap-2 font-medium text-muted-foreground">
           <span className="text-foreground">{host?.info.system_info.hostname || host?.ip[0]}</span>
           <span>快速测试结果概览</span>
         </h3>
         {query.isSuccess && (
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="2xs" className="text-primary hover:text-primary group">
+            <Button variant="ghost" size="2xs" className="group text-primary hover:text-primary">
               <span className="group-data-[state=open]:hidden">更多</span>
               <span className="group-data-[state=closed]:hidden">收起</span>
             </Button>
@@ -69,7 +69,7 @@ function QuickTextOverview({ hostId, query }: { hostId: string; query: ReturnTyp
 
   if (isPending) {
     return (
-      <div className="text-muted-foreground flex items-center gap-2 text-sm [&_svg]:size-4">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground [&_svg]:size-4">
         <Spinner />
         正在执行快速性能测试
         <Counter from={startup ?? undefined} />

@@ -52,7 +52,7 @@ export function FakeRingProgressBar({
     <RingProgress value={value} variant={variant} {...props}>
       <div
         data-state={variant}
-        className="data-[state=success]:text-success data-[state=destructive]:text-destructive text-muted-foreground text-xs font-medium [&_svg]:size-4"
+        className="text-xs font-medium text-muted-foreground data-[state=destructive]:text-destructive data-[state=success]:text-success [&_svg]:size-4"
       >
         {variant === 'success' ? <CheckIcon /> : variant === 'destructive' ? <XIcon /> : null}
       </div>

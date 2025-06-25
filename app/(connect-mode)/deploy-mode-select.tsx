@@ -45,9 +45,9 @@ export function DeployModeSelect({ ...props }: ComponentProps<typeof CardSelectG
 }
 
 function ModeSelectTitle({ className, ...props }: ComponentProps<'h4'>) {
-  return <h4 className={cn('group-aria-checked:text-primary text-lg font-bold', className)} {...props} />
+  return <h4 className={cn('text-lg font-bold group-aria-checked:text-primary', className)} {...props} />
 }
 
 function ModeSelectDescription({ className, ...props }: ComponentProps<'p'>) {
-  return <p className={cn('text-muted-foreground text-sm', className)} {...props} />
+  return <p className={cn('text-sm text-muted-foreground', className)} {...props} />
 }

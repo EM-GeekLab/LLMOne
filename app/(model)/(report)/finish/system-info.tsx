@@ -54,7 +54,7 @@ function HostSystemInfo({ hostId }: { hostId: string }) {
             <div key={index} className="flex flex-wrap items-center gap-x-2">
               <span>{c.vendor_id}</span>
               <span>{c.brand}</span>
-              <span className="text-muted-foreground text-xs">{c.names.length} 核</span>
+              <span className="text-xs text-muted-foreground">{c.names.length} 核</span>
             </div>
           ))}
         </div>
@@ -79,7 +79,7 @@ function HostSystemInfo({ hostId }: { hostId: string }) {
             .map((d) => (
               <div className="flex flex-wrap items-center gap-x-2" key={d.path}>
                 <span>{d.model}</span>
-                <span className="text-muted-foreground text-xs">{readableSize(d.size)}</span>
+                <span className="text-xs text-muted-foreground">{readableSize(d.size)}</span>
               </div>
             ))}
         </div>
@@ -147,7 +147,7 @@ function HostSystemInfo({ hostId }: { hostId: string }) {
           分区
         </h4>
         <div className="grid grid-cols-[repeat(4,auto)] gap-x-4 gap-y-1 justify-self-start">
-          <div className="text-muted-foreground col-span-full grid grid-cols-subgrid font-medium">
+          <div className="col-span-full grid grid-cols-subgrid font-medium text-muted-foreground">
             <span>挂载点</span>
             <span>文件系统</span>
             <span>类型</span>
@@ -187,7 +187,7 @@ function InfoSection({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       className={cn(
-        '[&>h4>svg]:text-muted-foreground bg-muted/50 rounded-md px-4 py-3 [&>h4]:mb-1.5 [&>h4]:flex [&>h4]:items-center [&>h4]:gap-x-2 [&>h4]:font-semibold [&>h4>svg]:size-4',
+        'rounded-md bg-muted/50 px-4 py-3 [&>h4]:mb-1.5 [&>h4]:flex [&>h4]:items-center [&>h4]:gap-x-2 [&>h4]:font-semibold [&>h4>svg]:size-4 [&>h4>svg]:text-muted-foreground',
         className,
       )}
       {...props}

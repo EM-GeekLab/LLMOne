@@ -51,7 +51,7 @@ export function ResultReport() {
     if (!startup) {
       return (
         <ReportContainer>
-          <div className="text-muted-foreground flex items-center justify-center gap-2 py-6 text-center text-sm [&_svg]:size-4">
+          <div className="flex items-center justify-center gap-2 py-6 text-center text-sm text-muted-foreground [&_svg]:size-4">
             <Spinner />
             载入中
           </div>
@@ -61,7 +61,7 @@ export function ResultReport() {
 
     return (
       <ReportContainer>
-        <div className="text-muted-foreground flex items-center justify-center gap-2 py-6 text-center text-sm [&_svg]:size-4">
+        <div className="flex items-center justify-center gap-2 py-6 text-center text-sm text-muted-foreground [&_svg]:size-4">
           <Spinner />
           正在进行{benchmarkModeMap[mode]}
           <Counter key={startup?.getDate()} from={startup ?? undefined} />
@@ -263,7 +263,7 @@ function PercentilePage() {
       <div className="overflow-auto rounded-lg border">
         <Table>
           <TableHeader>
-            <TableRow className="*:text-muted-foreground *:text-right">
+            <TableRow className="*:text-right *:text-muted-foreground">
               <TableHead>百分位</TableHead>
               <TableHead>首 token 时间 (秒)</TableHead>
               <TableHead>输出 token 间时延 (秒)</TableHead>
@@ -370,7 +370,7 @@ function ReportContainer({ className, ...props }: ComponentProps<'div'>) {
 }
 
 function ReportSection({ className, ...props }: ComponentProps<'div'>) {
-  return <div className={cn('border-border/50 rounded-xl border p-6 shadow-md', className)} {...props} />
+  return <div className={cn('rounded-xl border border-border/50 p-6 shadow-md', className)} {...props} />
 }
 
 function ReportSectionTitle({ className, ...props }: ComponentProps<'h3'>) {

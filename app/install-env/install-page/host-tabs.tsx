@@ -58,7 +58,7 @@ function ScrollController({ onClick, side }: { onClick: () => void; side: 'left'
   return (
     <div
       className={cn(
-        'from-card via-card pointer-events-none absolute top-0 bottom-2.5 flex flex-col justify-center *:pointer-events-auto',
+        'pointer-events-none absolute top-0 bottom-2.5 flex flex-col justify-center from-card via-card *:pointer-events-auto',
         side === 'left' && 'left-0 bg-gradient-to-r pr-1 pl-4',
         side === 'right' && 'right-0 bg-gradient-to-l pr-4 pl-1',
       )}
@@ -97,10 +97,10 @@ function HostTabsTrigger({ host, className }: { host: HostConfigType; className?
       data-error={isError ? '' : undefined}
       data-success={isSuccess ? '' : undefined}
       className={cn(
-        'data-[state=active]:border-primary group hover:bg-accent data-[state=active]:bg-primary/5 relative mb-2.5 grid w-52 shrink-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 rounded-lg border px-3 py-2 text-left transition',
+        'group relative mb-2.5 grid w-52 shrink-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 rounded-lg border px-3 py-2 text-left transition hover:bg-accent data-[state=active]:border-primary data-[state=active]:bg-primary/5',
         'data-error:border-destructive/25 data-success:border-success/25 data-[state=active]:data-error:border-destructive data-[state=active]:data-success:border-success',
         'data-[state=active]:data-error:bg-destructive/5 data-[state=active]:data-success:bg-success/5',
-        'focus-visible:border-ring focus-visible:ring-ring/50 outline-none focus-visible:ring-[3px]',
+        'outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
         'data-success:focus-visible:border-success data-success:focus-visible:ring-success/50',
         'data-error:focus-visible:border-destructive data-error:focus-visible:ring-destructive/50',
         className,
@@ -112,13 +112,13 @@ function HostTabsTrigger({ host, className }: { host: HostConfigType; className?
         thickness={6}
       />
       <div>
-        <h4 className="group-[state=active]:text-primary truncate text-sm font-semibold">{host.hostname}</h4>
+        <h4 className="truncate text-sm font-semibold group-[state=active]:text-primary">{host.hostname}</h4>
         <div>{host.bmcIp}</div>
-        <div className="text-muted-foreground text-xs *:truncate">
+        <div className="text-xs text-muted-foreground *:truncate">
           <FormatProgress stage={stage} progress={progress} />
         </div>
       </div>
-      <div className="group-data-[state=active]:border-t-primary group-data-error:group-data-[state=active]:border-t-destructive group-data-success:group-data-[state=active]:border-t-success absolute -bottom-2.5 left-1/2 h-1.5 w-4.5 -translate-x-1/2 border-x-9 border-t-6 border-transparent" />
+      <div className="absolute -bottom-2.5 left-1/2 h-1.5 w-4.5 -translate-x-1/2 border-x-9 border-t-6 border-transparent group-data-[state=active]:border-t-primary group-data-error:group-data-[state=active]:border-t-destructive group-data-success:group-data-[state=active]:border-t-success" />
     </TabsPrimitive.TabsTrigger>
   )
 }

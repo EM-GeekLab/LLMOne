@@ -181,8 +181,8 @@ function DnsFormSection() {
               name={`dns.list.${index}`}
               render={({ field: { value = '', onChange, ref, ...rest } }) => (
                 <FormItem>
-                  <div className="join join-with-input flex">
-                    <div className="border-input text-muted-foreground bg-muted pointer-events-none flex size-9 shrink-0 items-center justify-center rounded-md border">
+                  <div className="join flex join-with-input">
+                    <div className="pointer-events-none flex size-9 shrink-0 items-center justify-center rounded-md border border-input bg-muted text-muted-foreground">
                       {index + 1}
                     </div>
                     <FormControl>
@@ -233,7 +233,7 @@ function DnsFormSection() {
             </Button>
           )}
           {error && (
-            <p data-slot="form-message" className="text-destructive -mt-1 text-xs">
+            <p data-slot="form-message" className="-mt-1 text-xs text-destructive">
               {error.message}
             </p>
           )}
@@ -254,7 +254,7 @@ function CardWrapper({ className, children, ...props }: ComponentProps<'div'>) {
 
 function EmptyMessage({ className, children, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('text-muted-foreground col-span-full py-2 text-center text-sm', className)} {...props}>
+    <div className={cn('col-span-full py-2 text-center text-sm text-muted-foreground', className)} {...props}>
       {children}
     </div>
   )

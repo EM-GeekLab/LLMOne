@@ -12,7 +12,7 @@ export function TextCopyButton({ value, message, children }: { value: string; me
   return (
     <button
       className={cn(
-        '[&>svg]:text-primary hover:[&_svg]:text-primary/80 hover:text-foreground/90 inline-flex items-center gap-2 [&>svg]:size-3.5',
+        'inline-flex items-center gap-2 hover:text-foreground/90 hover:[&_svg]:text-primary/80 [&>svg]:size-3.5 [&>svg]:text-primary',
         error && '[&>svg]:text-destructive',
         copied && '[&>svg]:text-success',
       )}

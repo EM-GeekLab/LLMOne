@@ -83,14 +83,14 @@ function HostStatusCard({ hostId }: { hostId: string }) {
         <h4 className="text-base font-medium">
           {host?.info.system_info.hostname ?? <Skeleton className="h-6 w-32" />}
         </h4>
-        <div className="text-muted-foreground text-sm">{host?.ip[0]}</div>
+        <div className="text-sm text-muted-foreground">{host?.ip[0]}</div>
       </div>
       <div className="col-start-2 row-span-2 pt-1">
         <OpenWebUI size={28} />
       </div>
       <div>Open WebUI</div>
       <ProgressIndicator progress={progress} />
-      <div className="text-muted-foreground flex gap-2 [&_svg]:size-4 [&_svg]:shrink-0 [&>svg]:translate-y-0.5">
+      <div className="flex gap-2 text-muted-foreground [&_svg]:size-4 [&_svg]:shrink-0 [&>svg]:translate-y-0.5">
         {match(progress.status)
           .with('done', () => (
             <>
@@ -109,7 +109,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
               <AlertCircleIcon className="text-destructive" />
               <div className="text-destructive">{progress.message}</div>
               <button
-                className="text-primary hover:text-primary/90 shrink-0 font-medium whitespace-nowrap"
+                className="shrink-0 font-medium whitespace-nowrap text-primary hover:text-primary/90"
                 onClick={() => deployOneMutation.mutate({ host: hostId, service: 'openWebui' })}
               >
                 重试
@@ -121,11 +121,11 @@ function HostStatusCard({ hostId }: { hostId: string }) {
       </div>
       {url && progress.status === 'done' && (
         <div className="col-span-full flex">
-          <div className="text-foreground border-border/50 grid grid-cols-[auto_auto] gap-x-2.5 gap-y-1 rounded-md border px-3 py-2.5">
+          <div className="grid grid-cols-[auto_auto] gap-x-2.5 gap-y-1 rounded-md border border-border/50 px-3 py-2.5 text-foreground">
             <dl className="contents">
               <dt className="text-muted-foreground">服务访问地址</dt>
               <dd>
-                <a href={url} target="_blank" className="text-primary font-medium hover:underline">
+                <a href={url} target="_blank" className="font-medium text-primary hover:underline">
                   {url}
                 </a>
               </dd>

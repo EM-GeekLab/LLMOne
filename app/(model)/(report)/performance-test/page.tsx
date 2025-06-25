@@ -12,7 +12,7 @@ export default function Page() {
   return (
     <AppFrame title="完成部署" current="finish">
       <ForceSyncStateButton />
-      <AppCardHeader className="bg-muted/50 border-border/50 gap-4 border-b">
+      <AppCardHeader className="gap-4 border-b border-border/50 bg-muted/50">
         <div className="flex items-center gap-4">
           <NavButton to="/finish" variant="outline" size="xs">
             <ArrowLeftIcon />

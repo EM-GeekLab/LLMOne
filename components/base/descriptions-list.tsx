@@ -18,7 +18,7 @@ export function DescriptionsList({
         ({ id, key, value }) =>
           !(value == null && omitNull) && (
             <div key={id} className="contents text-sm">
-              <div className="text-muted-foreground text-right font-medium">{key || id}</div>
+              <div className="text-right font-medium text-muted-foreground">{key || id}</div>
               {typeof value !== 'object' ? <div>{value}</div> : value}
             </div>
           ),

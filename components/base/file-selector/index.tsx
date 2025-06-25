@@ -436,7 +436,7 @@ function FileSelectorList() {
                   data-invalid={!isItemValid(item) ? '' : undefined}
                   className={cn(
                     'absolute inset-x-1 top-0',
-                    `data-checked:bg-primary data-checked:text-primary-foreground data-checked:[&_svg]:stroke-primary-foreground data-checked:data-[selected=true]:bg-primary/90 data-checked:data-[selected=true]:text-primary-foreground`,
+                    `data-checked:bg-primary data-checked:text-primary-foreground data-checked:data-[selected=true]:bg-primary/90 data-checked:data-[selected=true]:text-primary-foreground data-checked:[&_svg]:stroke-primary-foreground`,
                     'data-invalid:opacity-50',
                   )}
                   onSelect={() => handleSelect(item)}
@@ -518,7 +518,7 @@ function PathBar({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       className={cn(
-        'text-foreground/70 scrollbar-none flex items-center gap-0.5 overflow-auto border-t p-1.5 text-xs',
+        'scrollbar-none flex items-center gap-0.5 overflow-auto border-t p-1.5 text-xs text-foreground/70',
         className,
       )}
       {...props}
@@ -527,7 +527,7 @@ function PathBar({ className, ...props }: ComponentProps<'div'>) {
         <Fragment key={`${part}-${index}`}>
           <button
             tabIndex={-1}
-            className="hover:text-accent-foreground hover:bg-accent -m-1 shrink-0 rounded-sm p-1"
+            className="-m-1 shrink-0 rounded-sm p-1 hover:bg-accent hover:text-accent-foreground"
             onClick={async () => {
               const target = joinPathParts(parts, index + 1)
               setCurrentDirectory(target)
@@ -596,7 +596,7 @@ function ClearableInput({
           setHasValue(!!e.target.value)
           onChange?.(e)
         }}
-        className="border-border/50 bg-muted/50 hover:bg-accent hover:border-accent-foreground/25 h-8 rounded-sm pr-7 transition-colors focus-visible:bg-transparent focus-visible:ring-0"
+        className="h-8 rounded-sm border-border/50 bg-muted/50 pr-7 transition-colors hover:border-accent-foreground/25 hover:bg-accent focus-visible:bg-transparent focus-visible:ring-0"
         {...props}
       />
       {hasValue && (

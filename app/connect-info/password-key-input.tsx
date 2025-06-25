@@ -47,10 +47,10 @@ export function FormPasswordKeyInput({
 
   return (
     <>
-      <Label htmlFor="default-credential" data-error={!!inputError} className="data-[error=true]:text-destructive pl-1">
+      <Label htmlFor="default-credential" data-error={!!inputError} className="pl-1 data-[error=true]:text-destructive">
         凭据
       </Label>
-      <div className={cn('join join-with-input flex items-stretch', className)} {...props}>
+      <div className={cn('join flex items-stretch join-with-input', className)} {...props}>
         <FormField
           control={control}
           name="type"
@@ -110,7 +110,7 @@ export function FormPasswordKeyInput({
         )}
       </div>
       {inputError && (
-        <p data-slot="form-message" className="text-destructive -my-1 pl-1 text-xs">
+        <p data-slot="form-message" className="-my-1 pl-1 text-xs text-destructive">
           {type === 'password' ? password?.message : privateKey?.message}
         </p>
       )}
@@ -143,7 +143,7 @@ function FormPrivateKeyInputDialog({
           className={cn(
             'flex-1 justify-start px-3 text-left font-normal',
             !hasKeyValue && 'text-muted-foreground',
-            'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
+            'aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
             className,
           )}
           {...props}

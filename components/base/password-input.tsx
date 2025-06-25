@@ -26,7 +26,7 @@ export function PasswordInput({ className, ...props }: ComponentProps<typeof Inp
         size="icon"
         variant="ghost"
         data-state={visible ? 'on' : 'off'}
-        className="data-[state=on]:text-primary text-muted-foreground hover:text-accent-foreground absolute top-1/2 right-1.5 size-6 -translate-y-1/2 p-0 [&_svg:not([class*='size-'])]:size-3.5"
+        className="absolute top-1/2 right-1.5 size-6 -translate-y-1/2 p-0 text-muted-foreground hover:text-accent-foreground data-[state=on]:text-primary [&_svg:not([class*='size-'])]:size-3.5"
         onClick={() => setVisible((v) => !v)}
       >
         {visible ? <EyeIcon /> : <EyeOffIcon />}

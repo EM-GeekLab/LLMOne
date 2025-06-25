@@ -86,14 +86,14 @@ function HostStatusCard({ hostId }: { hostId: string }) {
         <h4 className="text-base font-medium">
           {host?.info.system_info.hostname ?? <Skeleton className="h-6 w-32" />}
         </h4>
-        <div className="text-muted-foreground text-sm">{ipAddr}</div>
+        <div className="text-sm text-muted-foreground">{ipAddr}</div>
       </div>
       <div className="col-start-2 row-span-2">
         {model && <ModelIcon type="color" model={model.logoKey} size={32} />}
       </div>
       <div>{model?.displayName ?? <Skeleton className="h-5 w-48" />}</div>
       <ProgressIndicator progress={progress} />
-      <div className="text-muted-foreground flex gap-2 [&_svg]:size-4 [&_svg]:shrink-0 [&>svg]:translate-y-0.5">
+      <div className="flex gap-2 text-muted-foreground [&_svg]:size-4 [&_svg]:shrink-0 [&>svg]:translate-y-0.5">
         {match(progress.status)
           .with('done', () => (
             <>
@@ -112,7 +112,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
               <AlertCircleIcon className="text-destructive" />
               <div className="text-destructive">{progress.message}</div>
               <button
-                className="text-primary hover:text-primary/90 shrink-0 font-medium whitespace-nowrap"
+                className="shrink-0 font-medium whitespace-nowrap text-primary hover:text-primary/90"
                 onClick={() => deployOneMutation.mutate({ host: hostId })}
               >
                 重试
@@ -124,7 +124,7 @@ function HostStatusCard({ hostId }: { hostId: string }) {
       </div>
       {url && progress.status === 'done' && (
         <div className="col-span-full flex">
-          <div className="text-foreground border-border/50 grid grid-cols-[auto_auto] gap-x-2.5 gap-y-1 rounded-md border px-3 py-2.5">
+          <div className="grid grid-cols-[auto_auto] gap-x-2.5 gap-y-1 rounded-md border border-border/50 px-3 py-2.5 text-foreground">
             <dl className="contents">
               <dt className="text-muted-foreground">API 端点</dt>
               <dd>

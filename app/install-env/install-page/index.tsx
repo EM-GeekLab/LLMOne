@@ -108,7 +108,7 @@ function LogDisplay() {
   const { scrollRef, contentRef } = useStickToBottom()
 
   return (
-    <div ref={scrollRef} className="bg-muted/50 h-56 overflow-auto rounded-lg px-3.5 py-2.5 font-mono text-sm">
+    <div ref={scrollRef} className="h-56 overflow-auto rounded-lg bg-muted/50 px-3.5 py-2.5 font-mono text-sm">
       <div ref={contentRef}>
         {logs?.map((item) => (
           <div key={item.time.getTime()}>
@@ -131,7 +131,7 @@ function RetryButton({
   const { retry } = useBmcLocalInstallContext()
   return (
     <button
-      className="text-primary hover:text-primary/90 shrink-0 font-medium whitespace-nowrap"
+      className="shrink-0 font-medium whitespace-nowrap text-primary hover:text-primary/90"
       onClick={() =>
         step ? (stage === 'driver' ? retry({ hostId, stage, step }) : retry({ hostId, stage, step })) : undefined
       }

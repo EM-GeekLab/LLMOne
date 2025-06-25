@@ -180,7 +180,7 @@ function DeployForm({ modelPath, onSubmitted }: { modelPath: string; onSubmitted
           render={({ field: { value = '', ...rest } }) => (
             <FormItem className="hidden basis-[92px]">
               <FormLabel>API 密钥</FormLabel>
-              <div className="join join-with-input flex">
+              <div className="join flex join-with-input">
                 <FormControl>
                   <Input className="pr-0" readOnly value={value} {...rest} />
                 </FormControl>

@@ -104,7 +104,7 @@ function ModelHostDeployment({ deployment }: { deployment: ModelDeployConfigType
   const url = ipAddr ? `http://${ipAddr}:${deployment.port}` : undefined
 
   return (
-    <div className="bg-muted/50 rounded-md px-3.5 py-2.5">
+    <div className="rounded-md bg-muted/50 px-3.5 py-2.5">
       <div className="mb-1 text-sm font-medium">{host.info.system_info.hostname || ipAddr}</div>
       <DescriptionsList
         omitNull
@@ -160,7 +160,7 @@ function OpenWebuiInfo({ info }: { info: OpenWebuiConfigType }) {
             id: 'url',
             key: '访问地址',
             value: (
-              <a href={url} target="_blank" className="text-primary font-medium hover:underline">
+              <a href={url} target="_blank" className="font-medium text-primary hover:underline">
                 {url}
               </a>
             ),
@@ -208,7 +208,7 @@ function NexusGateInfo({ info }: { info: NexusGateConfigType }) {
             id: 'url',
             key: '访问地址',
             value: (
-              <a href={url} target="_blank" className="text-primary font-medium hover:underline">
+              <a href={url} target="_blank" className="font-medium text-primary hover:underline">
                 {url}
               </a>
             ),

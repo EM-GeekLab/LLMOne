@@ -54,7 +54,7 @@ function HostSelect() {
         {hostIds.length > 0 ? (
           hostIds.map((hostId) => <HostSelectItem key={hostId} hostId={hostId} />)
         ) : (
-          <div className="text-muted-foreground py-2 text-center text-sm">暂无主机</div>
+          <div className="py-2 text-center text-sm text-muted-foreground">暂无主机</div>
         )}
       </SelectContent>
     </Select>

@@ -55,17 +55,17 @@ export function StepSidebar({ current }: { current?: StepId }) {
       <footer className="flex items-center justify-between gap-1.5 px-4 py-3">
         <Popover>
           <PopoverTrigger asChild>
-            <button className="text-muted-foreground hover:text-accent-foreground inline-flex items-center gap-1 text-sm [&_svg]:size-3.5">
+            <button className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-accent-foreground [&_svg]:size-3.5">
               <HelpCircleIcon />
               帮助
             </button>
           </PopoverTrigger>
           <PopoverContent side="top" className="w-64 p-2.5">
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               如果您在使用过程中遇到问题，请联系我们以获取更多帮助和支持。
             </p>
             <p className="mt-1 flex items-center gap-1.5 text-sm">
-              <span className="text-muted-foreground flex items-center gap-1 text-xs [&_svg]:size-3.5">
+              <span className="flex items-center gap-1 text-xs text-muted-foreground [&_svg]:size-3.5">
                 <MailIcon />
                 邮箱
               </span>
@@ -77,7 +77,7 @@ export function StepSidebar({ current }: { current?: StepId }) {
         </Popover>
         <Popover>
           <PopoverTrigger asChild>
-            <button className="text-muted-foreground hover:text-accent-foreground inline-flex items-center gap-1 text-sm [&_svg]:size-3.5">
+            <button className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-accent-foreground [&_svg]:size-3.5">
               版本 {pkg.version}
             </button>
           </PopoverTrigger>
@@ -85,21 +85,21 @@ export function StepSidebar({ current }: { current?: StepId }) {
             <div className="flex flex-wrap items-baseline gap-2">
               <p className="text-sm font-medium">LLMOne {pkg.version}</p>
               <a
-                className="text-primary hover:text-primary/80 text-xs"
+                className="text-xs text-primary hover:text-primary/80"
                 target="_blank"
                 href="https://github.com/EM-GeekLab/LLMOne"
               >
                 GitHub
               </a>
             </div>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               本项目使用了 AGPL-3.0 协议的组件{' '}
               <a className="hover:text-accent-foreground" target="_blank" href="https://github.com/koitococo/mxlite">
                 mxlite
               </a>
               。
             </p>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               &copy; {new Date().getFullYear()} {pkg.author.name}.
             </p>
           </PopoverContent>

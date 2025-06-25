@@ -21,12 +21,12 @@ export function AppStepperItem({ title, status }: { title: string; status: 'done
       <div className="flex size-3 items-center justify-center">
         <div
           data-status={status}
-          className="bg-muted-foreground/50 data-[status=current]:bg-primary data-[status=done]:bg-primary size-2 rounded-full data-[status=current]:size-3"
+          className="size-2 rounded-full bg-muted-foreground/50 data-[status=current]:size-3 data-[status=current]:bg-primary data-[status=done]:bg-primary"
         />
       </div>
       <div
         data-status={status}
-        className="text-muted-foreground data-[status=current]:text-primary data-[status=done]:text-primary text-sm data-[status=current]:font-semibold"
+        className="text-sm text-muted-foreground data-[status=current]:font-semibold data-[status=current]:text-primary data-[status=done]:text-primary"
       >
         {title}
       </div>

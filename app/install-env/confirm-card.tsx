@@ -130,7 +130,7 @@ function HostConfirmInfo({ id, bmcIp, disk }: { id: string; bmcIp: string; disk?
       <InfoDescription name="IP/CIDR" value={host?.ip} />
       <dl className="col-span-full grid grid-cols-subgrid">
         <dt className="text-muted-foreground">安装磁盘</dt>
-        <dd className="*:not-first:text-muted-foreground flex items-baseline gap-2 *:not-first:text-xs">
+        <dd className="flex items-baseline gap-2 *:not-first:text-xs *:not-first:text-muted-foreground">
           <span>{host?.disk}</span>
           {diskInfo ? (
             <>

@@ -24,7 +24,7 @@ export function RemoveButton({ id, mode }: { id: string; mode: ConnectMode }) {
         }
       }}
     >
-      <Trash2Icon className="text-destructive size-3.5" />
+      <Trash2Icon className="size-3.5 text-destructive" />
       <span className="sr-only">删除</span>
     </Button>
   )

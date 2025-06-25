@@ -8,7 +8,7 @@ export function CopyButton({ value, message, children }: { value: string; messag
 
   return (
     <button
-      className="[&>svg]:text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:[&_svg]:text-accent-foreground -mx-1 -my-0.5 inline-flex items-center gap-2 justify-self-start rounded-sm px-1 py-0.5 [&>svg]:size-3.5"
+      className="-mx-1 -my-0.5 inline-flex items-center gap-2 justify-self-start rounded-sm px-1 py-0.5 hover:bg-accent hover:text-accent-foreground hover:[&_svg]:text-accent-foreground [&>svg]:size-3.5 [&>svg]:text-muted-foreground"
       onClick={() => {
         copy(value)
         toast.success(message)

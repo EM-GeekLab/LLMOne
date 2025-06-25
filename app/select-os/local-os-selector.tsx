@@ -53,7 +53,7 @@ function OsSelectorContainer() {
 
   if (distros.isPending || defaultArch.isPending)
     return (
-      <AppCardSection className="text-muted-foreground flex flex-row items-center gap-2">
+      <AppCardSection className="flex flex-row items-center gap-2 text-muted-foreground">
         <Spinner className="size-4" />
         <div>加载中...</div>
       </AppCardSection>
@@ -137,7 +137,7 @@ function VersionSelector({
               <RadioGroupItem id={value} value={value}></RadioGroupItem>
               <Label className="cursor-pointer" htmlFor={value}>
                 {displayName}
-                <div className="text-muted-foreground/75 text-xs font-normal">{arch}</div>
+                <div className="text-xs font-normal text-muted-foreground/75">{arch}</div>
               </Label>
             </div>
           ))}

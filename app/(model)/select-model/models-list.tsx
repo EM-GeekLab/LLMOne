@@ -41,7 +41,7 @@ export function ModelsListPage() {
     return (
       <AppCardSection>
         <ModelTableBody>
-          <div className="text-muted-foreground col-span-full flex items-center justify-center gap-2 px-6 py-10 text-sm">
+          <div className="col-span-full flex items-center justify-center gap-2 px-6 py-10 text-sm text-muted-foreground">
             <Spinner className="size-4" />
             加载中...
           </div>
@@ -82,7 +82,7 @@ function ModelTableBody({ className, children }: ComponentProps<'div'>) {
         className,
       )}
     >
-      <div className="text-muted-foreground col-span-full grid grid-cols-subgrid items-center border-b *:font-medium *:not-last:py-2.5">
+      <div className="col-span-full grid grid-cols-subgrid items-center border-b text-muted-foreground *:font-medium *:not-last:py-2.5">
         <div />
         <div>名称</div>
         <div>描述</div>
@@ -123,7 +123,7 @@ function ModelList({ data }: { data: Awaited<ReturnType<AppRouter['resource']['g
           </div>
         ))
       ) : (
-        <div className="text-muted-foreground col-span-full py-6 text-center text-sm">资源包中无可用模型</div>
+        <div className="col-span-full py-6 text-center text-sm text-muted-foreground">资源包中无可用模型</div>
       )}
     </ModelTableBody>
   )

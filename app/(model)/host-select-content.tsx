@@ -35,7 +35,7 @@ export function HostSelectContent() {
           </SelectItem>
         ))
       ) : (
-        <div className="text-muted-foreground py-2 text-center text-sm">暂无在线主机</div>
+        <div className="py-2 text-center text-sm text-muted-foreground">暂无在线主机</div>
       )}
     </SelectContent>
   )

@@ -144,7 +144,7 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
             {manualList.map((host) => (
               <Fragment key={host.ip}>
                 <div>{host.ip}</div>
-                <a href={host.url} target="_blank" className="text-primary truncate hover:underline">
+                <a href={host.url} target="_blank" className="truncate text-primary hover:underline">
                   {host.url}
                 </a>
               </Fragment>
@@ -153,7 +153,7 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
         </>
       ) : (
         <>
-          <ol className="*:marker:text-primary list-disc pl-4 text-sm *:pl-1">
+          <ol className="list-disc pl-4 text-sm *:pl-1 *:marker:text-primary">
             {hosts.map((host) => (
               <li key={host.id}>{host.ip}</li>
             ))}

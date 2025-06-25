@@ -10,7 +10,7 @@ function ScrollArea({ className, children, ...props }: React.ComponentProps<type
     <ScrollAreaPrimitive.Root data-slot="scroll-area" className={cn('relative', className)} {...props}>
       <ScrollAreaPrimitive.Viewport
         data-slot="scroll-area-viewport"
-        className="ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] focus-visible:ring-4 focus-visible:outline-1"
+        className="size-full rounded-[inherit] ring-ring/10 outline-ring/50 transition-[color,box-shadow] focus-visible:ring-4 focus-visible:outline-1 dark:ring-ring/20 dark:outline-ring/40"
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
@@ -31,15 +31,15 @@ function ScrollBar({
       orientation={orientation}
       className={cn(
         'flex touch-none p-px transition-[colors,width] select-none',
-        orientation === 'vertical' && 'hover:border-l-border h-full w-2.5 border-l border-l-transparent hover:w-3',
-        orientation === 'horizontal' && 'hover:border-t-border h-2.5 flex-col border-t border-t-transparent hover:h-3',
+        orientation === 'vertical' && 'h-full w-2.5 border-l border-l-transparent hover:w-3 hover:border-l-border',
+        orientation === 'horizontal' && 'h-2.5 flex-col border-t border-t-transparent hover:h-3 hover:border-t-border',
         className,
       )}
       {...props}
     >
       <ScrollAreaPrimitive.ScrollAreaThumb
         data-slot="scroll-area-thumb"
-        className="bg-border hover:bg-ring relative flex-1 rounded-full transition-colors"
+        className="relative flex-1 rounded-full bg-border transition-colors hover:bg-ring"
       />
     </ScrollAreaPrimitive.ScrollAreaScrollbar>
   )

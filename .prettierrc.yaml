@@ -13,6 +13,7 @@ singleAttributePerLine: false
 
 # prettier-plugin-tailwindcss
 tailwindFunctions: [cn]
+tailwindStylesheet: ./app/globals.css
 
 # prettier-plugin-sort-imports
 importOrder:

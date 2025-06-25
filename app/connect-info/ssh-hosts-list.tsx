@@ -34,7 +34,7 @@ function HostsList() {
 
   return (
     <div className="grid grid-cols-[auto_1fr_80px_1fr_1fr_auto] rounded-md border">
-      <div className="text-muted-foreground col-span-full grid grid-cols-subgrid items-center border-b *:px-3 *:py-1.5 *:font-medium">
+      <div className="col-span-full grid grid-cols-subgrid items-center border-b text-muted-foreground *:px-3 *:py-1.5 *:font-medium">
         <div></div>
         <div>IP</div>
         <div>端口</div>
@@ -72,7 +72,7 @@ function HostsList() {
             <div className="flex items-center gap-0.5 px-2">
               <SshFormDialog id={host.id}>
                 <SshFormDialogTrigger variant="ghost" className="size-7 !p-0">
-                  <EditIcon className="text-primary size-3.5" />
+                  <EditIcon className="size-3.5 text-primary" />
                   <span className="sr-only">编辑</span>
                 </SshFormDialogTrigger>
               </SshFormDialog>
@@ -81,7 +81,7 @@ function HostsList() {
           </div>
         ))
       ) : (
-        <div className="text-muted-foreground col-span-full py-6 text-center text-sm">还没有添加主机</div>
+        <div className="col-span-full py-6 text-center text-sm text-muted-foreground">还没有添加主机</div>
       )}
     </div>
   )

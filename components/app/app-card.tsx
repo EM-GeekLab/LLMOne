@@ -8,7 +8,7 @@ export function AppCard({ children, className, ...props }: ComponentProps<'div'>
   return (
     <div
       className={cn(
-        'bg-card text-card-foreground max-3xl:flex-1 3xl:h-[calc(20vh+48rem)] 3xl:w-[102rem] 3xl:overflow-hidden 3xl:rounded-lg 3xl:border 3xl:shadow-md flex w-full max-w-full min-w-[40rem] overflow-auto',
+        'flex w-full max-w-full min-w-[40rem] overflow-auto bg-card text-card-foreground max-3xl:flex-1 3xl:h-[calc(20vh+48rem)] 3xl:w-[102rem] 3xl:overflow-hidden 3xl:rounded-lg 3xl:border 3xl:shadow-md',
         className,
       )}
       {...props}
@@ -22,7 +22,7 @@ export function AppCardSidebar({ children, className, ...props }: ComponentProps
   return (
     <div
       className={cn(
-        'bg-muted/50 flex h-full flex-col overflow-hidden border-r max-md:hidden lg:w-[14rem] xl:w-[15rem]',
+        'flex h-full flex-col overflow-hidden border-r bg-muted/50 max-md:hidden lg:w-[14rem] xl:w-[15rem]',
         className,
       )}
       {...props}
@@ -66,7 +66,7 @@ export function AppCardTitle({ children, className, ...props }: ComponentProps<'
 
 export function AppCardDescription({ children, className, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('text-muted-foreground text-sm', className)} {...props}>
+    <div className={cn('text-sm text-muted-foreground', className)} {...props}>
       {children}
     </div>
   )
@@ -112,7 +112,7 @@ export function AppCardSectionTitle({ children, className, ...props }: Component
 
 export function AppCardSectionDescription({ children, className, ...props }: ComponentProps<'p'>) {
   return (
-    <p data-slot="section-description" className={cn('text-muted-foreground text-sm', className)} {...props}>
+    <p data-slot="section-description" className={cn('text-sm text-muted-foreground', className)} {...props}>
       {children}
     </p>
   )
