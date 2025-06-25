@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import net from 'node:net'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { join as joinPosix } from 'node:path/posix'
 
 import { NodeSSH, SSHExecCommandOptions } from 'node-ssh'
@@ -21,6 +21,8 @@ interface NewHostMxaControllerParams {
   password?: string
   enableMxaLog?: boolean
 }
+
+export type CtlExecOptions = { sudo?: boolean } & SSHExecCommandOptions
 
 export class MxaCtl {
   private readonly host: string
@@ -91,10 +93,12 @@ export class MxaCtl {
     return this
   }
 
-  private execSudoOptions(): SSHExecCommandOptions {
+  private execSudoOptions(options: SSHExecCommandOptions = {}): SSHExecCommandOptions {
+    const { execOptions, ...restOptions } = options
     return {
       stdin: this.passwordRequired ? this.password + '\n' : undefined,
-      execOptions: { pty: true },
+      execOptions: { pty: true, ...execOptions },
+      ...restOptions,
     }
   }
 
@@ -102,6 +106,7 @@ export class MxaCtl {
     try {
       await this.ssh.forwardIn('127.0.0.1', mxdHttpPort, (_details, accept) => {
         const stream = accept()
+        stream.pause()
         const socket = net.connect(mxdHttpPort, '127.0.0.1', () => {
           stream.pipe(socket)
           socket.pipe(stream)
@@ -226,6 +231,38 @@ export class MxaCtl {
       controller.dispose()
       throw e
     }
+  }
+
+  private removeSudoPrompt(text: string) {
+    if (this.passwordRequired) {
+      return text.replace(new RegExp(`^${this.password}\\s*(\\[sudo].+\\s+)?`), '')
+    }
+    return text
+  }
+
+  async uploadAndExecFile(file: string, execArgs: string[] = [], options: CtlExecOptions = {}) {
+    const { sudo = true, ...restOptions } = options
+    const remoteTmpDirRes = await this.ssh.execCommand('mktemp -d -t mxa.tmp.XXXXXX')
+    const remoteTmpPath = joinPosix(remoteTmpDirRes.stdout, basename(file))
+    await this.ssh.putFile(file, remoteTmpPath)
+    await this.ssh.execCommand(`chmod +x ${remoteTmpPath}`)
+    if (sudo) {
+      const res = await this.ssh.exec('sudo', [remoteTmpPath, ...execArgs], {
+        ...this.execSudoOptions(restOptions),
+        stream: 'both',
+      })
+      return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
+    }
+    return await this.ssh.exec(remoteTmpPath, execArgs, { stream: 'both' })
+  }
+
+  async execCommand(command: string, options: CtlExecOptions = {}) {
+    const { sudo = true, ...restOptions } = options
+    if (sudo) {
+      const res = await this.ssh.execCommand(`sudo ${command}`, this.execSudoOptions(restOptions))
+      return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
+    }
+    return await this.ssh.execCommand(command)
   }
 
   dispose() {
