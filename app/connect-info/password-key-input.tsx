@@ -229,7 +229,7 @@ function FormPrivateKeyInputDialogContent({
                   }}
                 />
               </FormControl>
-              <FormDescription>即使是密钥登录，某些主机执行 sudo 命令时仍需要提供密码。</FormDescription>
+              <FormDescription>对于大多数主机，使用密钥登录时，执行 sudo 命令也需要提供密码。</FormDescription>
             </FormItem>
           )}
         />
