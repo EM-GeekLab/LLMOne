@@ -26,6 +26,11 @@ const geistMono = localFont({
   variable: '--font-geist-mono',
 })
 
+const jetBrainsMono = localFont({
+  src: './fonts/JetBrainsMonoVF.woff2',
+  variable: '--font-jetbrains-mono',
+})
+
 export const metadata: Metadata = {
   title: 'LLMOne',
   description: '大模型一体机装机工具',
@@ -46,7 +51,7 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning lang="zh">
       {process.env.NODE_ENV === 'development' && <ReactScan />}
-      <body className={cn(geistSans.variable, geistMono.variable, 'font-sans antialiased')}>
+      <body className={cn(geistSans.variable, geistMono.variable, jetBrainsMono.variable, 'font-sans antialiased')}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TrpcReactProvider>
             <NuqsAdapter>
