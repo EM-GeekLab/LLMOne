@@ -7,6 +7,7 @@ import {
 } from '@/components/app/app-card'
 import { AppFrame } from '@/components/app/app-frame'
 import { ConnectModeIf, DeployModeIf } from '@/app/_shared/condition'
+import { SshPage } from '@/app/install-env/ssh-page'
 import { InstallStoreProvider } from '@/stores/install-store-provider'
 
 import { BmcLocalInstallStatusIf } from './condition'
@@ -45,6 +46,9 @@ export default function Page() {
               </BmcLocalInstallStatusIf>
             </BmcLocalInstallProvider>
           </DeployModeIf>
+        </ConnectModeIf>
+        <ConnectModeIf mode="ssh">
+          <SshPage />
         </ConnectModeIf>
       </InstallStoreProvider>
     </AppFrame>

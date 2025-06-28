@@ -186,6 +186,8 @@ jq -c '.' ./out/\${TEST_MODE}/benchmark_percentile.json`,
       code: 'INTERNAL_SERVER_ERROR',
     })
   })
+
+  // Read the result from the last two lines of stdout
   const [summary, percentile] = stdout
     .trim()
     .split('\n')

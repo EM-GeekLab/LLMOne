@@ -9,6 +9,7 @@ import { hostRouter } from './host'
 import { modelRouter } from './model'
 import { mxdRouter } from './mxd-controller'
 import { resourceRouter } from './resource'
+import { sshDeployRouter } from './ssh-deploy'
 import { stateStoreRouter } from './state-store'
 
 export const appRouter = createRouter({
@@ -18,6 +19,7 @@ export const appRouter = createRouter({
   resource: resourceRouter,
   stateStore: stateStoreRouter,
   deploy: deployRouter,
+  sshDeploy: sshDeployRouter,
   model: modelRouter,
   host: hostRouter,
   benchmark: benchmarkRouter,

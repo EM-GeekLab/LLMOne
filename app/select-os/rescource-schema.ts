@@ -9,6 +9,7 @@ export const resourceManifestSchema = z.object({
   bootstrap: z.record(architecturesEnum, z.string()),
   modelDir: z.string(),
   containerDir: z.string(),
+  packageDir: z.string(),
 })
 
 export type ResourceManifestType = z.infer<typeof resourceManifestSchema>
@@ -34,8 +35,18 @@ export const resourceOsInfoSchema = z.object({
   ),
 })
 
+export const resourcePkgInfoSchema = z.object({
+  metaVersion: z.literal('v1'),
+  arch: architecturesEnum,
+  displayName: z.string(),
+  file: z.string(),
+  sha256: z.string(),
+})
+
 export type ResourceOsInfoType = z.infer<typeof resourceOsInfoSchema>
 
 export type ResourceOsBaseInfo = Omit<ResourceOsInfoType, 'packages' | 'packagesDir'>
 
 export type ResourcePackage = ResourceOsInfoType['packages'][number]
+
+export type ResourcePkgInfoType = z.infer<typeof resourcePkgInfoSchema>

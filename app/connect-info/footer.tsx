@@ -70,12 +70,12 @@ function BmcNextStepButton() {
           下一步
         </Button>
       </NavButtonGuard>
-      <ConfirmDialogContent onClose={() => setDialogOpen(false)} />
+      <BmcConfirmDialogContent onClose={() => setDialogOpen(false)} />
     </Dialog>
   )
 }
 
-function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
+function BmcConfirmDialogContent({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate()
 
   const hosts = useGlobalStore((s) => s.bmcHosts)
@@ -183,7 +183,12 @@ function ConfirmDialogContent({ onClose }: { onClose: () => void }) {
 }
 
 function SshNextStepButton() {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const navigate = useNavigate()
+
   const { isAllConnected } = useIsAllConnected()
+  const trpcClient = useTRPCClient()
   const hasHost = useGlobalStore((s) => !!s.sshHosts.length)
 
   const storeApi = useGlobalStoreApi()
@@ -193,13 +198,24 @@ function SshNextStepButton() {
     const result = validateSshHosts(sshHosts, defaultCredentials)
     if (!result.success) return
     setHosts(result.data)
-  }, [setHosts, storeApi])
+
+    setIsLoading(true)
+    trpcClient.sshDeploy.initDeployer
+      .mutate(result.data)
+      .then(() => navigate('/install-env'))
+      .catch((err) => toast.error(err.message))
+      .finally(() => setIsLoading(false))
+  }, [navigate, setHosts, storeApi, trpcClient.sshDeploy.initDeployer])
 
   return (
-    <NavButtonGuard pass={isAllConnected && hasHost} message={!hasHost ? noHostMessage : connectionMessage}>
-      <NavButton to="/install-env" onClick={setLocalStoreHosts}>
+    <NavButtonGuard
+      pass={isAllConnected && hasHost && !isLoading}
+      message={!hasHost ? noHostMessage : connectionMessage}
+    >
+      <Button onClick={setLocalStoreHosts}>
+        {isLoading && <Spinner className="size-4" />}
         下一步
-      </NavButton>
+      </Button>
     </NavButtonGuard>
   )
 }

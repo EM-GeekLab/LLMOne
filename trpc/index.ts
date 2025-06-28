@@ -1,4 +1,4 @@
-import type { ListenOptions } from 'net'
+import { FastifyListenOptions } from 'fastify'
 
 import { trpcPort } from '@/lib/env/trpc'
 import { logger } from '@/lib/logger'
@@ -9,8 +9,8 @@ export async function createServer() {
   const config = {
     host: '127.0.0.1',
     port: trpcPort,
-  } satisfies ListenOptions
-  createTRPCServer().listen(config)
+  } satisfies FastifyListenOptions
+  await createTRPCServer().listen(config)
 
   logger.info({ module: 'trpc' }, `tRPC server started on ${config.host}:${config.port}`)
 

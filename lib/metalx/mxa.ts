@@ -8,10 +8,37 @@ import { match } from 'ts-pattern'
 
 import { mxdHttpPort } from '@/lib/env/mxc'
 import { logger } from '@/lib/logger'
+import { z } from '@/lib/zod'
 
 import { formatMxliteLog } from './format-mxlite-log'
 
 const log = logger.child({ module: 'mxa' })
+
+const environmentInfoSchema = z.object({
+  distroName: z.string(),
+  distro: z.string(),
+  version: z.string(),
+  architecture: z.string(),
+  kernel: z.string(),
+  headersPackageInfo: z.string(),
+  glibc: z.string(),
+  glibcDetectionMethod: z.string(),
+  dkms: z.string(),
+  dkmsDetectionMethod: z.string(),
+  docker: z.boolean(),
+  npuPresent: z.boolean(),
+  npuSmiFound: z.boolean(),
+  gpuPresent: z.boolean(),
+  gpuSmiFound: z.boolean(),
+  root: z.boolean(),
+  zstd: z.string(),
+  aria2: z.string(),
+  jq: z.string(),
+})
+
+export type EnvironmentInfo = z.infer<typeof environmentInfoSchema>
+
+export type PackageManager = 'apt' | 'yum' | 'dnf' | 'pacman' | 'zypper' | 'apk' | 'emerge' | 'nix-env'
 
 interface NewHostMxaControllerParams {
   host: string
@@ -37,6 +64,8 @@ export class MxaCtl {
   private remoteMxaPath?: string
   private localMxaPath?: string
   private abortController: AbortController
+  private pm?: PackageManager
+  private env?: EnvironmentInfo
 
   constructor(params: NewHostMxaControllerParams) {
     this.host = params.host
@@ -113,6 +142,16 @@ export class MxaCtl {
           stream.resume()
         })
       })
+      return this
+    } catch (e) {
+      throw new Error(`端口转发失败: ${e instanceof Error ? e.message : String(e)}`, { cause: e })
+    }
+  }
+
+  async forwardMxdPortCheck() {
+    try {
+      const conn = await this.ssh.forwardIn('127.0.0.1', mxdHttpPort)
+      await conn.dispose()
       return this
     } catch (e) {
       throw new Error(`端口转发失败: ${e instanceof Error ? e.message : String(e)}`, { cause: e })
@@ -210,50 +249,50 @@ export class MxaCtl {
   async check() {
     await this.forceSudo()
     await this.checkLocalMxaPath()
-    await this.forwardMxdPort()
+    await this.forwardMxdPortCheck()
     return this
   }
 
   info() {
     return {
       host: this.host,
-      hostId: this.hostId,
+      hostId: this.hostId!,
     }
   }
 
   static async create(params: NewHostMxaControllerParams): Promise<MxaCtl> {
-    const controller = new MxaCtl(params)
+    const ctl = new MxaCtl(params)
     try {
-      await controller.connect()
-      await controller.check()
-      return controller
+      await ctl.connect()
+      await ctl.check()
+      return ctl
     } catch (e) {
-      controller.dispose()
+      ctl.dispose()
       throw e
     }
   }
 
   private removeSudoPrompt(text: string) {
     if (this.passwordRequired) {
-      return text.replace(new RegExp(`^${this.password}\\s*(\\[sudo].+\\s+)?`), '')
+      return text.replace(new RegExp(`^(${this.password})?\\s*(\\[sudo].+\\s+)?`), '')
     }
     return text
   }
 
-  async uploadAndExecFile(file: string, execArgs: string[] = [], options: CtlExecOptions = {}) {
+  async uploadAndExecFile(file: string, options: CtlExecOptions = {}) {
     const { sudo = true, ...restOptions } = options
     const remoteTmpDirRes = await this.ssh.execCommand('mktemp -d -t mxa.tmp.XXXXXX')
     const remoteTmpPath = joinPosix(remoteTmpDirRes.stdout, basename(file))
     await this.ssh.putFile(file, remoteTmpPath)
     await this.ssh.execCommand(`chmod +x ${remoteTmpPath}`)
     if (sudo) {
-      const res = await this.ssh.exec('sudo', [remoteTmpPath, ...execArgs], {
+      const res = await this.ssh.exec('sudo', ['bash', '-c', remoteTmpPath], {
         ...this.execSudoOptions(restOptions),
         stream: 'both',
       })
       return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
     }
-    return await this.ssh.exec(remoteTmpPath, execArgs, { stream: 'both' })
+    return await this.ssh.exec('bash', [remoteTmpPath], { stream: 'both' })
   }
 
   async execCommand(command: string, options: CtlExecOptions = {}) {
@@ -263,6 +302,32 @@ export class MxaCtl {
       return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
     }
     return await this.ssh.execCommand(command)
+  }
+
+  async environment() {
+    if (!this.env) {
+      const { stdout, code, stderr } = await this.uploadAndExecFile('bin/helpers/env-detect.sh')
+      if (code !== 0) {
+        throw new Error(`环境检测脚本执行失败: ${stderr}`)
+      }
+      try {
+        this.env = environmentInfoSchema.parse(JSON.parse(stdout))
+      } catch (err) {
+        throw new Error(`环境检测脚本输出解析失败: ${stdout}`, { cause: err })
+      }
+    }
+    return this.env
+  }
+
+  async packageManager() {
+    if (!this.pm) {
+      const { stdout, code, stderr } = await this.uploadAndExecFile('bin/helpers/pm-detect.sh')
+      if (code !== 0) {
+        throw new Error(`包管理器检测失败: ${stderr}`)
+      }
+      this.pm = stdout.trim() as PackageManager
+    }
+    return this.pm
   }
 
   dispose() {
