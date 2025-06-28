@@ -42,9 +42,6 @@ File_AlpineRelease=/etc/alpine-release
 File_GentooRelease=/etc/gentoo-release
 File_openKylinVersion=/etc/kylin-version/kylin-system-version.conf
 
-
-# --- 核心功能函数 ---
-
 ## 报错退出函数
 function output_error() {
     # 将错误信息输出到标准错误流
@@ -60,6 +57,10 @@ function detect_system_info() {
         # 在这个脚本的上下文中，我们假设必要的工具已经存在或只进行检测
         :
     fi
+
+    if [[ "$(uname -s)" == *"Darwin"* ]]; then
+      output_error "暂不支持操作系统 macOS (Darwin)"
+    fi
     
     ## 定义系统ID
     SYSTEM_ID="$(cat $File_LinuxRelease | grep -E "^ID=" | awk -F '=' '{print$2}' | sed "s/[\'\"]//g")"
@@ -67,7 +68,7 @@ function detect_system_info() {
     if [ -s "${File_DebianVersion}" ]; then
         SYSTEM_FACTIONS="${SYSTEM_DEBIAN}"
     elif [ -s "${File_OracleLinuxRelease}" ]; then
-        output_error "当前操作系统（Oracle Linux）不受支持。"
+        output_error "不支持操作系统 Oracle Linux"
     elif [ -s "${File_RedHatRelease}" ]; then
         SYSTEM_FACTIONS="${SYSTEM_REDHAT}"
     elif [ -s "${File_openEulerRelease}" ]; then
@@ -89,7 +90,7 @@ function detect_system_info() {
     elif [[ "$(cat $File_LinuxRelease | grep -E "^NAME=" | awk -F '=' '{print$2}' | sed "s/[\'\"]//g")" == *"NixOS"* ]]; then
         SYSTEM_FACTIONS="${SYSTEM_NIXOS}"
     else
-        output_error "无法识别当前操作系统派系。"
+        output_error "无法识别操作系统派系"
     fi
 
     ## 判定系统类型、版本等
@@ -100,10 +101,10 @@ function detect_system_info() {
             if [ $UID -eq 0 ]; then
                 apt-get update >/dev/null 2>&1 && apt-get install -y lsb-release >/dev/null 2>&1
                 if [ $? -ne 0 ]; then
-                    output_error "lsb-release 命令不存在且自动安装失败。请手动安装。"
+                    output_error "lsb-release 命令不存在且自动安装失败，请手动安装"
                 fi
             else
-                output_error "需要 lsb-release 命令来识别系统，请先安装它 (例如: sudo apt install lsb-release)。"
+                output_error "需要 lsb-release 命令来识别系统，请先安装它 (例如: sudo apt install lsb-release)"
             fi
         fi
         SYSTEM_JUDGMENT="$(lsb_release -is)"
@@ -142,8 +143,12 @@ function detect_system_info() {
     aarch64)
         DEVICE_ARCH="ARM64"
         ;;
+    arm64)
+        DEVICE_ARCH="ARM64"
+        ;;
     *)
         DEVICE_ARCH="${DEVICE_ARCH_RAW}"
+        output_error "不支持的处理器架构 ${DEVICE_ARCH_RAW}"
         ;;
     esac
 }
@@ -177,25 +182,21 @@ function determine_package_manager() {
             pm_command="emerge"
             ;;
         "${SYSTEM_NIXOS}")
-            # NixOS 使用 nix-env 管理用户环境包, 用 nixos-rebuild 管理系统
-            # 这里返回更通用的 nix-env
             pm_command="nix-env"
             ;;
         *)
-            output_error "未能为系统派系 ${SYSTEM_FACTIONS} 确定包管理器。"
+            output_error "无法为系统派系 ${SYSTEM_FACTIONS} 确定包管理器"
             ;;
     esac
     echo "${pm_command}"
 }
 
-function main() {
-    detect_system_info
-    PACKAGE_MANAGER=$(determine_package_manager)
-    if [ -n "${PACKAGE_MANAGER}" ]; then
-        echo "${PACKAGE_MANAGER}"
-    else
-        output_error "无法最终确定包管理器。"
-    fi
-}
+detect_system_info
+PACKAGE_MANAGER=$(determine_package_manager)
 
-main
+echo "{\
+\"distroName\":\"${SYSTEM_JUDGMENT}\",\
+\"version\":\"${SYSTEM_VERSION_ID}\",\
+\"arch\":\"${DEVICE_ARCH}\",\
+\"pm\":\"${PACKAGE_MANAGER}\"\
+}"

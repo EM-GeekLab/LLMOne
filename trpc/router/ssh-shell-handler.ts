@@ -37,7 +37,6 @@ export async function sshShellHandler(host: string, ws: WebSocket, options: SshH
     match(chan)
       .with('d', () => stream.write(data))
       .with('r', () => stream.setWindow(data.rows, data.cols, data.height, data.width))
-      .run()
   })
 
   ws.on('close', () => {

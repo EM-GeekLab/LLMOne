@@ -9,34 +9,25 @@ import { match } from 'ts-pattern'
 
 import { mxdHttpPort } from '@/lib/env/mxc'
 import { logger } from '@/lib/logger'
+import { formatMxliteLog } from '@/lib/metalx/format-mxlite-log'
+import { OsArchitecture } from '@/lib/os'
 import type { PackageManagerType } from '@/lib/ssh/pm'
 import { z } from '@/lib/zod'
+import { architecturesEnum } from '@/app/select-os/rescource-schema'
 
-import { formatMxliteLog } from '../metalx/format-mxlite-log'
-
-const environmentInfoSchema = z.object({
+const systemInfoSchema = z.object({
   distroName: z.string(),
-  distro: z.string(),
   version: z.string(),
-  architecture: z.string(),
-  kernel: z.string(),
-  headersPackageInfo: z.string(),
-  glibc: z.string(),
-  glibcDetectionMethod: z.string(),
-  dkms: z.string(),
-  dkmsDetectionMethod: z.string(),
-  docker: z.boolean(),
-  npuPresent: z.boolean(),
-  npuSmiFound: z.boolean(),
-  gpuPresent: z.boolean(),
-  gpuSmiFound: z.boolean(),
-  root: z.boolean(),
-  zstd: z.string(),
-  aria2: z.string(),
-  jq: z.string(),
+  arch: architecturesEnum,
+  pm: z.string(),
 })
 
-export type EnvironmentInfo = z.infer<typeof environmentInfoSchema>
+export type SystemInfo = {
+  distroName: string
+  version: string
+  arch: OsArchitecture
+  pm: PackageManagerType
+}
 
 interface NewHostMxaControllerParams {
   host: string
@@ -62,8 +53,7 @@ export class MxaCtl {
   private remoteMxaPath?: string
   private localMxaPath?: string
   private abortController: AbortController
-  private pm?: PackageManagerType
-  private env?: EnvironmentInfo
+  private system?: SystemInfo
 
   constructor(params: NewHostMxaControllerParams) {
     this.host = params.host
@@ -246,15 +236,16 @@ export class MxaCtl {
 
   async check() {
     await this.forceSudo()
+    await this.systemInfo()
     await this.checkLocalMxaPath()
     await this.forwardMxdPortCheck()
     return this
   }
 
-  info() {
+  connectionInfo() {
     return {
       host: this.host,
-      hostId: this.hostId!,
+      hostId: this.hostId,
     }
   }
 
@@ -330,30 +321,24 @@ export class MxaCtl {
     return await this.ssh.execCommand(command)
   }
 
-  async environment() {
-    if (!this.env) {
-      const { stdout, code, stderr } = await this.execScriptFile('helpers/env-detect.sh')
+  async systemInfo() {
+    if (!this.system) {
+      const { stdout, code, stderr } = await this.execScriptFile('helpers/system-detect.sh')
       if (code !== 0) {
-        throw new Error(`环境检测脚本执行失败: ${stderr}`)
+        throw new Error(stderr)
       }
+      let info
       try {
-        this.env = environmentInfoSchema.parse(JSON.parse(stdout))
+        info = systemInfoSchema.parse(JSON.parse(stdout))
       } catch (err) {
-        throw new Error(`环境检测脚本输出解析失败: ${stdout}`, { cause: err })
+        throw new Error(`系统检测输出解析失败: ${stdout}`, { cause: err })
       }
-    }
-    return this.env
-  }
-
-  async packageManager() {
-    if (!this.pm) {
-      const { stdout, code, stderr } = await this.execScriptFile('helpers/pm-detect.sh')
-      if (code !== 0) {
-        throw new Error(`包管理器检测失败: ${stderr}`)
+      if (!['apt', 'yum', 'dnf', 'pacman', 'zypper'].includes(info.pm)) {
+        throw new Error(`不支持的平台: ${info.distroName} (${info.pm})`)
       }
-      this.pm = stdout.trim() as PackageManagerType
+      this.system = info as SystemInfo
     }
-    return this.pm
+    return this.system
   }
 
   dispose() {

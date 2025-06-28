@@ -2,44 +2,56 @@ import { TRPCError } from '@trpc/server'
 import { Config } from 'node-ssh'
 import { match } from 'ts-pattern'
 
-import { EnvironmentInfo, MxaCtl } from '@/lib/ssh/ssh-controller'
 import { SshFinalConnectionInfo } from '@/app/connect-info/schemas'
 
-import { PackageManager, PackageManagerType } from './pm'
+import { PackageManager } from './pm'
+import { MxaCtl, SystemInfo } from './ssh-controller'
 
 type HostItem = {
   host: string
-  hostId: string
+  hostId?: string
   ctl: MxaCtl
-  env: EnvironmentInfo
-  pm: PackageManagerType
+  os: SystemInfo
 }
 
 export class SshDeployer {
   readonly host: string
-  readonly hostId: string
+  readonly hostId?: string
   readonly ctl: MxaCtl
-  readonly env: EnvironmentInfo
   readonly pm: PackageManager
+  readonly os: SystemInfo
 
   constructor(item: HostItem) {
     this.host = item.host
     this.hostId = item.hostId
     this.ctl = item.ctl
-    this.env = item.env
-    this.pm = new PackageManager(item.pm)
+    this.os = item.os
+    this.pm = new PackageManager(this.os.pm)
   }
 
   info() {
     return {
       host: this.host,
       hostId: this.hostId,
-      env: this.env,
       pm: this.pm,
     }
   }
 
-  private async installDocker() {}
+  async installBasicTools() {
+    await this.ctl.execScript(this.pm.install('curl'))
+  }
+
+  async updateSources() {
+    await this.ctl.execScript(this.pm.updateSources())
+  }
+
+  async installDependencies() {
+    await this.ctl.execScript(this.pm.install('jq', 'zstd', 'aria2'))
+  }
+
+  async installDocker() {
+    await this.ctl.execScript(this.pm.installDocker())
+  }
 }
 
 export class SshDeployerManager {
@@ -61,10 +73,9 @@ export class SshDeployerManager {
             .exhaustive(),
         )
         try {
-          const { host, hostId } = ctl.info()
-          const env = await ctl.environment()
-          const pm = await ctl.packageManager()
-          return new SshDeployer({ host, hostId, ctl, env, pm })
+          const { host, hostId } = ctl.connectionInfo()
+          const os = await ctl.systemInfo()
+          return new SshDeployer({ host, hostId, ctl, os })
         } catch (err) {
           ctl.dispose()
           throw new TRPCError({
