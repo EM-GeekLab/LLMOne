@@ -1,18 +1,18 @@
 import { existsSync } from 'node:fs'
+import { readFile } from 'node:fs/promises'
 import net from 'node:net'
-import { basename, join } from 'node:path'
-import { join as joinPosix } from 'node:path/posix'
+import { join } from 'node:path'
+import { basename, join as joinPosix } from 'node:path/posix'
 
 import { NodeSSH, SSHExecCommandOptions } from 'node-ssh'
 import { match } from 'ts-pattern'
 
 import { mxdHttpPort } from '@/lib/env/mxc'
 import { logger } from '@/lib/logger'
+import type { PackageManagerType } from '@/lib/ssh/pm'
 import { z } from '@/lib/zod'
 
-import { formatMxliteLog } from './format-mxlite-log'
-
-const log = logger.child({ module: 'mxa' })
+import { formatMxliteLog } from '../metalx/format-mxlite-log'
 
 const environmentInfoSchema = z.object({
   distroName: z.string(),
@@ -38,8 +38,6 @@ const environmentInfoSchema = z.object({
 
 export type EnvironmentInfo = z.infer<typeof environmentInfoSchema>
 
-export type PackageManager = 'apt' | 'yum' | 'dnf' | 'pacman' | 'zypper' | 'apk' | 'emerge' | 'nix-env'
-
 interface NewHostMxaControllerParams {
   host: string
   port?: number
@@ -64,7 +62,7 @@ export class MxaCtl {
   private remoteMxaPath?: string
   private localMxaPath?: string
   private abortController: AbortController
-  private pm?: PackageManager
+  private pm?: PackageManagerType
   private env?: EnvironmentInfo
 
   constructor(params: NewHostMxaControllerParams) {
@@ -214,7 +212,7 @@ export class MxaCtl {
               }
             }
             if (this.enableMxaLog) {
-              formatMxliteLog(log, data, { removeAnsi: true })
+              formatMxliteLog(logger.child({ module: 'mxa' }), data, { removeAnsi: true })
             }
             if (data.includes('Connected to controller')) {
               resolve(this)
@@ -279,20 +277,48 @@ export class MxaCtl {
     return text
   }
 
-  async uploadAndExecFile(file: string, options: CtlExecOptions = {}) {
+  async uploadAndExecFile(file: string, execArgs: string[] = [], options: CtlExecOptions = {}) {
     const { sudo = true, ...restOptions } = options
     const remoteTmpDirRes = await this.ssh.execCommand('mktemp -d -t mxa.tmp.XXXXXX')
     const remoteTmpPath = joinPosix(remoteTmpDirRes.stdout, basename(file))
     await this.ssh.putFile(file, remoteTmpPath)
     await this.ssh.execCommand(`chmod +x ${remoteTmpPath}`)
     if (sudo) {
-      const res = await this.ssh.exec('sudo', ['bash', '-c', remoteTmpPath], {
+      const res = await this.ssh.exec('sudo', [remoteTmpPath, ...execArgs], {
         ...this.execSudoOptions(restOptions),
         stream: 'both',
       })
       return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
     }
-    return await this.ssh.exec('bash', [remoteTmpPath], { stream: 'both' })
+    return await this.ssh.exec(remoteTmpPath, execArgs, { stream: 'both' })
+  }
+
+  async execScriptFile(file: string, options: CtlExecOptions = {}) {
+    const { sudo = true, ...restOptions } = options
+    if (!existsSync(file)) {
+      throw new Error(`文件 ${file} 不存在`)
+    }
+    const fileContent = await readFile(file, { encoding: 'utf8' })
+    if (sudo) {
+      const res = await this.ssh.exec('sudo', ['bash', '-c', fileContent], {
+        ...this.execSudoOptions(restOptions),
+        stream: 'both',
+      })
+      return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
+    }
+    return await this.ssh.exec('bash', ['-c', fileContent], { stream: 'both' })
+  }
+
+  async execScript(script: string, options: CtlExecOptions = {}) {
+    const { sudo = true, ...restOptions } = options
+    if (sudo) {
+      const res = await this.ssh.exec('sudo', ['bash', '-c', script], {
+        ...this.execSudoOptions(restOptions),
+        stream: 'both',
+      })
+      return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
+    }
+    return await this.ssh.exec('bash', ['-c', script], { stream: 'both' })
   }
 
   async execCommand(command: string, options: CtlExecOptions = {}) {
@@ -306,7 +332,7 @@ export class MxaCtl {
 
   async environment() {
     if (!this.env) {
-      const { stdout, code, stderr } = await this.uploadAndExecFile('bin/helpers/env-detect.sh')
+      const { stdout, code, stderr } = await this.execScriptFile('helpers/env-detect.sh')
       if (code !== 0) {
         throw new Error(`环境检测脚本执行失败: ${stderr}`)
       }
@@ -321,11 +347,11 @@ export class MxaCtl {
 
   async packageManager() {
     if (!this.pm) {
-      const { stdout, code, stderr } = await this.uploadAndExecFile('bin/helpers/pm-detect.sh')
+      const { stdout, code, stderr } = await this.execScriptFile('helpers/pm-detect.sh')
       if (code !== 0) {
         throw new Error(`包管理器检测失败: ${stderr}`)
       }
-      this.pm = stdout.trim() as PackageManager
+      this.pm = stdout.trim() as PackageManagerType
     }
     return this.pm
   }

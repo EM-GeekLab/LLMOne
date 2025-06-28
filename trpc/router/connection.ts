@@ -8,7 +8,7 @@ import { match } from 'ts-pattern'
 
 import { BmcClients } from '@/lib/bmc-clients'
 import { mxc } from '@/lib/metalx'
-import { MxaCtl } from '@/lib/metalx/mxa'
+import { MxaCtl } from '@/lib/ssh/ssh-controller'
 import { z } from '@/lib/zod'
 import { BmcFinalConnectionInfo, bmcHostsListSchema, SshFinalConnectionInfo } from '@/app/connect-info/schemas'
 import { HostExtraInfo } from '@/sdk/mxlite/types'
