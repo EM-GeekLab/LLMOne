@@ -27,7 +27,7 @@ const config: Configuration = {
     '!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}',
     '!.{git,hg,svn,cache,DS_Store}',
   ],
-  extraResources: ['bin/mxa/**/*', '!.DS_Store'],
+  extraResources: ['bin/mxa/**/*', 'helpers/**/*', '!.DS_Store'],
 
   nsis: {
     oneClick: false,
