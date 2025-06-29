@@ -14,31 +14,44 @@ export function DeployModeSelect({ ...props }: ComponentProps<typeof CardSelectG
   const mode = useGlobalStore((s) => s.deployMode)
   const setMode = useGlobalStore((s) => s.setDeployMode)
 
+  const connectMode = useGlobalStore((s) => s.connectMode)
+  const setConnectMode = useGlobalStore((s) => s.setConnectMode)
+
   return (
-    <CardSelectGroup value={mode} onValueChange={(v: DeployMode) => setMode(v)} {...props}>
-      <CardSelectItem className="items-center" value="local">
+    <CardSelectGroup
+      value={mode}
+      onValueChange={(v: DeployMode) => {
+        setMode(v)
+        if (v === 'local') {
+          setConnectMode('bmc')
+        } else if (v === 'online') {
+          setConnectMode('ssh')
+        }
+      }}
+      {...props}
+    >
+      <CardSelectItem className="items-center" value="local" disabled={connectMode === 'ssh'}>
         <CardSelectIndicator />
         <LocalIcon className="mb-4 size-16" />
         <ModeSelectTitle>本地模式</ModeSelectTitle>
         <ModeSelectDescription>使用本地的离线安装包部署，不受网络环境影响</ModeSelectDescription>
-        <Badge className="absolute top-3.5 right-3.5">推荐</Badge>
+        <Badge className="absolute top-3.5 right-3.5 group-disabled:hidden">推荐</Badge>
+        {connectMode === 'ssh' && (
+          <Slot className="absolute top-3.5 right-3.5 opacity-50">
+            <Badge color="secondary">暂不支持 SSH 模式</Badge>
+          </Slot>
+        )}
       </CardSelectItem>
-      <CardSelectItem className="items-center" value="online" disabled>
+      <CardSelectItem className="items-center" value="online" disabled={connectMode === 'bmc'}>
         <CardSelectIndicator />
         <OnlineIcon className="mb-4 size-16" />
         <ModeSelectTitle>在线模式</ModeSelectTitle>
-        <ModeSelectDescription>部署过程中从云端下载安装包，耗时可能较长</ModeSelectDescription>
-        {/* <EasyTooltip */}
-        {/*   content={online ? '网络环境正常，在线下载已准备就绪' : '网络环境异常，无法连接到下载服务器'} */}
-        {/*   asChild */}
-        {/* > */}
-        {/*   <Slot className="not-disabled absolute top-3.5 right-3.5"> */}
-        {/*     {online ? <Badge color="success">网络正常</Badge> : <Badge color="destructive">网络异常</Badge>} */}
-        {/*   </Slot> */}
-        {/* </EasyTooltip> */}
-        <Slot className="not-disabled absolute top-3.5 right-3.5">
-          <Badge color="secondary">暂未上线</Badge>
-        </Slot>
+        <ModeSelectDescription>部署过程中从云端下载安装包，需要保证网络环境的稳定性</ModeSelectDescription>
+        {connectMode === 'bmc' && (
+          <Slot className="absolute top-3.5 right-3.5 opacity-50">
+            <Badge color="secondary">暂不支持无操作系统模式</Badge>
+          </Slot>
+        )}
       </CardSelectItem>
     </CardSelectGroup>
   )

@@ -13,8 +13,21 @@ export function ConnectModeSelect({ ...props }: ComponentProps<typeof CardSelect
   const mode = useGlobalStore((s) => s.connectMode)
   const setMode = useGlobalStore((s) => s.setConnectMode)
 
+  const setDeployMode = useGlobalStore((s) => s.setDeployMode)
+
   return (
-    <CardSelectGroup value={mode} onValueChange={(v: ConnectMode) => setMode(v)} {...props}>
+    <CardSelectGroup
+      value={mode}
+      onValueChange={(v: ConnectMode) => {
+        setMode(v)
+        if (v === 'bmc') {
+          setDeployMode('local')
+        } else if (v === 'ssh') {
+          setDeployMode('online')
+        }
+      }}
+      {...props}
+    >
       <CardSelectItem value="bmc">
         <CardSelectIndicator />
         <ModeSelectHeader>
