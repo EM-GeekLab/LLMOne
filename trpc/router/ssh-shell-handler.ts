@@ -2,17 +2,11 @@ import { TRPCError } from '@trpc/server'
 import { match } from 'ts-pattern'
 import type WebSocket from 'ws'
 
+import { PtySize } from '@/components/base/xterm/utils'
 import { sshDm } from '@/trpc/router/ssh-deploy'
 
 export type SshHandlerOptions = {
   size?: PtySize
-}
-
-export type PtySize = {
-  rows: number
-  cols: number
-  height: number
-  width: number
 }
 
 export async function sshShellHandler(host: string, ws: WebSocket, options: SshHandlerOptions = {}) {

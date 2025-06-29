@@ -12,6 +12,7 @@ import { logger } from '@/lib/logger'
 import { formatMxliteLog } from '@/lib/metalx/format-mxlite-log'
 import { OsArchitecture } from '@/lib/os'
 import type { PackageManagerType } from '@/lib/ssh/pm'
+import { wrapError } from '@/lib/utils/error'
 import { z } from '@/lib/zod'
 import { architecturesEnum } from '@/app/select-os/rescource-schema'
 
@@ -132,7 +133,7 @@ export class MxaCtl {
       })
       return this
     } catch (e) {
-      throw new Error(`端口转发失败: ${e instanceof Error ? e.message : String(e)}`, { cause: e })
+      throw wrapError('端口转发失败', e)
     }
   }
 
@@ -142,7 +143,7 @@ export class MxaCtl {
       await conn.dispose()
       return this
     } catch (e) {
-      throw new Error(`端口转发失败: ${e instanceof Error ? e.message : String(e)}`, { cause: e })
+      throw wrapError('端口转发失败', e)
     }
   }
 
@@ -222,7 +223,7 @@ export class MxaCtl {
           }
         })
         .catch((err) => {
-          throw err instanceof Error ? err : new Error(err)
+          throw wrapError('Agent 启动失败', err)
         })
     })
   }

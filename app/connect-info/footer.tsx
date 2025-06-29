@@ -200,12 +200,12 @@ function SshNextStepButton() {
     setHosts(result.data)
 
     setIsLoading(true)
-    trpcClient.sshDeploy.initDeployer
+    trpcClient.sshDeploy.deployer.init
       .mutate(result.data)
       .then(() => navigate('/install-env'))
       .catch((err) => toast.error(err.message))
       .finally(() => setIsLoading(false))
-  }, [navigate, setHosts, storeApi, trpcClient.sshDeploy.initDeployer])
+  }, [navigate, setHosts, storeApi, trpcClient])
 
   return (
     <NavButtonGuard
