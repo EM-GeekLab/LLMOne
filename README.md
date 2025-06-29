@@ -17,7 +17,9 @@
 [![GitHub issues](https://img.shields.io/github/issues/em-geeklab/llmone)](https://github.com/em-geeklab/llmone/issues)
 [![Free Use](https://img.shields.io/badge/free-pricing?logo=free&color=%20%23155EEF&label=pricing&labelColor=%20%23528bff)](https://img.shields.io/badge/free-pricing?logo=free&color=%20%23155EEF&label=pricing&labelColor=%20%23528bff)
 [![GitHub Releases](https://img.shields.io/github/v/release/em-geeklab/llmone?include_prereleases)](https://github.com/em-geeklab/llmone/releases)
-<img src="./assets/img/ascend.png" alt="Ascend Native" height="20">
+<a href="https://deepwiki.com/EM-GeekLab/LLMOne"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+
+<img src="./assets/img/ascend.png" alt="Ascend Native" height="30">
 
 </div>
 
