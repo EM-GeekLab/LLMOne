@@ -3,12 +3,11 @@
 import '@xterm/xterm/css/xterm.css'
 
 import { ComponentProps, useEffect, useRef, useState } from 'react'
-import { ClipboardAddon } from '@xterm/addon-clipboard'
-import { FitAddon } from '@xterm/addon-fit'
-import { WebLinksAddon } from '@xterm/addon-web-links'
 import { Terminal } from '@xterm/xterm'
 
 import { cn } from '@/lib/utils'
+
+import { createTerminal } from './utils'
 
 const sshWsUrl =
   (process.env.NEXT_PUBLIC_TRPC_SERVER_URL
@@ -22,19 +21,14 @@ export function useXTermSsh({ host }: { host: string }) {
   useEffect(() => {
     if (!terminalRef.current) return
 
-    const terminal = new Terminal({
-      fontFamily: 'jetBrainsMono',
-      cursorStyle: 'block',
-    })
     const container = terminalRef.current
-
-    // Load addons
-    const fitAddon = new FitAddon()
-    terminal.loadAddon(fitAddon)
-    terminal.loadAddon(new WebLinksAddon())
-    terminal.loadAddon(new ClipboardAddon())
-    terminal.open(container)
-    fitAddon.fit()
+    const { terminal, dispose } = createTerminal(container, {
+      emitInitialSize: false,
+      onResize: (size) => {
+        if (ws.readyState !== WebSocket.OPEN) return
+        ws.send(JSON.stringify(['r', size]))
+      },
+    })
     setInstance(terminal)
 
     // Set up WebSocket connection
@@ -56,26 +50,11 @@ export function useXTermSsh({ host }: { host: string }) {
     }
     ws.addEventListener('message', handleWsEvent)
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0]
-      fitAddon.fit()
-      const height = entry.borderBoxSize[0].blockSize
-      const width = entry.borderBoxSize[0].inlineSize
-      const rows = terminal.rows
-      const cols = terminal.cols
-      if (ws.readyState !== WebSocket.OPEN) return
-      ws.send(JSON.stringify(['r', { rows, cols, height, width }]))
-    })
-    resizeObserver.observe(container)
-
     return () => {
-      resizeObserver.disconnect()
-
       ws.removeEventListener('message', handleWsEvent)
       ws.close()
 
-      fitAddon.dispose()
-      terminal.dispose()
+      dispose()
 
       setInstance(null)
     }
