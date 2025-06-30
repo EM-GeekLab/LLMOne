@@ -20,10 +20,14 @@ import { useBmcLocalInstallContext } from './context'
 export function ConfirmCard() {
   const navigate = useNavigate()
 
+  const mode = useGlobalStore((s) => s.connectMode)
   const osInfoPath = useGlobalStore((s) => s.osInfoPath)
   const trpc = useTRPC()
   const { data } = useQuery(
-    trpc.resource.getOsInfo.queryOptions(osInfoPath || '', { enabled: !!osInfoPath, refetchOnMount: false }),
+    trpc.resource.getOsInfo.queryOptions(osInfoPath || '', {
+      enabled: !!osInfoPath && mode === 'bmc',
+      refetchOnMount: false,
+    }),
   )
 
   const {
@@ -117,7 +121,8 @@ function HostConfirmInfo({ id, bmcIp, disk }: { id: string; bmcIp: string; disk?
   const host = useGlobalStore((s) => s.hostConfig.hosts.get(id))
 
   const trpc = useTRPC()
-  const { data } = useQuery(trpc.connection.bmc.getHostDiskInfo.queryOptions(id))
+  const mode = useGlobalStore((s) => s.connectMode)
+  const { data } = useQuery(trpc.connection.bmc.getHostDiskInfo.queryOptions(id, { enabled: mode === 'bmc' }))
   const diskInfo = data?.find((d) => d.path === disk)
 
   return (
