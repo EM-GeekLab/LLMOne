@@ -64,7 +64,15 @@ export class MxaCtl {
     this.password = params.password
     this.enableMxaLog = params.enableMxaLog ?? false
     this.ssh = new NodeSSH()
+    this.passwordRequired = params.username !== 'root'
     this.abortController = new AbortController()
+  }
+
+  getPassword() {
+    return {
+      passwordRequired: this.passwordRequired,
+      password: this.password,
+    }
   }
 
   async connect() {
@@ -78,8 +86,18 @@ export class MxaCtl {
     return this
   }
 
+  isRootUser() {
+    return this.username === 'root'
+  }
+
   async forceSudo() {
     await new Promise<void>(async (resolve, reject) => {
+      if (this.isRootUser()) {
+        this.passwordRequired = false
+        resolve()
+        return
+      }
+
       const needPasswordResult = await this.ssh.execCommand('sudo -n true', { execOptions: { pty: true } })
       if (needPasswordResult.code === 0) {
         this.passwordRequired = false
@@ -188,33 +206,30 @@ export class MxaCtl {
         reject(new Error('Mxa executable path is not set. Please call uploadMxa() first.'))
         return
       }
-      this.ssh
-        .exec('sudo', [this.remoteMxaPath, '-w', `ws://127.0.0.1:${mxdHttpPort}/ws`], {
-          ...this.execSudoOptions(),
-          stream: 'both',
-          onStdout: (buf) => {
-            const data = buf.toString().trim()
-            if (!data) return
-            if (this.password && data === this.password) return
-            if (!this.hostId) {
-              const match = data.match(/Host ID: ([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/)
-              if (match && match[1]) {
-                this.hostId = match[1]
-              }
+      this.execCommand(`${this.remoteMxaPath} -w ws://127.0.0.1:${mxdHttpPort}/ws`, {
+        onStdout: (buf) => {
+          const data = buf.toString().trim()
+          if (!data) return
+          if (this.password && data === this.password) return
+          if (!this.hostId) {
+            const match = data.match(/Host ID: ([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/)
+            if (match && match[1]) {
+              this.hostId = match[1]
             }
-            if (this.enableMxaLog) {
-              formatMxliteLog(logger.child({ module: 'mxa' }), data, { removeAnsi: true })
-            }
-            if (data.includes('Connected to controller')) {
-              resolve(this)
-            }
-          },
-          onChannel: (stream) => {
-            this.abortController?.signal.addEventListener('abort', () => {
-              stream.write('\x03')
-            })
-          },
-        })
+          }
+          if (this.enableMxaLog) {
+            formatMxliteLog(logger.child({ module: 'mxa' }), data, { removeAnsi: true })
+          }
+          if (data.includes('Connected to controller')) {
+            resolve(this)
+          }
+        },
+        onChannel: (stream) => {
+          this.abortController?.signal.addEventListener('abort', () => {
+            stream.write('\x03')
+          })
+        },
+      })
         .then((res) => {
           if (res.code === 0) {
             resolve(this)
@@ -270,7 +285,7 @@ export class MxaCtl {
   }
 
   async uploadAndExecFile(file: string, execArgs: string[] = [], options: CtlExecOptions = {}) {
-    const { sudo = true, ...restOptions } = options
+    const { sudo = !this.isRootUser(), ...restOptions } = options
     const remoteTmpDirRes = await this.ssh.execCommand('mktemp -d -t mxa.tmp.XXXXXX')
     const remoteTmpPath = joinPosix(remoteTmpDirRes.stdout, basename(file))
     await this.ssh.putFile(file, remoteTmpPath)
@@ -286,7 +301,7 @@ export class MxaCtl {
   }
 
   async execScriptFile(file: string, options: CtlExecOptions = {}) {
-    const { sudo = true, ...restOptions } = options
+    const { sudo = !this.isRootUser(), ...restOptions } = options
     if (!existsSync(file)) {
       throw new Error(`文件 ${file} 不存在`)
     }
@@ -302,7 +317,7 @@ export class MxaCtl {
   }
 
   async execScript(script: string, options: CtlExecOptions = {}) {
-    const { sudo = true, ...restOptions } = options
+    const { sudo = !this.isRootUser(), ...restOptions } = options
     if (sudo) {
       const res = await this.ssh.exec('sudo', ['bash', '-c', script], {
         ...this.execSudoOptions(restOptions),
@@ -314,7 +329,7 @@ export class MxaCtl {
   }
 
   async execCommand(command: string, options: CtlExecOptions = {}) {
-    const { sudo = true, ...restOptions } = options
+    const { sudo = !this.isRootUser(), ...restOptions } = options
     if (sudo) {
       const res = await this.ssh.execCommand(`sudo ${command}`, this.execSudoOptions(restOptions))
       return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
