@@ -55,6 +55,7 @@ export class MxaCtl {
   private localMxaPath?: string
   private abortController: AbortController
   private system?: SystemInfo
+  private _hostname?: string
 
   constructor(params: NewHostMxaControllerParams) {
     this.host = params.host
@@ -131,10 +132,10 @@ export class MxaCtl {
 
   private execOptions(options: SSHExecCommandOptions & { sudo: boolean }): SSHExecCommandOptions {
     const { sudo, execOptions, ...restOptions } = options
-    const { pty, ...restExecOptions } = execOptions || {}
+    const { pty = true, ...restExecOptions } = execOptions || {}
     return {
       stdin: sudo && this.passwordRequired ? this.password + '\n' : undefined,
-      execOptions: { pty: { term: 'xterm-256color', ...(typeof pty === 'object' ? pty : {}) }, ...restExecOptions },
+      execOptions: { pty, ...restExecOptions },
       ...restOptions,
     }
   }
@@ -365,6 +366,17 @@ export class MxaCtl {
       this.system = info as SystemInfo
     }
     return this.system
+  }
+
+  async hostname() {
+    if (!this._hostname) {
+      const { stdout, code, stderr } = await this.execCommand('hostname -s', { sudo: false })
+      if (code !== 0) {
+        throw new Error(`获取主机名失败: ${stderr}`)
+      }
+      this._hostname = stdout.trim()
+    }
+    return this._hostname
   }
 
   dispose() {
