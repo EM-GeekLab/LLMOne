@@ -3,11 +3,11 @@
 import '@xterm/xterm/css/xterm.css'
 
 import { ComponentProps, useEffect, useRef, useState } from 'react'
-import { Terminal } from '@xterm/xterm'
+import { useTheme } from 'next-themes'
 
 import { cn } from '@/lib/utils'
 
-import { createTerminal } from './utils'
+import { createTerminal, TerminalInstance, xtermTheme } from './utils'
 
 const sshWsUrl =
   (process.env.NEXT_PUBLIC_TRPC_SERVER_URL
@@ -15,21 +15,24 @@ const sshWsUrl =
     : 'ws://localhost:' + (typeof window.env !== 'undefined' ? window.env.trpcPort : 3008)) + '/ssh'
 
 export function useXTermSsh({ host }: { host: string }) {
-  const [instance, setInstance] = useState<Terminal | null>(null)
+  const [instance, setInstance] = useState<TerminalInstance | null>(null)
   const terminalRef = useRef<HTMLDivElement | null>(null)
+  const { resolvedTheme } = useTheme()
+  const terminalTheme = resolvedTheme === 'light' ? xtermTheme('github-light') : xtermTheme('github-dark')
 
   useEffect(() => {
     if (!terminalRef.current) return
 
     const container = terminalRef.current
-    const { terminal, dispose } = createTerminal(container, {
+    const terminalInstance = createTerminal(container, {
       emitInitialSize: false,
       onResize: (size) => {
         if (ws.readyState !== WebSocket.OPEN) return
         ws.send(JSON.stringify(['r', size]))
       },
     })
-    setInstance(terminal)
+    setInstance(terminalInstance)
+    const { terminal } = terminalInstance
 
     // Set up WebSocket connection
     const query = new URLSearchParams()
@@ -54,13 +57,20 @@ export function useXTermSsh({ host }: { host: string }) {
       ws.removeEventListener('message', handleWsEvent)
       ws.close()
 
-      dispose()
+      terminalInstance.dispose()
 
       setInstance(null)
     }
   }, [host])
 
-  return { xterm: instance, ref: terminalRef }
+  useEffect(() => {
+    if (!instance) return
+    if (instance.terminal.options.theme !== terminalTheme) {
+      instance.setTheme(terminalTheme)
+    }
+  }, [instance, terminalTheme])
+
+  return { xterm: instance?.terminal, ref: terminalRef }
 }
 
 export function XtermSsh({ host, className, ...props }: { host: string } & ComponentProps<'div'>) {
@@ -68,7 +78,7 @@ export function XtermSsh({ host, className, ...props }: { host: string } & Compo
   return (
     <div
       ref={ref}
-      className={cn('h-full w-full overflow-hidden rounded-md bg-black p-1 font-mono', className)}
+      className={cn('h-full w-full overflow-hidden rounded-md bg-muted/50 p-1 font-mono', className)}
       data-host={host}
       {...props}
     />
