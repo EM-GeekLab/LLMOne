@@ -112,7 +112,7 @@ export class MxaCtl {
       }
 
       const hasSudoResult = await this.ssh.execCommand('sudo true', {
-        ...this.execSudoOptions(),
+        ...this.execOptions({ sudo: true }),
         onStdout: (buf) => {
           if (buf.toString().includes('Sorry, try again')) {
             reject(new Error('sudo 密码错误'))
@@ -129,11 +129,12 @@ export class MxaCtl {
     return this
   }
 
-  private execSudoOptions(options: SSHExecCommandOptions = {}): SSHExecCommandOptions {
-    const { execOptions, ...restOptions } = options
+  private execOptions(options: SSHExecCommandOptions & { sudo: boolean }): SSHExecCommandOptions {
+    const { sudo, execOptions, ...restOptions } = options
+    const { pty, ...restExecOptions } = execOptions || {}
     return {
-      stdin: this.passwordRequired ? this.password + '\n' : undefined,
-      execOptions: { pty: true, ...execOptions },
+      stdin: sudo && this.passwordRequired ? this.password + '\n' : undefined,
+      execOptions: { pty: { term: 'xterm-256color', ...(typeof pty === 'object' ? pty : {}) }, ...restExecOptions },
       ...restOptions,
     }
   }
@@ -292,12 +293,15 @@ export class MxaCtl {
     await this.ssh.execCommand(`chmod +x ${remoteTmpPath}`)
     if (sudo) {
       const res = await this.ssh.exec('sudo', [remoteTmpPath, ...execArgs], {
-        ...this.execSudoOptions(restOptions),
+        ...this.execOptions({ sudo, ...restOptions }),
         stream: 'both',
       })
       return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
     }
-    return await this.ssh.exec(remoteTmpPath, execArgs, { stream: 'both' })
+    return await this.ssh.exec(remoteTmpPath, execArgs, {
+      ...this.execOptions({ sudo, ...restOptions }),
+      stream: 'both',
+    })
   }
 
   async execScriptFile(file: string, options: CtlExecOptions = {}) {
@@ -308,33 +312,39 @@ export class MxaCtl {
     const fileContent = await readFile(file, { encoding: 'utf8' })
     if (sudo) {
       const res = await this.ssh.exec('sudo', ['bash', '-c', fileContent], {
-        ...this.execSudoOptions(restOptions),
+        ...this.execOptions({ sudo, ...restOptions }),
         stream: 'both',
       })
       return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
     }
-    return await this.ssh.exec('bash', ['-c', fileContent], { stream: 'both' })
+    return await this.ssh.exec('bash', ['-c', fileContent], {
+      ...this.execOptions({ sudo, ...restOptions }),
+      stream: 'both',
+    })
   }
 
   async execScript(script: string, options: CtlExecOptions = {}) {
     const { sudo = !this.isRootUser(), ...restOptions } = options
     if (sudo) {
       const res = await this.ssh.exec('sudo', ['bash', '-c', script], {
-        ...this.execSudoOptions(restOptions),
+        ...this.execOptions({ sudo, ...restOptions }),
         stream: 'both',
       })
       return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
     }
-    return await this.ssh.exec('bash', ['-c', script], { stream: 'both' })
+    return await this.ssh.exec('bash', ['-c', script], {
+      ...this.execOptions({ sudo, ...restOptions }),
+      stream: 'both',
+    })
   }
 
   async execCommand(command: string, options: CtlExecOptions = {}) {
     const { sudo = !this.isRootUser(), ...restOptions } = options
     if (sudo) {
-      const res = await this.ssh.execCommand(`sudo ${command}`, this.execSudoOptions(restOptions))
+      const res = await this.ssh.execCommand(`sudo ${command}`, this.execOptions({ sudo, ...restOptions }))
       return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
     }
-    return await this.ssh.execCommand(command)
+    return await this.ssh.execCommand(command, this.execOptions({ sudo, ...restOptions }))
   }
 
   async systemInfo() {
