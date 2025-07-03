@@ -23,6 +23,7 @@ export function HostSelectContent() {
         ip: ip[0],
         hostname: info.system_info.hostname,
       })),
+    staleTime: 0,
   })
 
   return (
