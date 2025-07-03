@@ -7,7 +7,6 @@ import {
 } from '@/components/app/app-card'
 import { AppFrame } from '@/components/app/app-frame'
 import { ConnectModeIf, DeployModeIf } from '@/app/_shared/condition'
-import { SshPage } from '@/app/install-env/ssh-page'
 import { InstallStoreProvider } from '@/stores/install-store-provider'
 
 import { BmcLocalInstallStatusIf } from './condition'
@@ -15,6 +14,7 @@ import { ConfirmCard, ConfirmCardPlaceholder } from './confirm-card'
 import { BmcLocalInstallProvider } from './context'
 import { Footer } from './footer'
 import { InstallPage } from './install-page'
+import { SshPage } from './ssh/ssh-page'
 
 export default function Page() {
   return (
@@ -47,10 +47,10 @@ export default function Page() {
             </BmcLocalInstallProvider>
           </DeployModeIf>
         </ConnectModeIf>
-        <ConnectModeIf mode="ssh">
-          <SshPage />
-        </ConnectModeIf>
       </InstallStoreProvider>
+      <ConnectModeIf mode="ssh">
+        <SshPage />
+      </ConnectModeIf>
     </AppFrame>
   )
 }
