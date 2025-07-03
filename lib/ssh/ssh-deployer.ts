@@ -245,6 +245,17 @@ echo "{\
     }
   }
 
+  private async updatePmIndex() {
+    await this.execInstallScript({
+      script: this.pm.updateIndex(),
+      flag: this.installFlags.updateSources,
+      initLog: '更新软件包索引',
+      successLog: '软件包索引更新完成',
+      errorLog: '软件包索引更新失败',
+      errorMessage: '软件包索引更新失败，请检查网络连接或手动更新软件包索引',
+    })
+  }
+
   private async updateSources() {
     await this.execInstallScript({
       script: this.pm.updateSources(),

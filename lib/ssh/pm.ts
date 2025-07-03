@@ -2,6 +2,19 @@ import { match } from 'ts-pattern'
 
 export type PackageManagerType = 'apt' | 'yum' | 'dnf' | 'pacman' | 'zypper'
 
+export type PackageMirrors =
+  | 'mirrors.aliyun.com'
+  | 'mirrors.tencent.com'
+  | 'mirrors.tuna.tsinghua.edu.cn'
+  | 'mirrors.ustc.edu.cn'
+
+export type DockerPackageMirrors =
+  | 'mirrors.aliyun.com/docker-ce'
+  | 'mirrors.tencent.com/docker-ce'
+  | 'mirrors.tuna.tsinghua.edu.cn/docker-ce'
+  | 'mirrors.ustc.edu.cn/docker-ce'
+  | 'download.docker.com'
+
 export class PackageManager {
   readonly type: PackageManagerType
 
@@ -39,9 +52,19 @@ export class PackageManager {
       .exhaustive()
   }
 
-  updateSources() {
+  updateIndex() {
+    return match(this.type)
+      .with('apt', () => 'apt-get update')
+      .with('yum', () => 'yum makecache')
+      .with('dnf', () => 'dnf makecache')
+      .with('pacman', () => 'pacman -Sy')
+      .with('zypper', () => 'zypper refresh')
+      .exhaustive()
+  }
+
+  updateSources(mirror: PackageMirrors = 'mirrors.aliyun.com') {
     return String.raw`source <(curl -sSL https://gitee.com/SuperManito/LinuxMirrors/raw/main/ChangeMirrors.sh) \
---source mirrors.aliyun.com \
+--source ${mirror} \
 --protocol http \
 --use-intranet-source false \
 --install-epel true \
@@ -52,9 +75,9 @@ export class PackageManager {
 --pure-mode`
   }
 
-  installDocker() {
+  installDocker(mirror: DockerPackageMirrors = 'mirrors.aliyun.com/docker-ce') {
     return String.raw`source <(curl -sSL https://gitee.com/SuperManito/LinuxMirrors/raw/main/DockerInstallation.sh) \
---source mirrors.aliyun.com/docker-ce \
+--source ${mirror} \
 --source-registry registry.hub.docker.com \
 --protocol http \
 --install-latest true \
