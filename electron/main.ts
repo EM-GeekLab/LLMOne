@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, clipboard, dialog, shell } from 'electron'
 import electronServe from 'electron-serve'
 
+import { useExportedPages } from '@/lib/env/electron'
 import { killMxd, startMxd } from '@/lib/metalx/mxc'
 import { createServer } from '@/trpc'
 
@@ -19,8 +20,8 @@ const singletonLock = app.requestSingleInstanceLock()
 
 async function createWindow() {
   const win = new BrowserWindow({
-    width: 1280,
-    height: 860,
+    width: 1288,
+    height: 872,
     webPreferences: {
       preload: join(__dirname, 'preload.mjs'),
       contextIsolation: true,
@@ -39,7 +40,7 @@ async function createWindow() {
     return { action: 'deny' }
   })
 
-  if (app.isPackaged) {
+  if (app.isPackaged || useExportedPages) {
     await loadUrl(win)
   } else {
     await win.loadURL('http://localhost:3000')
@@ -100,9 +101,14 @@ if (!singletonLock) {
   })
 
   app.whenReady().then(async () => {
-    await startMxd({ disableDiscovery: true })
-    const { port } = await createServer()
-    process.env.TRPC_REAL_PORT = String(port)
+    try {
+      await startMxd({ disableDiscovery: true })
+      const { port } = await createServer()
+      process.env.TRPC_REAL_PORT = String(port)
+    } catch (err) {
+      dialog.showErrorBox('LLMOne 启动失败', '原因: ' + (err instanceof Error ? err.message : String(err)))
+      app.exit(1)
+    }
 
     await createWindow()
 
