@@ -18,23 +18,35 @@ const log = logger.child({ module: 'ssh.deployer' })
 type HostItem = {
   host: string
   hostId?: string
+  hostname: string
   ctl: MxaCtl
   os: SystemInfo
 }
 
 type LogListener = (data: string) => void
 
-type InstallFlag = {
+export type InstallFlag = {
   // 是否需要安装
   planned: boolean
   // 是否已完成安装
   completed: boolean
 }
 
-type InstallStepFlags = {
+export type InstallStepFlags = {
   updateSources: InstallFlag
   installDependencies: InstallFlag
   installDocker: InstallFlag
+}
+
+export type SshDeployerStatus = 'idle' | 'failed' | 'installing' | 'completed'
+
+export type SshDeployerInfo = {
+  host: string
+  hostId?: string
+  hostname: string
+  os: SystemInfo
+  flags: InstallStepFlags
+  status: SshDeployerStatus
 }
 
 export class SshDeployer {
@@ -43,14 +55,17 @@ export class SshDeployer {
   readonly ctl: MxaCtl
   readonly pm: PackageManager
   readonly os: SystemInfo
-  private logStore: string[]
-  private status: 'idle' | 'failed' | 'installing' | 'completed'
+  readonly hostname: string
+  private readonly logStore: string[]
+  private status: SshDeployerStatus
   installFlags: InstallStepFlags
+  private serviceStarted: boolean
   private ee: EventEmitter
 
   constructor(item: HostItem) {
     this.host = item.host
     this.hostId = item.hostId
+    this.hostname = item.hostname
     this.ctl = item.ctl
     this.os = item.os
     this.pm = new PackageManager(this.os.pm)
@@ -61,6 +76,7 @@ export class SshDeployer {
       installDependencies: { planned: true, completed: false },
       installDocker: { planned: true, completed: false },
     }
+    this.serviceStarted = false
     this.ee = new EventEmitter()
     this.pushLog = this.pushLog.bind(this)
   }
@@ -75,10 +91,11 @@ export class SshDeployer {
     return this.status === 'completed'
   }
 
-  info() {
+  info(): SshDeployerInfo {
     return {
       host: this.host,
       hostId: this.hostId,
+      hostname: this.hostname,
       os: this.os,
       flags: this.installFlags,
       status: this.status,
@@ -94,21 +111,21 @@ export class SshDeployer {
     this.ee.emit('install:log', data)
   }
 
-  private pushSuccessLog(data: string) {
-    this.pushLog(`\r\n${green(data)}\r\n`)
+  private pushSuccessLog(data: string, { withNewLine = false } = {}) {
+    this.pushLog(`${withNewLine ? '\r\n' : ''}${green(`✓ ${data}`)}\r\n`)
   }
 
-  private pushErrorLog(data: string) {
-    this.pushLog(`\r\n${red(data)}\r\n`)
+  private pushErrorLog(data: string, { withNewLine = false } = {}) {
+    this.pushLog(`${withNewLine ? '\r\n' : ''}${red(`✗ ${data}`)}\r\n`)
   }
 
-  private pushInfoLog(data: string) {
-    this.pushLog(`\r\n${data}\r\n`)
+  private pushInfoLog(data: string, { withNewLine = false } = {}) {
+    this.pushLog(`${withNewLine ? '\r\n' : ''}${data}\r\n`)
   }
 
   // 检查是否需要安装组件
   async check() {
-    const { stdout } = await this.ctl
+    const { stdout, code } = await this.ctl
       .execScript(
         String.raw`
 docker_found="false"
@@ -135,9 +152,11 @@ echo "{\
 }"`,
       )
       .catch((err) => {
-        log.error(err, '检查安装组件失败')
         throw wrapError('检查安装组件失败', err)
       })
+    if (code !== 0) {
+      throw wrapError('检查安装组件失败', `执行脚本失败，返回码：${code}`)
+    }
     const result = JSON.parse(stdout) as {
       docker: boolean
       zstd: boolean
@@ -172,25 +191,54 @@ echo "{\
     await this.updateSources()
     await this.installDependencies()
     await this.installDocker()
+    await this.startServices()
     this.afterInstall()
+  }
+
+  clear() {
+    this.pushLog('\x1b[2J\x1b[H')
+  }
+
+  clearLine() {
+    this.pushLog('\x1b[2K\r')
   }
 
   private beforeInstall() {
     if (this.status === 'idle') {
       this.status = 'installing'
+      this.clear()
       this.pushInfoLog(`安装运行环境到 ${this.host}`)
     } else if (this.status === 'failed') {
       this.status = 'installing'
-      this.pushInfoLog(`重试安装运行环境到 ${this.host}`)
+      this.pushInfoLog(`重试安装`, { withNewLine: true })
     }
   }
 
   private afterInstall() {
     if (this.status === 'installing') {
       this.status = 'completed'
-      this.pushInfoLog(`运行环境安装完成`)
+      this.pushInfoLog(`✓ 运行环境安装完成`)
       this.ee.emit('install:completed')
       this.ee.removeAllListeners()
+    }
+  }
+
+  private async startServices() {
+    try {
+      if (this.serviceStarted) return
+      this.pushLog('→ 启动前置服务')
+      await this.ctl.spawnAria2()
+      await this.ctl.startDocker()
+      this.clearLine()
+      this.pushInfoLog('✓ 前置服务已启动')
+      this.serviceStarted = true
+    } catch (err) {
+      this.status = 'failed'
+      const errorMessage = messageError('前置服务启动失败', err)
+      this.clearLine()
+      this.pushErrorLog(errorMessage)
+      this.ee.emit('install:failed', errorMessage)
+      throw wrapError('前置服务启动失败', err)
     }
   }
 
@@ -259,20 +307,37 @@ echo "{\
     if (!flag.planned || flag.completed) {
       return
     }
-    this.pushInfoLog(initLog)
+    this.pushInfoLog(`→ ${initLog}`, { withNewLine: true })
     await beforeExec?.().catch((err) => {
       log.error(err, '执行前操作失败')
+      this.status = 'failed'
+      this.ee.emit('install:failed', messageError('脚本执行失败', err))
       throw wrapError('执行失败', err)
     })
     const { code } = await this.ctl
       .execScript(script, {
         onChannel: (stream) => {
-          stream.on('data', (data: Buffer) => this.pushLog(data.toString()))
+          let isSudoPromptHandled = false
+          stream.on('data', (data: Buffer) => {
+            const { password, passwordRequired } = this.ctl.getPassword()
+            if (!isSudoPromptHandled && passwordRequired && password) {
+              if (data.includes(password)) {
+                return
+              }
+              if (data.includes('[sudo] password for')) {
+                isSudoPromptHandled = true
+                return
+              }
+            }
+            this.pushLog(data.toString())
+          })
           this.ee.on('ssh:write-data', (data: string) => stream.write(data))
         },
       })
       .catch((err) => {
         log.error(err, '脚本执行失败')
+        this.status = 'failed'
+        this.ee.emit('install:failed', messageError('脚本执行失败', err))
         throw wrapError('脚本执行失败', err)
       })
     if (code !== 0) {
@@ -306,8 +371,11 @@ export class SshDeployerManager {
         )
         try {
           const { host, hostId } = ctl.connectionInfo()
-          const os = await ctl.systemInfo()
-          return await SshDeployer.create({ host, hostId, ctl, os })
+          const [os, hostname] = await Promise.all([ctl.systemInfo(), ctl.hostname()])
+          await ctl.forwardMxdPort()
+          await ctl.uploadMxa()
+          await ctl.spawnMxa()
+          return await SshDeployer.create({ host, hostId, ctl, os, hostname })
         } catch (err) {
           ctl.dispose()
           throw new TRPCError({

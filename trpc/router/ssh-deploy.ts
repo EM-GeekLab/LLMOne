@@ -15,25 +15,48 @@ function getSshDeployerManager() {
   return sshDm
 }
 
+const installStatusCache = new Map<string, Promise<void>>()
+
 export const sshDeployRouter = createRouter({
   deployer: {
     init: baseProcedure.input(sshHostsListSchema).mutation(async ({ input }) => {
-      if (sshDm) await sshDm.dispose()
+      if (sshDm) {
+        await sshDm.dispose()
+        installStatusCache.clear()
+      }
       sshDm = await SshDeployerManager.create(input)
     }),
     dispose: baseProcedure.mutation(async () => {
       if (sshDm) {
         await sshDm.dispose()
         sshDm = null
+        installStatusCache.clear()
       }
+    }),
+    query: baseProcedure.input(inputType<string>).query(async ({ input: host }) => {
+      return getSshDeployerManager().getDeployer(host).info()
+    }),
+    queryAll: baseProcedure.query(async () => {
+      return getSshDeployerManager().list.map((d) => d.info())
     }),
   },
   install: {
     trigger: baseProcedure.input(inputType<string>).mutation(async ({ input: host }) => {
-      await getSshDeployerManager().installTrigger(host)
+      const promise = getSshDeployerManager().installTrigger(host)
+      installStatusCache.set(host, promise)
+      return await promise
     }),
-    stream: baseProcedure.input(inputType<string>).mutation(async function* ({ input: host }) {
-      yield* getSshDeployerManager().installStream(host)
+    triggerOnce: baseProcedure.input(inputType<string>).mutation(async ({ input: host }) => {
+      const promise = getSshDeployerManager().installTrigger(host)
+      installStatusCache.set(host, promise)
+    }),
+    status: baseProcedure.input(inputType<string>).query(async ({ input: host }) => {
+      const promise = installStatusCache.get(host)
+      if (promise) await promise
+      return null
+    }),
+    statusAll: baseProcedure.query(async () => {
+      return await Promise.all(Array.from(installStatusCache.values()))
     }),
     query: baseProcedure.input(inputType<string>).subscription(async function* ({ input: host }) {
       yield* getSshDeployerManager().query(host)
