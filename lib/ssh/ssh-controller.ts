@@ -59,6 +59,7 @@ export class MxaCtl {
   private abortController: AbortController
   private system?: SystemInfo
   private _hostname?: string
+  private hasForwardedMxdPort = false
 
   constructor(params: NewHostMxaControllerParams) {
     this.host = params.host
@@ -144,6 +145,9 @@ export class MxaCtl {
   }
 
   async forwardMxdPort() {
+    if (this.hasForwardedMxdPort) {
+      return this
+    }
     try {
       await this.ssh.forwardIn('127.0.0.1', mxdHttpPort, (_details, accept) => {
         const stream = accept()
@@ -154,6 +158,7 @@ export class MxaCtl {
           stream.resume()
         })
       })
+      this.hasForwardedMxdPort = true
       return this
     } catch (e) {
       throw wrapError('端口转发失败', e)
@@ -230,7 +235,7 @@ export class MxaCtl {
             return
           }
           if (data.includes('Failed to connect to controller')) {
-            reject(new Error('Mxa 启动失败: ' + data.replace(/.+Failed to connect to controller:\s*/, '')))
+            reject(new Error('Agent 启动失败: ' + data.replace(/.+Failed to connect to controller:\s*/, '')))
             return
           }
         },

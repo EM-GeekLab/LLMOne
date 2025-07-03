@@ -227,10 +227,13 @@ echo "{\
     try {
       if (this.serviceStarted) return
       this.pushLog('→ 启动前置服务')
+      await this.ctl.forwardMxdPort()
+      await this.ctl.uploadMxa()
+      await this.ctl.spawnMxa()
       await this.ctl.spawnAria2()
       await this.ctl.startDocker()
       this.clearLine()
-      this.pushInfoLog('✓ 前置服务已启动')
+      this.pushSuccessLog('前置服务已启动')
       this.serviceStarted = true
     } catch (err) {
       this.status = 'failed'
@@ -372,9 +375,6 @@ export class SshDeployerManager {
         try {
           const { host, hostId } = ctl.connectionInfo()
           const [os, hostname] = await Promise.all([ctl.systemInfo(), ctl.hostname()])
-          await ctl.forwardMxdPort()
-          await ctl.uploadMxa()
-          await ctl.spawnMxa()
           return await SshDeployer.create({ host, hostId, ctl, os, hostname })
         } catch (err) {
           ctl.dispose()
