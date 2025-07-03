@@ -29,7 +29,7 @@ export function InstallPage() {
   const hostsList = Array.from(hosts.values())
 
   return (
-    <TabsPrimitive.Tabs className="grid gap-4" defaultValue={hostsList[0].id}>
+    <TabsPrimitive.Tabs className="grid gap-4" defaultValue={hostsList[0]?.id}>
       <HostTabsList hostsList={hostsList as HostConfigType[]} />
       {hostsList.map((host) => (
         <TabsPrimitive.TabsContent key={host.id} value={host.id} className="grid gap-4">
