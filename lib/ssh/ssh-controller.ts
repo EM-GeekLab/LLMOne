@@ -41,6 +41,9 @@ interface NewHostMxaControllerParams {
 
 export type CtlExecOptions = { sudo?: boolean } & SSHExecCommandOptions
 
+const log = logger.child({ module: 'ssh' })
+const mxaLogger = logger.child({ module: 'mxa' })
+
 export class MxaCtl {
   private readonly host: string
   private readonly port?: number
@@ -220,10 +223,15 @@ export class MxaCtl {
             }
           }
           if (this.enableMxaLog) {
-            formatMxliteLog(logger.child({ module: 'mxa' }), data, { removeAnsi: true })
+            formatMxliteLog(mxaLogger, data, { removeAnsi: true })
           }
           if (data.includes('Connected to controller')) {
             resolve(this)
+            return
+          }
+          if (data.includes('Failed to connect to controller')) {
+            reject(new Error('Mxa 启动失败: ' + data.replace(/.+Failed to connect to controller:\s*/, '')))
+            return
           }
         },
         onChannel: (stream) => {
@@ -250,6 +258,55 @@ export class MxaCtl {
     this.abortController = new AbortController()
     this.hostId = undefined
     return this
+  }
+
+  async spawnAria2() {
+    return new Promise<MxaCtl>(async (resolve, reject) => {
+      // 检查 aria2 是否已安装
+      const { code: whichResult } = await this.execCommand('which aria2c')
+      if (whichResult !== 0) reject(new Error('Aria2 未安装，请先安装 Aria2'))
+
+      const { code: lsofResult, stdout: lsofOut } = await this.execCommand('lsof -i :6800')
+      if (lsofOut.includes('aria2c')) {
+        // 如果有正在运行的 aria2c 实例并占用了 6800 端口
+        await this.execScript('pkill aria2c\nwhile pgrep aria2c > /dev/null; do\n\tsleep 0.5\ndone')
+      } else if (lsofResult === 0) {
+        // 如果有其他进程在 6800 端口上监听
+        reject(new Error('Aria2 启动失败: 端口 6800 已被占用'))
+        return
+      }
+
+      this.execCommand('aria2c --enable-rpc --rpc-listen-port=6800', {
+        onStdout: (buf) => {
+          if (buf.includes('listening on TCP port')) {
+            resolve(this)
+            return
+          }
+          if (buf.includes('failed to bind TCP port')) {
+            log.error(buf.toString().trim())
+            reject(new Error('Aria2 启动失败: 端口 6800 已被占用'))
+            return
+          }
+        },
+      })
+        .then((res) => {
+          if (res.code === 0) {
+            resolve(this)
+          } else {
+            reject(new Error(`Aria2 启动失败: ${res.stderr}`))
+          }
+        })
+        .catch((err) => {
+          reject(wrapError('Aria2 启动失败', err))
+        })
+    })
+  }
+
+  async startDocker() {
+    const { code, stderr } = await this.execScript('systemctl start docker')
+    if (code !== 0) {
+      throw new Error(`Docker 启动失败: ${stderr}`)
+    }
   }
 
   async check() {
