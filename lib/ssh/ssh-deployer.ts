@@ -132,6 +132,7 @@ docker_found="false"
 zstd_found="false"
 jq_found="false"
 aria2_found="false"
+
 if command -v docker >/dev/null 2>&1; then
     docker_found="true"
 fi
@@ -144,11 +145,37 @@ fi
 if command -v aria2c >/dev/null 2>&1; then
     aria2_found="true"
 fi
+
+nvidia_gpu_present="false"
+nvidia_gpu_smi_found="false"
+huawei_npu_present="false"
+huawei_npu_smi_found="false"
+
+if command -v lspci >/dev/null 2>&1; then
+    lspci_output=$(lspci)
+    if echo "$lspci_output" | grep -iqE 'VGA compatible controller.*NVIDIA|3D controller.*NVIDIA'; then
+        nvidia_gpu_present="true"
+        if command -v nvidia-smi >/dev/null 2>&1; then
+            nvidia_gpu_smi_found="true"
+        fi
+    fi
+    if echo "$lspci_output" | grep -q "Processing accelerators: Huawei Technologies"; then
+        huawei_npu_present="true"
+        if command -v npu-smi >/dev/null 2>&1; then
+            huawei_npu_smi_found="true"
+        fi
+    fi
+fi
+
 echo "{\
 \"docker\":$docker_found,\
 \"zstd\":$zstd_found,\
 \"jq\":$jq_found,\
-\"aria2\":$aria2_found\
+\"aria2\":$aria2_found,\
+\"nvidiaGpu\": $nvidia_gpu_present,\
+\"nvidiaSmi\": $nvidia_gpu_smi_found,\
+\"huaweiNpu\": $huawei_npu_present,\
+\"huaweiSmi\": $huawei_npu_smi_found\
 }"`,
       )
       .catch((err) => {
@@ -162,6 +189,10 @@ echo "{\
       zstd: boolean
       jq: boolean
       aria2: boolean
+      nvidiaGpu: boolean
+      nvidiaSmi: boolean
+      huaweiNpu: boolean
+      huaweiSmi: boolean
     }
     const dependenciesInstalled = [result.zstd, result.jq, result.aria2].every((v) => v)
     this.installFlags = {
