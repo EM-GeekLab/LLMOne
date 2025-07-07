@@ -1,4 +1,16 @@
 /**
+ * Copyright (c) 2025 EM-GeekLab
+ * LLMOne is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+ * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+ * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ */
+
+/**
  * 检查两个IP地址是否在同一网段 Check if two IP addresses are in the same subnet
  * @param ip1 第一个IP地址 The first IP address
  * @param ip1Prefix 第一个IP地址的前缀长度 The prefix length of the first IP address
