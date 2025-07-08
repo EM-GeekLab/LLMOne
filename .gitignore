@@ -20,7 +20,7 @@
 # production
 /build
 /dist
-/dist-*
+/dist-*/*
 /release
 
 # misc
