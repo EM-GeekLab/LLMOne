@@ -3,10 +3,12 @@
   "description": "LLMOne - 大模型一体机部署工具",
   "version": "0.5.3",
   "private": true,
+  "license": "MulanPSL-2.0",
   "author": {
     "name": "EM GeekLab",
     "email": "modelmachine@115lab.club"
   },
+  "repository": "https://github.com/EM-GeekLab/LLMOne",
   "main": "dist-electron/main.mjs",
   "type": "module",
   "scripts": {
