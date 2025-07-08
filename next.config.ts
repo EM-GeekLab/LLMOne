@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
     incomingRequests: false,
   },
   trailingSlash: true,
-  serverExternalPackages: ['pino', 'pino-pretty'],
   webpack: (config) => {
     // Grab the existing rule that handles SVG imports
     const fileLoaderRule = config.module.rules.find((rule: any) => rule.test?.test?.('.svg'))
@@ -29,15 +28,6 @@ const nextConfig: NextConfig = {
 
     // Modify the file loader rule to ignore *.svg, since we have it handled now.
     fileLoaderRule.exclude = /\.svg$/i
-
-    config.module.rules.push({
-      test: /\.node$/,
-      use: [
-        {
-          loader: 'nextjs-node-loader',
-        },
-      ],
-    })
 
     return config
   },

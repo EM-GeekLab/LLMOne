@@ -126,7 +126,6 @@
     "eslint": "^9.30.1",
     "eslint-config-next": "15.3.4",
     "extract-zip": "^2.0.1",
-    "nextjs-node-loader": "^1.1.9",
     "octokit": "^5.0.3",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.13",
