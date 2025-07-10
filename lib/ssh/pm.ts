@@ -97,4 +97,8 @@ export class PackageManager {
 --ignore-backup-tips \
 --pure-mode`
   }
+
+  installNvidiaDriver() {
+    return String.raw`source <(curl -sSL https://raw.githubusercontent.com/EM-GeekLab/nvidia-driver-installer/main/nvidia-install.sh) -y`
+  }
 }

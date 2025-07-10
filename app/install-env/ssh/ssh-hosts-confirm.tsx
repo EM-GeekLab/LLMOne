@@ -15,7 +15,8 @@
 import * as React from 'react'
 import { ReactNode } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowRightIcon, CheckIcon } from 'lucide-react'
+import { AlertTriangleIcon, ArrowRightIcon, CheckIcon } from 'lucide-react'
+import { match } from 'ts-pattern'
 
 import type { InstallFlag, SshDeployerInfo } from '@/lib/ssh/ssh-deployer'
 import { AppCardContent, AppCardFooter, AppCardSection } from '@/components/app/app-card'
@@ -117,6 +118,21 @@ function HostConfirmList({ host }: { host: SshDeployerInfo }) {
         plannedMessage="即将安装基础依赖"
         completedMessage="已安装基础依赖"
       />
+      {flags.installNvidiaGpu && (
+        <HostConfirmItem
+          flag={flags.installNvidiaGpu}
+          plannedMessage="即将安装 NVIDIA GPU 驱动"
+          completedMessage="已安装 NVIDIA GPU 驱动"
+        />
+      )}
+      {flags.installHuaweiNpu && (
+        <HostConfirmItem
+          customIcon={<AlertTriangleIcon className="text-warning" />}
+          flag={flags.installHuaweiNpu}
+          plannedMessage="需要手动安装 NPU 驱动"
+          completedMessage="已安装 NPU 驱动"
+        />
+      )}
       <HostConfirmItem flag={flags.installDocker} plannedMessage="即将安装 Docker" completedMessage="已安装 Docker" />
     </ol>
   )
@@ -124,23 +140,33 @@ function HostConfirmList({ host }: { host: SshDeployerInfo }) {
 
 function HostConfirmItem({
   children,
+  customIcon,
   plannedMessage,
   completedMessage,
   flag,
 }: {
   children?: ReactNode
+  customIcon?: ReactNode
   plannedMessage?: string
   completedMessage?: string
   flag: InstallFlag
 }) {
+  if (!flag.planned && !flag.completed) {
+    return null
+  }
   return (
     <li
       data-planned={flag.planned ? '' : undefined}
       data-completed={flag.completed ? '' : undefined}
-      className="group flex items-center gap-2 text-sm data-completed:text-muted-foreground/50"
+      className="group flex items-center gap-2 text-sm data-completed:text-muted-foreground/50 [&_svg]:size-4"
     >
-      <CheckIcon className="size-4 text-success/50 opacity-0 group-data-completed:opacity-100" />
-      <ArrowRightIcon className="absolute size-4 text-primary opacity-0 group-data-planned:opacity-100" />
+      {customIcon
+        ? customIcon
+        : match(flag)
+            .with({ completed: true }, () => <CheckIcon className="text-success/50" />)
+            .with({ planned: true }, () => <ArrowRightIcon className="text-primary" />)
+            .with({ completed: false, planned: false }, () => <div className="size-4" />)
+            .exhaustive()}
       {flag.planned && plannedMessage}
       {flag.completed && completedMessage}
       {children}

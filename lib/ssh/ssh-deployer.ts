@@ -48,6 +48,8 @@ export type InstallStepFlags = {
   updateSources: InstallFlag
   installDependencies: InstallFlag
   installDocker: InstallFlag
+  installNvidiaGpu?: InstallFlag
+  installHuaweiNpu?: InstallFlag
 }
 
 export type SshDeployerStatus = 'idle' | 'failed' | 'installing' | 'completed'
@@ -211,6 +213,8 @@ echo "{\
       installDocker: { planned: !result.docker, completed: result.docker },
       installDependencies: { planned: !dependenciesInstalled, completed: dependenciesInstalled },
       updateSources: { planned: true, completed: false }, // always update sources
+      ...(result.nvidiaGpu ? { installNvidiaGpu: { planned: !result.nvidiaSmi, completed: result.nvidiaSmi } } : {}),
+      ...(result.huaweiNpu ? { installHuaweiNpu: { planned: !result.huaweiSmi, completed: result.huaweiSmi } } : {}),
     }
   }
 
@@ -233,6 +237,12 @@ echo "{\
     this.beforeInstall()
     await this.updateSources()
     await this.installDependencies()
+    if (this.installFlags.installNvidiaGpu) {
+      await this.installNvidiaGpu()
+    }
+    if (this.installFlags.installHuaweiNpu) {
+      await this.installHuaweiNpu()
+    }
     await this.installDocker()
     await this.startServices()
     this.afterInstall()
@@ -337,6 +347,23 @@ echo "{\
       errorLog: 'Docker 安装失败',
       errorMessage: 'Docker 安装失败，请检查网络连接或手动安装 Docker',
     })
+  }
+
+  private async installNvidiaGpu() {
+    if (!this.installFlags.installNvidiaGpu) return
+    await this.execInstallScript({
+      script: this.pm.installNvidiaDriver(),
+      flag: this.installFlags.installNvidiaGpu,
+      initLog: '安装 NVIDIA GPU 驱动',
+      successLog: 'NVIDIA GPU 驱动安装完成',
+      errorLog: 'NVIDIA GPU 驱动安装失败',
+      errorMessage: 'NVIDIA GPU 驱动安装失败，请检查网络连接或手动安装 NVIDIA GPU 驱动',
+    })
+  }
+
+  private async installHuaweiNpu() {
+    if (!this.installFlags.installHuaweiNpu) return
+    this.pushInfoLog('暂不支持华为 NPU 驱动自动安装，请手动安装后重试', { withNewLine: true })
   }
 
   // 发送数据到 SSH 通道
