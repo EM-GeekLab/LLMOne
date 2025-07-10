@@ -99,6 +99,6 @@ export class PackageManager {
   }
 
   installNvidiaDriver() {
-    return String.raw`source <(curl -sSL https://raw.githubusercontent.com/EM-GeekLab/nvidia-driver-installer/main/nvidia-install.sh) -y`
+    return String.raw`source <(curl -sSL https://atomgit.com/em-geeklab/nvidia-driver-installer/raw/main/nvidia-install.sh) -y`
   }
 }
