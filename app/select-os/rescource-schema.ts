@@ -21,7 +21,7 @@ export const resourceManifestSchema = z.object({
   bootstrap: z.record(architecturesEnum, z.string()),
   modelDir: z.string(),
   containerDir: z.string(),
-  packageDir: z.string(),
+  packageDir: z.string().optional(),
 })
 
 export type ResourceManifestType = z.infer<typeof resourceManifestSchema>

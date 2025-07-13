@@ -293,7 +293,7 @@ export class MxaCtl {
         return
       }
 
-      this.execCommand('aria2c --enable-rpc --rpc-listen-port=6800', {
+      this.execCommand('aria2c --enable-rpc --rpc-listen-all --rpc-listen-port=6800', {
         onStdout: (buf) => {
           if (buf.includes('listening on TCP port')) {
             resolve(this)
