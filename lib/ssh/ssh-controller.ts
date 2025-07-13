@@ -19,7 +19,7 @@ import { basename, join as joinPosix } from 'node:path/posix'
 import { NodeSSH, SSHExecCommandOptions } from 'node-ssh'
 import { match } from 'ts-pattern'
 
-import { mxdHttpPort } from '@/lib/env/mxc'
+import { mxdHttpPort, rootDir } from '@/lib/env/mxc'
 import { logger } from '@/lib/logger'
 import { formatMxliteLog } from '@/lib/metalx/format-mxlite-log'
 import { OsArchitecture } from '@/lib/os'
@@ -384,7 +384,7 @@ export class MxaCtl {
     if (!existsSync(file)) {
       throw new Error(`文件 ${file} 不存在`)
     }
-    const fileContent = await readFile(file, { encoding: 'utf8' })
+    const fileContent = await readFile(join(rootDir, file), { encoding: 'utf8' })
     if (sudo) {
       const res = await this.ssh.exec('sudo', ['bash', '-c', fileContent], {
         ...this.execOptions({ sudo, ...restOptions }),
