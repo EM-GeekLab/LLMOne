@@ -180,3 +180,20 @@ export async function getHostArch(host: string | HostExtraInfo) {
     .with('aarch64', 'arm64', () => 'ARM64')
     .otherwise((v) => v)
 }
+
+export async function getHostDistroVersion(host: string) {
+  const { stdout } = await executeCommand(host, 'cat /etc/os-release', 100)
+  return extractSystemVersion(stdout)
+}
+
+function extractSystemVersion(content: string) {
+  const versionMatch = content.match(/^VERSION="(.+)"$/m)
+  if (versionMatch && versionMatch[1]) {
+    return versionMatch[1]
+  }
+  const prettyNameMatch = content.match(/^PRETTY_NAME="(.+)"$/m)
+  if (prettyNameMatch && prettyNameMatch[1]) {
+    return prettyNameMatch[1]
+  }
+  return null
+}

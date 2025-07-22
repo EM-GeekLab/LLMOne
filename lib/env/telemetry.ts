@@ -10,14 +10,12 @@
  * See the Mulan PSL v2 for more details.
  */
 
-import { z } from '@/lib/zod'
-import { baseProcedure, createRouter } from '@/trpc/init'
+import './config-env'
 
-import { getHostDistroVersion, getHostInfo, getHostIp } from './mxc-utils'
+import { join } from 'node:path'
 
-export const hostRouter = createRouter({
-  getFullInfo: baseProcedure.input(z.string()).query(async ({ input: host }) => {
-    const [info, ip, version] = await Promise.all([getHostInfo(host), getHostIp(host), getHostDistroVersion(host)])
-    return { info, ip, version }
-  }),
-})
+import { dataPath } from '@/lib/env/paths'
+
+export const telemetryDisabled = process.env.DISABLE_TELEMETRY === 'true'
+export const telemetryUrl = process.env.TELEMETRY_URL || 'https://telemetry.llmone.site/api/telemetry' // TODO: Update telemetry endpoint
+export const telemetryRecordsPath = process.env.APP_TELEMETRY_DIR || join(dataPath, 'telemetry')

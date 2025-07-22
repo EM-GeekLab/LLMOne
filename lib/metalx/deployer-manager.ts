@@ -15,6 +15,7 @@ import { basename } from 'node:path'
 import { match } from 'ts-pattern'
 
 import { logger } from '@/lib/logger'
+import { sendSystemDeployEvent } from '@/lib/metalx/utils'
 import type { AccountConfigType, HostConfigType, NetworkConfigType } from '@/app/host-info/schemas'
 import { ResourceOsBaseInfo, ResourcePackage } from '@/app/select-os/rescource-schema'
 import { SystemDeployer, type Distro } from '@/sdk/mxlite/deployer'
@@ -210,5 +211,6 @@ export class MxdManager {
       yield info
       throw err
     }
+    sendSystemDeployEvent(host.id)
   }
 }

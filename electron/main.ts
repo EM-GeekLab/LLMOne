@@ -13,11 +13,12 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { app, BrowserWindow, clipboard, dialog, shell } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, powerSaveBlocker, shell } from 'electron'
 import electronServe from 'electron-serve'
 
 import { useExportedPages } from '@/lib/env/electron'
 import { killMxd, startMxd } from '@/lib/metalx/mxc'
+import { sendCrashEvent, sendStartupEvent } from '@/lib/telemetry'
 import { createServer } from '@/trpc'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -29,6 +30,8 @@ const loadUrl = electronServe({
 })
 
 const singletonLock = app.requestSingleInstanceLock()
+
+let powerSaveBlockerId: number | null
 
 async function createWindow() {
   const win = new BrowserWindow({
@@ -76,6 +79,7 @@ process.on('uncaughtException', (e) => {
   const title = 'LLMOne 发生了意外错误'
   const stack = e.stack ?? `${e.name}:${e.message}`
   if (app.isReady()) {
+    sendCrashEvent(e)
     const buttons = ['关闭', '重新打开', '复制错误信息']
     const buttonIndex = dialog.showMessageBoxSync({
       type: 'error',
@@ -124,6 +128,10 @@ if (!singletonLock) {
 
     await createWindow()
 
+    powerSaveBlockerId = powerSaveBlocker.start('prevent-app-suspension')
+
+    sendStartupEvent()
+
     app.on('activate', () => {
       if (process.platform === 'darwin' && BrowserWindow.getAllWindows().length === 0) {
         createWindow()
@@ -140,4 +148,7 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', () => {
   killMxd()
+  if (powerSaveBlockerId && powerSaveBlocker.isStarted(powerSaveBlockerId)) {
+    powerSaveBlocker.stop(powerSaveBlockerId)
+  }
 })

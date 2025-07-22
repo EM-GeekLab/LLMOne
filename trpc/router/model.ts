@@ -21,6 +21,7 @@ import yaml from 'yaml'
 import { downloadFile, downloadWithMetalink } from '@/lib/aria2'
 import { mxc } from '@/lib/metalx'
 import { flowActors } from '@/lib/progress/utils/server'
+import { sendModelDeployEvent, sendServiceDeployEvent } from '@/lib/telemetry'
 import { z } from '@/lib/zod'
 import { modelDeployConfigSchema } from '@/app/(model)/select-model/schemas'
 import { nexusGateConfigSchema, openWebuiConfigSchema } from '@/app/(model)/service-config/schemas'
@@ -131,6 +132,8 @@ export const modelRouter = createRouter({
           },
         })
         .run(from)
+
+      sendModelDeployEvent(config.modelId)
     }),
   deployService: {
     openWebui: baseProcedure
@@ -221,6 +224,8 @@ export const modelRouter = createRouter({
             },
           })
           .run(from)
+
+        sendServiceDeployEvent('Open WebUI')
       }),
     nexusGate: baseProcedure
       .input(
@@ -392,6 +397,8 @@ export const modelRouter = createRouter({
             },
           })
           .run(from)
+
+        sendServiceDeployEvent('NexusGate')
       }),
   },
 })

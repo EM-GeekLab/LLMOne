@@ -21,6 +21,7 @@ import { match } from 'ts-pattern'
 import { BmcClients } from '@/lib/bmc-clients'
 import { mxc } from '@/lib/metalx'
 import { MxaCtl } from '@/lib/ssh/ssh-controller'
+import { sendRedfishEvent } from '@/lib/telemetry'
 import { z } from '@/lib/zod'
 import { BmcFinalConnectionInfo, bmcHostsListSchema, SshFinalConnectionInfo } from '@/app/connect-info/schemas'
 import { HostExtraInfo } from '@/sdk/mxlite/types'
@@ -59,6 +60,7 @@ export const connectionRouter = createRouter({
       .input(z.object({ bmcHosts: bmcHostsListSchema, manifestPath: z.string() }))
       .mutation(async ({ input: { bmcHosts, manifestPath } }) => {
         const bmcClients = await BmcClients.create(bmcHosts)
+        bmcClients.map(({ client }) => sendRedfishEvent(client.name))
         try {
           const architecture = await getDefaultArchitecture(bmcClients, true)
           const bootstrapPath = await getBootstrapPath(manifestPath, architecture)
