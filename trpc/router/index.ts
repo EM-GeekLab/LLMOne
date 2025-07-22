@@ -21,6 +21,7 @@ import { hostRouter } from './host'
 import { modelRouter } from './model'
 import { mxdRouter } from './mxd-controller'
 import { resourceRouter } from './resource'
+import { settingsRouter } from './settings'
 import { sshDeployRouter } from './ssh-deploy'
 import { stateStoreRouter } from './state-store'
 
@@ -36,6 +37,7 @@ export const appRouter = createRouter({
   host: hostRouter,
   benchmark: benchmarkRouter,
   mxdController: mxdRouter,
+  settings: settingsRouter,
 })
 
 export type AppRouter = typeof appRouter
