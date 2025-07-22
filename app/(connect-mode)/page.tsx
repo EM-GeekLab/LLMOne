@@ -26,6 +26,7 @@ import { ConnectModeSelect } from './connect-mode-select'
 import { DeployModeSelect } from './deploy-mode-select'
 import { Footer } from './footer'
 import { ManifestSelect } from './manifest-select'
+import { TelemetryDialog } from './telemetry-dialog'
 
 export default function Home() {
   return (
@@ -52,6 +53,7 @@ export default function Home() {
         <ManifestSelect localModeOnly />
       </AppCardContent>
       <Footer />
+      <TelemetryDialog />
     </AppFrame>
   )
 }
