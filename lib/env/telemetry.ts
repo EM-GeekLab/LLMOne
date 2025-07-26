@@ -17,5 +17,5 @@ import { join } from 'node:path'
 import { dataPath } from '@/lib/env/paths'
 
 export const telemetryDisabled = process.env.DISABLE_TELEMETRY === 'true'
-export const telemetryUrl = process.env.TELEMETRY_URL || 'https://telemetry.llmone.site/api/telemetry' // TODO: Update telemetry endpoint
+export const telemetryUrl = process.env.TELEMETRY_URL || 'https://api.llmone.115.zone'
 export const telemetryRecordsPath = process.env.APP_TELEMETRY_DIR || join(dataPath, 'telemetry')
