@@ -9,12 +9,7 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-
-type StartupTelemetry = {
-  event: 'startup'
-  version: string
-  system: string
-}
+import { BenchmarkSummary } from '@/app/(model)/(report)/performance-test/types'
 
 type CrashTelemetry = {
   event: 'crash'
@@ -61,13 +56,18 @@ type ServiceDeployTelemetry = {
   service: string
 }
 
+type BenchmarkTelemetry = {
+  event: 'benchmark'
+  summary: BenchmarkSummary
+}
+
 export type TelemetryEvent =
-  | StartupTelemetry
   | CrashTelemetry
   | RedfishTelemetry
   | SystemDeployTelemetry
   | ModelDeployTelemetry
   | ServiceDeployTelemetry
+  | BenchmarkTelemetry
 
 export type TelemetryHeader = {
   'x-session-id': string

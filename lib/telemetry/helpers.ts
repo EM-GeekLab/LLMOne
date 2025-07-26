@@ -19,6 +19,7 @@ import { join } from 'node:path'
 import { format } from 'date-fns'
 import pkg from 'package.json'
 import { retry } from 'radash'
+import { match } from 'ts-pattern'
 
 import { telemetryDisabled, telemetryRecordsPath, telemetryUrl } from '@/lib/env/telemetry'
 import { logger } from '@/lib/logger'
@@ -32,9 +33,35 @@ export const version = pkg.version
 
 const sessionId = randomUUID()
 
-const systemType = os.type()
+const systemType = match(os.type())
+  .with('Windows_NT', () => 'Windows')
+  .with('Darwin', () => 'macOS')
+  .with('Linux', () => 'Linux')
+  .otherwise((t) => t)
 const systemArch = os.arch()
 const systemVersion = process.env.ELECTRON_ENV ? process.getSystemVersion() : os.release()
+const platformString = `${systemType} ${systemVersion} (${systemArch})`
+
+function getTelemetryHeader(): TelemetryHeader & HeadersInit {
+  return {
+    'content-type': 'application/json',
+    'x-session-id': sessionId,
+    'x-version': version,
+    'x-platform': platformString,
+    'x-node-env': process.env.NODE_ENV,
+    'user-agent': `LLMOne/${version}`,
+  }
+}
+
+async function saveLogFile(event: unknown) {
+  const recordsDir = join(telemetryRecordsPath, format(new Date(), 'yyyyMMdd'))
+  if (!existsSync(recordsDir)) {
+    await mkdir(recordsDir, { recursive: true })
+  }
+  await appendFile(join(recordsDir, `${sessionId}.log`), JSON.stringify(event) + '\n').catch((err) => {
+    log.error(err, 'Failed to write telemetry log to file')
+  })
+}
 
 export type TelemetryEventOptions = {
   // Whether the event is sent manually by the user. If true, telemetry will not be disabled
@@ -51,34 +78,14 @@ export async function sendTelemetryEvent(event: TelemetryEvent, options: Telemet
     }
   }
 
-  const headers: TelemetryHeader = {
-    'x-session-id': sessionId,
-    'x-version': version,
-    'x-platform': `${systemType} ${systemVersion} (${systemArch})`,
-    'x-node-env': process.env.NODE_ENV,
-    'user-agent': `LLMOne/${version}`,
-  }
-
-  log.debug({ event, headers }, 'Sending telemetry event')
-
-  const recordsDir = join(telemetryRecordsPath, format(new Date(), 'yyyyMMdd'))
-  if (!existsSync(recordsDir)) {
-    await mkdir(recordsDir, { recursive: true })
-  }
-  await appendFile(join(recordsDir, `${sessionId}.log`), JSON.stringify(event) + '\n').catch((err) => {
-    log.error(err, 'Failed to write telemetry log to file')
-  })
+  log.debug(event, 'Sending telemetry event')
+  saveLogFile(event)
 
   const send = async () => {
-    log.debug(`Sending telemetry event: ${event.event}`)
-    await fetch(telemetryUrl, {
+    await fetch(new URL('/api/event', telemetryUrl), {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        ...headers,
-      },
+      headers: getTelemetryHeader(),
       body: JSON.stringify(event),
-      signal: AbortSignal.timeout(1000),
     })
   }
 
@@ -87,5 +94,47 @@ export async function sendTelemetryEvent(event: TelemetryEvent, options: Telemet
     log.debug(`Telemetry event sent: ${event.event}`)
   } catch (err) {
     log.error(err, 'Failed to send telemetry event')
+  }
+}
+
+export async function getLatestVersion() {
+  const send = async () => {
+    return await fetch(new URL('/api/version', telemetryUrl), {
+      method: 'GET',
+      headers: getTelemetryHeader(),
+    })
+  }
+  return retry({ times: 5, backoff: (i) => 10 ** i }, send)
+}
+
+export async function sendStartupEvent() {
+  const { disableTelemetry } = await readSettings()
+  if (telemetryDisabled || disableTelemetry) {
+    return
+  }
+
+  const data = {
+    event: 'startup',
+    session: sessionId,
+    version,
+    platform: platformString,
+  }
+
+  log.debug(data, 'Sending startup telemetry event')
+  saveLogFile(data)
+
+  const send = async () => {
+    await fetch(new URL('/api/version', telemetryUrl), {
+      method: 'POST',
+      headers: getTelemetryHeader(),
+      body: JSON.stringify(data),
+    })
+  }
+
+  try {
+    await retry({ times: 5, backoff: (i) => 10 ** i }, send)
+    log.debug('Startup telemetry event sent')
+  } catch (err) {
+    log.error(err, 'Failed to send startup telemetry event')
   }
 }

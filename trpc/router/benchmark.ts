@@ -18,6 +18,7 @@ import type { Aria2RpcHTTPUrl } from 'maria2'
 
 import { downloadFile } from '@/lib/aria2'
 import { mxc } from '@/lib/metalx'
+import { sendBenchmarkEvent } from '@/lib/telemetry'
 import { z } from '@/lib/zod'
 import { BenchmarkPercentile, BenchmarkResult, BenchmarkSummary } from '@/app/(model)/(report)/performance-test/types'
 import { baseProcedure, createRouter } from '@/trpc/init'
@@ -204,6 +205,10 @@ jq -c '.' ./out/\${TEST_MODE}/benchmark_percentile.json`,
     .trim()
     .split('\n')
     .map((line) => JSON.parse(line)) as [BenchmarkSummary, BenchmarkPercentile[]]
+
+  if (mode === 'standard') {
+    sendBenchmarkEvent({ summary })
+  }
 
   return { summary, percentile }
 }

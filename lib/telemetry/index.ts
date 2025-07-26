@@ -10,30 +10,10 @@
  * See the Mulan PSL v2 for more details.
  */
 
-import os from 'node:os'
+import { BenchmarkSummary } from '@/app/(model)/(report)/performance-test/types'
 
-import { match } from 'ts-pattern'
-
-import { TelemetryCpuInfo, TelemetryOsInfo, TelemetryRamInfo } from '@/lib/telemetry/types'
-
-import { sendTelemetryEvent, version } from './helpers'
-
-export async function sendStartupEvent() {
-  const systemName = match(process.platform)
-    .with('win32', () => 'Windows')
-    .with('darwin', () => 'macOS')
-    .with('linux', () => 'Linux')
-    .otherwise((p) => p)
-
-  const systemVersion = process.env.ELECTRON_ENV ? process.getSystemVersion() : os.release()
-  const systemArch = process.arch
-
-  await sendTelemetryEvent({
-    event: 'startup',
-    version: version,
-    system: `${systemName} ${systemVersion} (${systemArch})`,
-  })
-}
+import { sendTelemetryEvent } from './helpers'
+import { TelemetryCpuInfo, TelemetryOsInfo, TelemetryRamInfo } from './types'
 
 export async function sendCrashEvent(error: Error) {
   await sendTelemetryEvent(
@@ -48,7 +28,7 @@ export async function sendCrashEvent(error: Error) {
 }
 
 export async function sendRedfishEvent(client: string) {
-  await sendTelemetryEvent({ event: 'redfish', client }, { isManual: true })
+  await sendTelemetryEvent({ event: 'redfish', client })
 }
 
 export async function sendSystemDeployEvent(data: {
@@ -75,3 +55,9 @@ export async function sendServiceDeployEvent(service: string) {
     service,
   })
 }
+
+export async function sendBenchmarkEvent({ summary }: { summary: BenchmarkSummary }) {
+  await sendTelemetryEvent({ event: 'benchmark', summary })
+}
+
+export { sendStartupEvent, getLatestVersion } from './helpers'
