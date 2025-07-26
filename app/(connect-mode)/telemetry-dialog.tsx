@@ -36,7 +36,9 @@ export function TelemetryDialog() {
 
   const [joined, setJoined] = useState(true)
 
-  const { data, isPending, isError } = useQuery(trpc.settings.getSettings.queryOptions())
+  const { data, isPending, isError } = useQuery(
+    trpc.settings.getSettings.queryOptions(undefined, { trpc: { context: { stream: true } } }),
+  )
 
   const { mutate } = useMutation(
     trpc.settings.setSettingsEntry.mutationOptions({
