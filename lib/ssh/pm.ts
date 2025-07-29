@@ -92,6 +92,7 @@ export class PackageManager {
 --source ${mirror} \
 --source-registry registry.hub.docker.com \
 --protocol http \
+--use-intranet-source false \
 --install-latest true \
 --close-firewall true \
 --ignore-backup-tips \
