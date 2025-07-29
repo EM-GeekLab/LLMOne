@@ -381,10 +381,11 @@ export class MxaCtl {
 
   async execScriptFile(file: string, options: CtlExecOptions = {}) {
     const { sudo = !this.isRootUser(), ...restOptions } = options
-    if (!existsSync(file)) {
-      throw new Error(`文件 ${file} 不存在`)
+    const fullPath = join(rootDir, file)
+    if (!existsSync(fullPath)) {
+      throw new Error(`文件 ${file} 不存在: ${fullPath}`)
     }
-    const fileContent = await readFile(join(rootDir, file), { encoding: 'utf8' })
+    const fileContent = await readFile(fullPath, { encoding: 'utf8' })
     if (sudo) {
       const res = await this.ssh.exec('sudo', ['bash', '-c', fileContent], {
         ...this.execOptions({ sudo, ...restOptions }),
