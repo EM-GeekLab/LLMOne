@@ -136,6 +136,7 @@ if (runs.data.workflow_runs.length > 0) {
       }
       const targetDir = join(process.cwd(), 'bin/mxa', platform, arch)
       mkdirSync(targetDir, { recursive: true })
+      console.log(`Extracting ${artifact.name}.zip to ${targetDir}`)
       await extractZip(`${artifact.name}.zip`, { dir: targetDir })
       rmSync(`${artifact.name}.zip`)
     }
