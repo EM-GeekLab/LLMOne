@@ -427,7 +427,7 @@ export class MxaCtl {
     if (!this.system) {
       const { stdout, code, stderr } = await this.execScriptFile('helpers/system-detect.sh')
       if (code !== 0) {
-        throw new Error(stderr)
+        throw new Error(`系统环境检测失败: ${stderr || `返回码 ${code}`}`)
       }
       let info
       try {
