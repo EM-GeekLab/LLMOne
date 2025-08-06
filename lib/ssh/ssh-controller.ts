@@ -386,14 +386,15 @@ export class MxaCtl {
       throw new Error(`文件 ${file} 不存在: ${fullPath}`)
     }
     const fileContent = await readFile(fullPath, { encoding: 'utf8' })
+    const normalizedContent = fileContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
     if (sudo) {
-      const res = await this.ssh.exec('sudo', ['bash', '-c', fileContent], {
+      const res = await this.ssh.exec('sudo', ['bash', '-c', normalizedContent], {
         ...this.execOptions({ sudo, ...restOptions }),
         stream: 'both',
       })
       return { ...res, stdout: this.removeSudoPrompt(res.stdout) }
     }
-    return await this.ssh.exec('bash', ['-c', fileContent], {
+    return await this.ssh.exec('bash', ['-c', normalizedContent], {
       ...this.execOptions({ sudo, ...restOptions }),
       stream: 'both',
     })
