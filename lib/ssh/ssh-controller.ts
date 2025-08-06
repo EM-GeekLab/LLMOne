@@ -203,7 +203,7 @@ export class MxaCtl {
 
     const systemName = await getSystemName()
     const systemArch = await getSystemArch()
-    const path = join('bin/mxa', systemName, systemArch, 'mxa')
+    const path = join(rootDir, 'bin/mxa', systemName, systemArch, 'mxa')
     if (!existsSync(path)) {
       throw new Error(`没有找到适用于 ${systemName} ${systemArch} 的 mxa 可执行文件`)
     }
