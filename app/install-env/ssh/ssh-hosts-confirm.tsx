@@ -118,11 +118,19 @@ function HostConfirmList({ host }: { host: SshDeployerInfo }) {
         plannedMessage="即将安装基础依赖"
         completedMessage="已安装基础依赖"
       />
+      <HostConfirmItem flag={flags.installDocker} plannedMessage="即将安装 Docker" completedMessage="已安装 Docker" />
       {flags.installNvidiaGpu && (
         <HostConfirmItem
           flag={flags.installNvidiaGpu}
           plannedMessage="即将安装 NVIDIA GPU 驱动"
           completedMessage="已安装 NVIDIA GPU 驱动"
+        />
+      )}
+      {flags.installNvidiaCtk && (
+        <HostConfirmItem
+          flag={flags.installNvidiaCtk}
+          plannedMessage="即将安装 NVIDIA Container Toolkit"
+          completedMessage="已安装 NVIDIA Container Toolkit"
         />
       )}
       {flags.installHuaweiNpu && (
@@ -133,7 +141,6 @@ function HostConfirmList({ host }: { host: SshDeployerInfo }) {
           completedMessage="已安装 NPU 驱动"
         />
       )}
-      <HostConfirmItem flag={flags.installDocker} plannedMessage="即将安装 Docker" completedMessage="已安装 Docker" />
     </ol>
   )
 }

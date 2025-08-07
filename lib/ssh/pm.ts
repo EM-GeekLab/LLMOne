@@ -100,6 +100,10 @@ export class PackageManager {
   }
 
   installNvidiaDriver() {
-    return String.raw`source <(curl -sSL https://atomgit.com/em-geeklab/nvidia-driver-installer/raw/main/nvidia-install.sh) -y`
+    return String.raw`source <(curl -sSL https://gitee.com/EM_GeekLab/nvidia-driver-installer/raw/main/nvidia-install.sh) -y`
+  }
+
+  installNvidiaContainerToolkit() {
+    return String.raw`source <(curl -sSL https://gitee.com/EM_GeekLab/nvidia-driver-installer/raw/main/nvidia-container-installer.sh) -y --china-mirror`
   }
 }

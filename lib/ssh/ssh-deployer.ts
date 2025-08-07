@@ -50,6 +50,7 @@ export type InstallStepFlags = {
   installDocker: InstallFlag
   installNvidiaGpu?: InstallFlag
   installHuaweiNpu?: InstallFlag
+  installNvidiaCtk?: InstallFlag
 }
 
 export type SshDeployerStatus = 'idle' | 'failed' | 'installing' | 'completed'
@@ -162,6 +163,7 @@ fi
 
 nvidia_gpu_present="false"
 nvidia_gpu_smi_found="false"
+nvidia_container_toolkit_found="false"
 huawei_npu_present="false"
 huawei_npu_smi_found="false"
 
@@ -171,6 +173,9 @@ if command -v lspci >/dev/null 2>&1; then
         nvidia_gpu_present="true"
         if command -v nvidia-smi >/dev/null 2>&1; then
             nvidia_gpu_smi_found="true"
+        fi
+        if command -v nvidia-ctk >/dev/null 2>&1; then
+            nvidia_container_toolkit_found="true"
         fi
     fi
     if echo "$lspci_output" | grep -q "Processing accelerators: Huawei Technologies"; then
@@ -188,6 +193,7 @@ echo "{\
 \"aria2\":$aria2_found,\
 \"nvidiaGpu\": $nvidia_gpu_present,\
 \"nvidiaSmi\": $nvidia_gpu_smi_found,\
+\"nvidiaCtk\": $nvidia_container_toolkit_found,\
 \"huaweiNpu\": $huawei_npu_present,\
 \"huaweiSmi\": $huawei_npu_smi_found\
 }"`,
@@ -205,6 +211,7 @@ echo "{\
       aria2: boolean
       nvidiaGpu: boolean
       nvidiaSmi: boolean
+      nvidiaCtk: boolean
       huaweiNpu: boolean
       huaweiSmi: boolean
     }
@@ -213,7 +220,12 @@ echo "{\
       installDocker: { planned: !result.docker, completed: result.docker },
       installDependencies: { planned: !dependenciesInstalled, completed: dependenciesInstalled },
       updateSources: { planned: true, completed: false }, // always update sources
-      ...(result.nvidiaGpu ? { installNvidiaGpu: { planned: !result.nvidiaSmi, completed: result.nvidiaSmi } } : {}),
+      ...(result.nvidiaGpu
+        ? {
+            installNvidiaGpu: { planned: !result.nvidiaSmi, completed: result.nvidiaSmi },
+            installNvidiaCtk: { planned: !result.nvidiaCtk, completed: result.nvidiaCtk },
+          }
+        : {}),
       ...(result.huaweiNpu ? { installHuaweiNpu: { planned: !result.huaweiSmi, completed: result.huaweiSmi } } : {}),
     }
   }
@@ -237,13 +249,16 @@ echo "{\
     this.beforeInstall()
     await this.updateSources()
     await this.installDependencies()
+    await this.installDocker()
     if (this.installFlags.installNvidiaGpu) {
       await this.installNvidiaGpu()
     }
     if (this.installFlags.installHuaweiNpu) {
       await this.installHuaweiNpu()
     }
-    await this.installDocker()
+    if (this.installFlags.installNvidiaCtk) {
+      await this.installNvidiaContainerToolkit()
+    }
     await this.startServices()
     this.afterInstall()
   }
@@ -358,6 +373,18 @@ echo "{\
       successLog: 'NVIDIA GPU 驱动安装完成',
       errorLog: 'NVIDIA GPU 驱动安装失败',
       errorMessage: 'NVIDIA GPU 驱动安装失败，请检查网络连接或手动安装 NVIDIA GPU 驱动',
+    })
+  }
+
+  private async installNvidiaContainerToolkit() {
+    if (!this.installFlags.installNvidiaCtk) return
+    await this.execInstallScript({
+      script: this.pm.installNvidiaContainerToolkit(),
+      flag: this.installFlags.installNvidiaCtk,
+      initLog: '安装 NVIDIA Container Toolkit',
+      successLog: 'NVIDIA Container Toolkit 安装完成',
+      errorLog: 'NVIDIA Container Toolkit 安装失败',
+      errorMessage: 'NVIDIA Container Toolkit 安装失败，请检查网络连接或手动安装',
     })
   }
 
