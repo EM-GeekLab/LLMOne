@@ -22,7 +22,7 @@ import { logger } from '@/lib/logger'
 import { messageError, wrapError } from '@/lib/utils/error'
 import { SshFinalConnectionInfo } from '@/app/connect-info/schemas'
 
-import { PackageManager } from './pm'
+import { DockerPackageMirrors, PackageManager, PackageMirrors } from './pm'
 import { MxaCtl, SystemInfo } from './ssh-controller'
 
 const log = logger.child({ module: 'ssh.deployer' })
@@ -51,6 +51,11 @@ export type InstallStepFlags = {
   installNvidiaGpu?: InstallFlag
   installHuaweiNpu?: InstallFlag
   installNvidiaCtk?: InstallFlag
+}
+
+export type InstallOptions = {
+  packageMirror?: PackageMirrors | 'none'
+  dockerPackageMirror?: DockerPackageMirrors
 }
 
 export type SshDeployerStatus = 'idle' | 'failed' | 'installing' | 'completed'
@@ -242,14 +247,14 @@ echo "{\
     this.ee.on('install:completed', listener)
   }
 
-  async install({ onProgress }: { onProgress?: LogListener } = {}) {
+  async install({ onProgress, ...options }: { onProgress?: LogListener } & InstallOptions = {}) {
     if (onProgress) {
       this.onLog(onProgress)
     }
     this.beforeInstall()
-    await this.updateSources()
+    await this.updateSources(options.packageMirror)
     await this.installDependencies()
-    await this.installDocker()
+    await this.installDocker(options.dockerPackageMirror)
     if (this.installFlags.installNvidiaGpu) {
       await this.installNvidiaGpu()
     }
@@ -313,20 +318,20 @@ echo "{\
     }
   }
 
-  private async updatePmIndex() {
+  private async updateSources(mirror?: InstallOptions['packageMirror']) {
+    if (mirror === 'none') {
+      await this.execInstallScript({
+        script: this.pm.updateIndex(),
+        flag: this.installFlags.updateSources,
+        initLog: '更新软件包索引',
+        successLog: '软件包索引更新完成',
+        errorLog: '软件包索引更新失败',
+        errorMessage: '软件包索引更新失败，请检查网络连接或手动更新软件包索引',
+      })
+      return
+    }
     await this.execInstallScript({
-      script: this.pm.updateIndex(),
-      flag: this.installFlags.updateSources,
-      initLog: '更新软件包索引',
-      successLog: '软件包索引更新完成',
-      errorLog: '软件包索引更新失败',
-      errorMessage: '软件包索引更新失败，请检查网络连接或手动更新软件包索引',
-    })
-  }
-
-  private async updateSources() {
-    await this.execInstallScript({
-      script: this.pm.updateSources(),
+      script: this.pm.updateSources(mirror),
       flag: this.installFlags.updateSources,
       initLog: '更新软件源',
       successLog: '软件源更新完成',
@@ -353,9 +358,9 @@ echo "{\
     })
   }
 
-  private async installDocker() {
+  private async installDocker(mirror?: InstallOptions['dockerPackageMirror']) {
     await this.execInstallScript({
-      script: this.pm.installDocker(),
+      script: this.pm.installDocker(mirror),
       flag: this.installFlags.installDocker,
       initLog: '安装 Docker',
       successLog: 'Docker 安装完成',
@@ -508,17 +513,17 @@ export class SshDeployerManager {
     return deployer
   }
 
-  async installTrigger(host: string) {
+  async installTrigger(host: string, options: InstallOptions = {}) {
     const deployer = this.getDeployer(host)
-    await deployer.install()
+    await deployer.install(options)
   }
 
-  installStream(host: string): EventIterator<string> {
+  installStream(host: string, options: InstallOptions = {}): EventIterator<string> {
     const deployer = this.getDeployer(host)
     return new EventIterator<string>(({ push, stop, fail }) => {
       deployer.getLogs().forEach((log) => push(log))
       deployer
-        .install({ onProgress: (data) => push(data) })
+        .install({ onProgress: (data) => push(data), ...options })
         .then(() => stop())
         .catch((err) => fail(err))
     })

@@ -10,19 +10,11 @@
  * See the Mulan PSL v2 for more details.
  */
 
-'use client'
+import { enableMapSet } from 'immer'
+import { atom } from 'jotai'
 
-import * as React from 'react'
+import type { InstallOptions } from '@/lib/ssh/ssh-deployer'
 
-import { JotaiProvider } from './jotai-provider'
-import { SshHostsConfirm } from './ssh-hosts-confirm'
-import { SshInstallPage } from './ssh-install-page'
+enableMapSet()
 
-export function SshPage() {
-  return (
-    <JotaiProvider>
-      <SshHostsConfirm />
-      <SshInstallPage />
-    </JotaiProvider>
-  )
-}
+export const installConfigAtom = atom<Map<string, InstallOptions>>(new Map())

@@ -13,6 +13,7 @@
 import { TRPCError } from '@trpc/server'
 
 import { SshDeployerManager } from '@/lib/ssh/ssh-deployer'
+import { z } from '@/lib/zod'
 import { sshHostsListSchema } from '@/app/connect-info/schemas'
 import { baseProcedure, createRouter } from '@/trpc/init'
 
@@ -28,6 +29,35 @@ function getSshDeployerManager() {
 }
 
 const installStatusCache = new Map<string, Promise<void>>()
+
+const triggerInputSchema = z.object({
+  host: z.string(),
+  options: z
+    .object({
+      packageMirror: z
+        .enum([
+          'none',
+          'mirrors.aliyun.com',
+          'mirrors.tencent.com',
+          'mirrors.tuna.tsinghua.edu.cn',
+          'mirrors.ustc.edu.cn',
+        ])
+        .optional(),
+      dockerPackageMirror: z
+        .enum([
+          'mirrors.aliyun.com/docker-ce',
+          'mirrors.tencent.com/docker-ce',
+          'mirrors.tuna.tsinghua.edu.cn/docker-ce',
+          'mirrors.ustc.edu.cn/docker-ce',
+          'download.docker.com',
+        ])
+        .optional(),
+    })
+    .default({
+      packageMirror: 'none',
+      dockerPackageMirror: 'mirrors.aliyun.com/docker-ce',
+    }),
+})
 
 export const sshDeployRouter = createRouter({
   deployer: {
@@ -53,13 +83,13 @@ export const sshDeployRouter = createRouter({
     }),
   },
   install: {
-    trigger: baseProcedure.input(inputType<string>).mutation(async ({ input: host }) => {
-      const promise = getSshDeployerManager().installTrigger(host)
+    trigger: baseProcedure.input(triggerInputSchema).mutation(async ({ input: { host, options } }) => {
+      const promise = getSshDeployerManager().installTrigger(host, options)
       installStatusCache.set(host, promise)
       return await promise
     }),
-    triggerOnce: baseProcedure.input(inputType<string>).mutation(async ({ input: host }) => {
-      const promise = getSshDeployerManager().installTrigger(host)
+    triggerOnce: baseProcedure.input(triggerInputSchema).mutation(async ({ input: { host, options } }) => {
+      const promise = getSshDeployerManager().installTrigger(host, options)
       installStatusCache.set(host, promise)
     }),
     status: baseProcedure.input(inputType<string>).query(async ({ input: host }) => {

@@ -13,17 +13,20 @@
 'use client'
 
 import * as React from 'react'
-import { ReactNode } from 'react'
+import { ComponentProps, ReactNode, useId } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useAtom } from 'jotai/react'
 import { AlertTriangleIcon, ArrowRightIcon, CheckIcon } from 'lucide-react'
 import { match } from 'ts-pattern'
 
-import type { InstallFlag, SshDeployerInfo } from '@/lib/ssh/ssh-deployer'
+import type { InstallFlag, InstallOptions, SshDeployerInfo } from '@/lib/ssh/ssh-deployer'
+import { cn } from '@/lib/utils'
 import { AppCardContent, AppCardFooter, AppCardSection } from '@/components/app/app-card'
 import { Callout } from '@/components/base/callout'
 import { NavButton } from '@/components/base/nav-button'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { installConfigAtom } from '@/app/install-env/ssh/atoms'
 import { useGlobalStore } from '@/stores'
 import { useTRPC, useTRPCClient } from '@/trpc/client'
 
@@ -112,13 +115,17 @@ function HostConfirmList({ host }: { host: SshDeployerInfo }) {
         flag={flags.updateSources}
         plannedMessage="即将更新软件源镜像"
         completedMessage="已更新软件源镜像"
-      />
+      >
+        <PackageMirrorSelect host={host.host} />
+      </HostConfirmItem>
       <HostConfirmItem
         flag={flags.installDependencies}
         plannedMessage="即将安装基础依赖"
         completedMessage="已安装基础依赖"
       />
-      <HostConfirmItem flag={flags.installDocker} plannedMessage="即将安装 Docker" completedMessage="已安装 Docker" />
+      <HostConfirmItem flag={flags.installDocker} plannedMessage="即将安装 Docker" completedMessage="已安装 Docker">
+        <DockerPackageMirrorSelect host={host.host} />
+      </HostConfirmItem>
       {flags.installNvidiaGpu && (
         <HostConfirmItem
           flag={flags.installNvidiaGpu}
@@ -142,6 +149,68 @@ function HostConfirmList({ host }: { host: SshDeployerInfo }) {
         />
       )}
     </ol>
+  )
+}
+
+function PackageMirrorSelect({ host }: { host: string }) {
+  const id = useId()
+  const [options, setOptions] = useAtom(installConfigAtom)
+  const value = options.get(host)?.packageMirror || 'none'
+  const setValue = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newMirror = e.target.value as InstallOptions['packageMirror']
+    setOptions((prev) => {
+      const newOptions = new Map(prev)
+      const currentConfig = newOptions.get(host) || {}
+      newOptions.set(host, { ...currentConfig, packageMirror: newMirror })
+      return newOptions
+    })
+  }
+
+  return (
+    <NativeSelect id={id} name="package-mirror" value={value} onChange={setValue}>
+      <option value="none">不修改源</option>
+      <option value="mirrors.aliyun.com">阿里源</option>
+      <option value="mirrors.tencent.com">腾讯源</option>
+      <option value="mirrors.tuna.tsinghua.edu.cn">清华源</option>
+      <option value="mirrors.ustc.edu.cn">中科大源</option>
+    </NativeSelect>
+  )
+}
+
+function DockerPackageMirrorSelect({ host }: { host: string }) {
+  const id = useId()
+  const [options, setOptions] = useAtom(installConfigAtom)
+  const value = options.get(host)?.dockerPackageMirror || 'mirrors.aliyun.com/docker-ce'
+  const setValue = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newMirror = e.target.value as InstallOptions['dockerPackageMirror']
+    setOptions((prev) => {
+      const newOptions = new Map(prev)
+      const currentConfig = newOptions.get(host) || {}
+      newOptions.set(host, { ...currentConfig, dockerPackageMirror: newMirror })
+      return newOptions
+    })
+  }
+
+  return (
+    <NativeSelect id={id} name="docker-package-mirror" value={value} onChange={setValue}>
+      <option value="mirrors.aliyun.com/docker-ce">阿里源</option>
+      <option value="mirrors.tencent.com/docker-ce">腾讯源</option>
+      <option value="mirrors.tuna.tsinghua.edu.cn/docker-ce">清华源</option>
+      <option value="mirrors.ustc.edu.cn/docker-ce">中科大源</option>
+      <option value="download.docker.com">官方源</option>
+    </NativeSelect>
+  )
+}
+
+function NativeSelect({ className, ...props }: ComponentProps<'select'>) {
+  return (
+    <select
+      className={cn(
+        'shrink-0 rounded-sm border bg-background py-px text-xs shadow-xs outline-none group-data-completed:hidden hover:border-accent-foreground/25 hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[2px] focus-visible:ring-ring/50 disabled:hover:border-border disabled:hover:bg-background disabled:hover:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 dark:disabled:hover:bg-input/30',
+        className,
+      )}
+      {...props}
+    />
   )
 }
 

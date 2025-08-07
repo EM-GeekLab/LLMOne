@@ -10,8 +10,11 @@
  * See the Mulan PSL v2 for more details.
  */
 
+import { useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useAtomValue } from 'jotai/react'
 
+import { installConfigAtom } from '@/app/install-env/ssh/atoms'
 import { useGlobalStoreApi } from '@/stores'
 import { useTRPC, useTRPCClient } from '@/trpc/client'
 
@@ -20,13 +23,14 @@ export function useInstallStartTrigger(): { start: () => void } {
   const trpcClient = useTRPCClient()
   const trpc = useTRPC()
   const queryClient = useQueryClient()
+  const installConfigs = useAtomValue(installConfigAtom)
 
   const { mutate: start } = useMutation({
     mutationFn: async () => {
       const { finalSshHosts } = storeApi.getState()
       await Promise.all(
         finalSshHosts.map(async ({ ip: host }) => {
-          await trpcClient.sshDeploy.install.triggerOnce.mutate(host)
+          await trpcClient.sshDeploy.install.triggerOnce.mutate({ host, options: installConfigs.get(host) })
         }),
       )
     },
@@ -47,16 +51,22 @@ export function useInstallStartTrigger(): { start: () => void } {
 export function useInstallRetryTrigger(): { retry: (host: string) => void } {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
+  const installConfigs = useAtomValue(installConfigAtom)
 
-  const { mutate: retry } = useMutation(
+  const { mutate } = useMutation(
     trpc.sshDeploy.install.triggerOnce.mutationOptions({
-      onSuccess: (_, host) => {
+      onSuccess: (_, { host }) => {
         return Promise.all([
           queryClient.resetQueries({ queryKey: trpc.sshDeploy.install.status.queryKey(host) }),
           queryClient.resetQueries({ queryKey: trpc.sshDeploy.install.statusAll.queryKey() }),
         ])
       },
     }),
+  )
+
+  const retry = useCallback(
+    (host: string) => mutate({ host, options: installConfigs.get(host) }),
+    [installConfigs, mutate],
   )
 
   return { retry }
