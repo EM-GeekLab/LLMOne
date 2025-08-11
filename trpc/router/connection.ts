@@ -29,11 +29,16 @@ import { baseProcedure, createRouter } from '@/trpc/init'
 
 import { getDefaultArchitecture } from './bmc-utils'
 import { getBootstrapPath } from './resource-utils'
+import { sshDm } from './ssh-deploy'
 import { inputType, log } from './utils'
 
 export type DiskInfo = (NonNullable<HostExtraInfo['system_info']>['blks'][number] & { path: string })[]
 
 const getHostIp = async (host: string) => {
+  if (sshDm) {
+    const hostFound = sshDm.list.find((h) => h.hostId === host)
+    if (hostFound) return [hostFound.host]
+  }
   const [res] = await mxc.remoteIpByHostIp(host)
   if (!res.ok) return []
   return res.urls

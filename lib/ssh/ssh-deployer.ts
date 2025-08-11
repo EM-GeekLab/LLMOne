@@ -29,7 +29,6 @@ const log = logger.child({ module: 'ssh.deployer' })
 
 type HostItem = {
   host: string
-  hostId?: string
   hostname: string
   ctl: MxaCtl
   os: SystemInfo
@@ -62,7 +61,6 @@ export type SshDeployerStatus = 'idle' | 'failed' | 'installing' | 'completed'
 
 export type SshDeployerInfo = {
   host: string
-  hostId?: string
   hostname: string
   os: SystemInfo
   flags: InstallStepFlags
@@ -71,7 +69,6 @@ export type SshDeployerInfo = {
 
 export class SshDeployer {
   readonly host: string
-  readonly hostId?: string
   readonly ctl: MxaCtl
   readonly pm: PackageManager
   readonly os: SystemInfo
@@ -84,7 +81,6 @@ export class SshDeployer {
 
   constructor(item: HostItem) {
     this.host = item.host
-    this.hostId = item.hostId
     this.hostname = item.hostname
     this.ctl = item.ctl
     this.os = item.os
@@ -101,6 +97,10 @@ export class SshDeployer {
     this.pushLog = this.pushLog.bind(this)
   }
 
+  get hostId() {
+    return this.ctl.connectionInfo().hostId
+  }
+
   static async create(item: HostItem) {
     const deployer = new SshDeployer(item)
     await deployer.check()
@@ -114,7 +114,6 @@ export class SshDeployer {
   info(): SshDeployerInfo {
     return {
       host: this.host,
-      hostId: this.hostId,
       hostname: this.hostname,
       os: this.os,
       flags: this.installFlags,
@@ -486,9 +485,9 @@ export class SshDeployerManager {
             .exhaustive(),
         )
         try {
-          const { host, hostId } = ctl.connectionInfo()
+          const { host } = ctl.connectionInfo()
           const [os, hostname] = await Promise.all([ctl.systemInfo(), ctl.hostname()])
-          return await SshDeployer.create({ host, hostId, ctl, os, hostname })
+          return await SshDeployer.create({ host, ctl, os, hostname })
         } catch (err) {
           ctl.dispose()
           throw new TRPCError({
