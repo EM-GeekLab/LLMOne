@@ -165,14 +165,7 @@ export async function getHostInfo(host: string) {
 export async function getHostIp(host: string) {
   if (sshDm) {
     const hostFound = sshDm.list.find((h) => h.hostId === host)
-    if (!hostFound) {
-      log.error({ host }, '无法获取主机的 IP 地址')
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: `无法获取主机的 IP 地址`,
-      })
-    }
-    return hostFound.host
+    if (hostFound) return hostFound.host
   }
   const [res, status] = await mxc.remoteIpByHostIp(host)
   if (!res.ok || status >= 400 || !res.urls[0]) {
