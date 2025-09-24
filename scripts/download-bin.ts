@@ -49,7 +49,8 @@ async function treePrint(dir: string, prefix = '') {
   }
 }
 
-const commit = process.env.MXD_COMMIT || exit(2)
+const commit = process.env.MXD_COMMIT
+const releaseTag = process.env.MXD_RELEASE
 const platform = (process.env.MXD_PLATFORM || exit(2)) as 'windows' | 'linux-gnu' | 'linux-musl' | 'darwin'
 const arch = (process.env.MXD_ARCH || exit(2)) as 'x86_64' | 'aarch64'
 
@@ -57,18 +58,22 @@ const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 })
 
-console.log('Fetching workflow runs')
-const runs = await octokit.rest.actions.listWorkflowRunsForRepo({
-  owner: 'koitococo',
-  repo: 'mxlite',
-  // eslint-disable-next-line camelcase
-  head_sha: commit,
-  headers: {
-    'X-GitHub-Api-Version': '2022-11-28',
-  },
-})
+async function downloadFromActions() {
+  console.log('Fetching workflow runs')
+  const runs = await octokit.rest.actions.listWorkflowRunsForRepo({
+    owner: 'koitococo',
+    repo: 'mxlite',
+    // eslint-disable-next-line camelcase
+    head_sha: commit!,
+    headers: {
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  })
 
-if (runs.data.workflow_runs.length > 0) {
+  if (!(runs.data.workflow_runs.length > 0)) {
+    throw new Error('No workflow runs found.')
+  }
+
   console.log('Fetching artifacts')
   const artifacts = await octokit.rest.actions.listWorkflowRunArtifacts({
     owner: 'koitococo',
@@ -80,16 +85,45 @@ if (runs.data.workflow_runs.length > 0) {
     },
   })
 
-  const matchedArtifact = artifacts.data.artifacts.find(
+  const mxdArtifact = artifacts.data.artifacts.find(
     (artifact) => artifact.name.match(/mxd-/) && artifact.name.includes(platform) && artifact.name.includes(arch),
   )
-  if (matchedArtifact) {
-    console.log('Downloading mxd artifact:', matchedArtifact.name)
+  if (!mxdArtifact) {
+    throw new Error(`No mxd artifact found for platform ${platform} and arch ${arch}.`)
+  }
+  console.log('Downloading mxd artifact:', mxdArtifact.name)
+  const response = await octokit.rest.actions.downloadArtifact({
+    owner: 'koitococo',
+    repo: 'mxlite',
+    // eslint-disable-next-line camelcase
+    artifact_id: mxdArtifact.id,
+    // eslint-disable-next-line camelcase
+    archive_format: 'zip',
+    headers: {
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  })
+  const binary = response.data as ArrayBuffer
+  await writeFile('artifact.zip', new Uint8Array(binary))
+  console.log('mxd artifact downloaded successfully')
+  const targetDir = join(process.cwd(), 'bin')
+  mkdirSync(targetDir, { recursive: true })
+  await extractZip('artifact.zip', { dir: targetDir })
+  rmSync('artifact.zip')
+
+  const mxaArtifacts = artifacts.data.artifacts.filter(
+    (artifact) => artifact.name.match(/^mxa-(.+)/) && !artifact.name.includes('gnu'),
+  )
+  if (!(mxaArtifacts.length > 0)) {
+    throw new Error('No mxa artifacts found.')
+  }
+  for (const artifact of mxaArtifacts) {
+    console.log(`Downloading mxa artifact: ${artifact.name}`)
     const response = await octokit.rest.actions.downloadArtifact({
       owner: 'koitococo',
       repo: 'mxlite',
       // eslint-disable-next-line camelcase
-      artifact_id: matchedArtifact.id,
+      artifact_id: artifact.id,
       // eslint-disable-next-line camelcase
       archive_format: 'zip',
       headers: {
@@ -97,57 +131,80 @@ if (runs.data.workflow_runs.length > 0) {
       },
     })
     const binary = response.data as ArrayBuffer
-    await writeFile('artifact.zip', new Uint8Array(binary))
-    console.log('mxd artifact downloaded successfully')
-    const targetDir = join(process.cwd(), 'bin')
-    mkdirSync(targetDir, { recursive: true })
-    await extractZip('artifact.zip', { dir: targetDir })
-    rmSync('artifact.zip')
-  } else {
-    console.error('No mxd artifact found.')
-  }
-
-  const mxaArtifacts = artifacts.data.artifacts.filter(
-    (artifact) => artifact.name.match(/^mxa-(.+)/) && !artifact.name.includes('gnu'),
-  )
-  if (mxaArtifacts.length > 0) {
-    for (const artifact of mxaArtifacts) {
-      console.log(`Downloading mxa artifact: ${artifact.name}`)
-      const response = await octokit.rest.actions.downloadArtifact({
-        owner: 'koitococo',
-        repo: 'mxlite',
-        // eslint-disable-next-line camelcase
-        artifact_id: artifact.id,
-        // eslint-disable-next-line camelcase
-        archive_format: 'zip',
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      })
-      const binary = response.data as ArrayBuffer
-      await writeFile(`${artifact.name}.zip`, new Uint8Array(binary))
-      console.log(`mxa artifact ${artifact.name} downloaded successfully`)
-      const matchedSegments = artifact.name.match(/^mxa-(\w+)-(\w+)-(\w+)/)
-      const arch = matchedSegments?.[1]
-      const platform = matchedSegments?.[3]
-      if (!arch || !platform) {
-        console.error(`Failed to parse architecture or platform from artifact name: ${artifact.name}`)
-        continue
-      }
-      const targetDir = join(process.cwd(), 'bin/mxa', platform, arch)
-      mkdirSync(targetDir, { recursive: true })
-      console.log(`Extracting ${artifact.name}.zip to ${targetDir}`)
-      await extractZip(`${artifact.name}.zip`, { dir: targetDir })
-      rmSync(`${artifact.name}.zip`)
+    await writeFile(`${artifact.name}.zip`, new Uint8Array(binary))
+    console.log(`mxa artifact ${artifact.name} downloaded successfully`)
+    const matchedSegments = artifact.name.match(/^mxa-(\w+)-(\w+)-(\w+)/)
+    const arch = matchedSegments?.[1]
+    const platform = matchedSegments?.[3]
+    if (!arch || !platform) {
+      console.error(`Failed to parse architecture or platform from artifact name: ${artifact.name}`)
+      continue
     }
-  } else {
-    console.error('No mxa artifacts found.')
+    const targetDir = join(process.cwd(), 'bin/mxa', platform, arch)
+    mkdirSync(targetDir, { recursive: true })
+    await extractZip(`${artifact.name}.zip`, { dir: targetDir })
+    rmSync(`${artifact.name}.zip`)
   }
 
   console.log('bin directory structure:')
   await treePrint(join(process.cwd(), 'bin'))
-} else {
-  console.error('No workflow runs found.')
-  console.error(runs)
-  exit(1)
 }
+
+async function downloadByUrl(url: string, dir: string, filename: string) {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Failed to download ${url}: ${response.statusText}`)
+  }
+  const data = await response.bytes()
+  mkdirSync(dir, { recursive: true })
+  const target = join(dir, filename)
+  await writeFile(target, new Uint8Array(data))
+}
+
+async function downloadFromRelease() {
+  console.log('Fetching release info')
+  const releaseInfo = await octokit.rest.repos.getReleaseByTag({
+    owner: 'koitococo',
+    repo: 'mxlite',
+    tag: releaseTag!,
+    headers: {
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  })
+  console.log('Fetching assets')
+  const assets = releaseInfo.data.assets
+
+  const mxdAsset = assets.find(
+    (asset) => asset.name.includes('mxd-') && asset.name.includes(platform) && asset.name.includes(arch),
+  )
+  if (!mxdAsset) {
+    throw new Error(`No mxd asset found for platform ${platform} and arch ${arch}.`)
+  }
+
+  console.log('Downloading mxd asset:', mxdAsset.name)
+  await downloadByUrl(mxdAsset.url, 'bin', 'mxd')
+
+  for (const asset of assets) {
+    const match = asset.name.match(/^mxa-(.+)-linux-musl$/)
+    if (match) {
+      const arch = match[1]
+
+      console.log(`Downloading mxa asset: ${asset.name}`)
+      await downloadByUrl(asset.url, join('bin/mxa/linux', arch), 'mxa')
+    }
+  }
+}
+
+if (releaseTag) {
+  await downloadFromRelease()
+  exit(0)
+}
+
+if (commit) {
+  await downloadFromActions()
+  exit(0)
+}
+
+throw new Error('Either COMMIT or RELEASE environment variable must be set.')
+
+export {}
