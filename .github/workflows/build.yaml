@@ -68,7 +68,7 @@ jobs:
         env:
           MXD_PLATFORM: ${{ matrix.mxd-platform }}
           MXD_ARCH: ${{ matrix.mxd-arch }}
-          MXD_COMMIT: ${{ vars.MXD_COMMIT }}
+          MXD_RELEASE: ${{ vars.MXA_RELEASE }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build the app
         run: bun run build
