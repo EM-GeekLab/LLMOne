@@ -182,15 +182,15 @@ async function downloadFromRelease() {
   }
 
   console.log('Downloading mxd asset:', mxdAsset.name)
-  await downloadByUrl(mxdAsset.url, 'bin', 'mxd')
+  await downloadByUrl(mxdAsset.browser_download_url, 'bin', 'mxd')
 
   for (const asset of assets) {
-    const match = asset.name.match(/^mxa-(.+)-linux-musl$/)
+    const match = asset.name.match(/^mxa-(.+)-unknown-linux-musl$/)
     if (match) {
       const arch = match[1]
 
       console.log(`Downloading mxa asset: ${asset.name}`)
-      await downloadByUrl(asset.url, join('bin/mxa/linux', arch), 'mxa')
+      await downloadByUrl(asset.browser_download_url, join('bin/mxa/linux', arch), 'mxa')
     }
   }
 }
