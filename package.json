@@ -120,7 +120,7 @@
     "@types/ssh2": "^1.15.5",
     "@types/ws": "^8.18.1",
     "@types/yargs": "^17.0.35",
-    "electron": "35.5.1",
+    "electron": "35.7.5",
     "electron-builder": "^26.8.1",
     "electron-serve": "^2.1.1",
     "eslint": "^9.39.3",
