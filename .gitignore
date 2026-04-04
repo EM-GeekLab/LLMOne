@@ -58,6 +58,9 @@ next-env.d.ts
 .local
 local-test
 
+# local agent/session artifacts
+/.tmp/
+
 # store persistence
 .global-store.json
 .install-store.json
