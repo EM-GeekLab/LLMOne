@@ -34,12 +34,15 @@ export function ModelsListPage() {
   const trpcClient = useTRPCClient()
   const queryClient = useQueryClient()
 
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps -- queryFn intentionally pre-populates model-detail caches while fetching the model list.
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: trpc.resource.getModelInfo.queryKey(manifestPath),
     queryFn: async ({ signal }) => {
       if (!manifestPath) throw new Error('未选择模型配置文件')
       const models = await trpcClient.resource.getModels.query(manifestPath, { signal })
-      models.map((model) => queryClient.setQueryData(trpc.resource.getModelInfo.queryKey(model.modelInfoPath), model))
+      models.forEach((model) =>
+        queryClient.setQueryData(trpc.resource.getModelInfo.queryKey(model.modelInfoPath), model),
+      )
       return models
     },
     enabled: !!manifestPath,

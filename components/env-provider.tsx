@@ -38,6 +38,7 @@ export function EnvProvider({ children }: { children: ReactNode }) {
 
   const { data: home } = useQuery(trpc.environment.homeDirectory.queryOptions(undefined, { staleTime: Infinity }))
   const { data: sshPath } = useQuery(trpc.environment.sshPath.queryOptions(undefined, { staleTime: Infinity }))
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps -- queryFn writes backend platform to window as an intentional side effect while fetching the stable platform value.
   const { data: platform } = useQuery({
     queryKey: trpc.environment.platform.queryKey(),
     queryFn: async ({ signal }) => {

@@ -32,6 +32,8 @@ function showErrorMessage(message?: string) {
   })
 }
 
+type CheckConnectionMode = 'bmc' | 'ssh'
+
 export function useAutoCheckConnection(id: string) {
   const store = useGlobalStoreApi()
   const mode = useGlobalStore((s) => s.connectMode)
@@ -41,9 +43,10 @@ export function useAutoCheckConnection(id: string) {
 
   const trpc = useTRPCClient()
 
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps -- queryKey is intentionally scoped to connection identity; queryFn closes over stable clients/store and validation helpers.
   return queryOptions({
     enabled: !!host && !!mode,
-    queryKey: ['check-connection', mode, host?.id, { host, defaultCredentials }],
+    queryKey: ['check-connection', mode as CheckConnectionMode, host?.id, { host, defaultCredentials }],
     retry: false,
     queryFn: async ({ signal }) => {
       if (!host || !mode) throw new Error('连接配置不完整')
@@ -112,7 +115,7 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
           result.data.map(async (_info, index) => {
             await queryClient.cancelQueries({ queryKey: ['check-connection', 'bmc', bmcHosts[index].id] })
             return await queryClient.invalidateQueries({
-              queryKey: ['check-connection', 'bmc', bmcHosts[index].id, { host: bmcHosts[index], defaultCredentials }],
+              queryKey: ['check-connection', 'bmc', bmcHosts[index].id],
             })
           }),
         )
@@ -129,7 +132,7 @@ export function useManualCheckAllConnections({ onValidate }: { onValidate?: () =
           result.data.map(async (_info, index) => {
             await queryClient.cancelQueries({ queryKey: ['check-connection', 'ssh', sshHosts[index].id] })
             return await queryClient.invalidateQueries({
-              queryKey: ['check-connection', 'ssh', sshHosts[index].id, { host: sshHosts[index], defaultCredentials }],
+              queryKey: ['check-connection', 'ssh', sshHosts[index].id],
             })
           }),
         )

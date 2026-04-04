@@ -48,12 +48,13 @@ function OsSelectorContainer() {
   const defaultArch = useQuery(
     trpc.connection.bmc.getDefaultArchitecture.queryOptions(bmcHosts, { enabled: !!manifestPath }),
   )
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps -- queryFn intentionally pre-populates per-OS detail caches from the distribution list.
   const distros = useQuery({
     queryKey: trpc.resource.getDistributions.queryKey(manifestPath),
     queryFn: async ({ signal }) => {
       if (!manifestPath) throw new Error('未选择配置文件')
       const result = await trpcClient.resource.getDistributions.query(manifestPath, { signal })
-      result.map((info) => queryClient.setQueryData(trpc.resource.getOsInfo.queryKey(info.osInfoPath), info))
+      result.forEach((info) => queryClient.setQueryData(trpc.resource.getOsInfo.queryKey(info.osInfoPath), info))
       return result
     },
     enabled: !!manifestPath,

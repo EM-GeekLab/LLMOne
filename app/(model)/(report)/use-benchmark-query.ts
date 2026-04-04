@@ -34,11 +34,12 @@ export function useBenchmarkQuery(
 
   const input = { deployment, mode, manifestPath }
 
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps -- queryFn intentionally seeds related benchmark result cache; extra captured values are stable helpers, not cache identity.
   return useQuery({
     queryKey: trpc.benchmark.runQuickTest.queryKey(input),
     queryFn: async () => {
       const result = await trpcClient.benchmark.runQuickTest.query(input, { context: { stream: true } })
-      queryClient.setQueryData(trpc.benchmark.getResult.queryKey(input), result)
+      queryClient.setQueryData(trpc.benchmark.getResult.queryKey({ host: deployment.host, mode }), result)
       return result
     },
     retry: false,

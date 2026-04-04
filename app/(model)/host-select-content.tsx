@@ -22,11 +22,12 @@ export function HostSelectContent() {
   const trpc = useTRPC()
   const trpcClient = useTRPCClient()
   const queryClient = useQueryClient()
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps -- queryFn intentionally warms per-host caches from the fetched host list.
   const { data: hosts = initHosts } = useQuery({
     queryKey: trpc.connection.getHosts.queryKey(),
     queryFn: async ({ signal }) => {
       const hosts = await trpcClient.connection.getHosts.query(undefined, { signal })
-      hosts.map(({ host, ...rest }) => queryClient.setQueryData(trpc.connection.getHostInfo.queryKey(host), rest))
+      hosts.forEach(({ host, ...rest }) => queryClient.setQueryData(trpc.connection.getHostInfo.queryKey(host), rest))
       return hosts
     },
     select: (list) =>

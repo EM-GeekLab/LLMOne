@@ -23,7 +23,7 @@ import {
 } from 'react'
 import { useDebouncedCallback, useOs } from '@mantine/hooks'
 import { useControllableState } from '@radix-ui/react-use-controllable-state'
-import { keepPreviousData, queryOptions, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { CommandLoading } from 'cmdk'
 import { ArrowUpIcon, ChevronRightIcon, FileIcon, FolderIcon, FolderOpenIcon, XCircleIcon, XIcon } from 'lucide-react'
@@ -49,7 +49,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { useTRPCClient } from '@/trpc/client'
+import { useTRPC, useTRPCClient } from '@/trpc/client'
 
 import { getDirectoryName, getFileDirectory, getPathParts, joinPathParts, normalizeDirPath } from './file-utils'
 
@@ -163,13 +163,12 @@ function FileSelectorList() {
   const { open, setOpen } = DialogContext.useContext()
 
   const queryClient = useQueryClient()
-  const trpc = useTRPCClient()
+  const trpc = useTRPC()
+  const trpcClient = useTRPCClient()
 
   const filesQueryOptions = useCallback(
     (opts: { directory: string; enabled?: boolean }) =>
-      queryOptions({
-        queryKey: ['directory', opts.directory],
-        queryFn: async ({ signal }) => trpc.file.readDirectory.query(opts.directory, { signal }),
+      trpc.file.readDirectory.queryOptions(opts.directory, {
         placeholderData: keepPreviousData,
         enabled: opts.enabled,
       }),
@@ -236,7 +235,7 @@ function FileSelectorList() {
   // Navigate to parent directory.
   const navigateToParent = useCallback(
     async ({ closeWhenRoot = false } = {}) => {
-      const parentPath = await trpc.file.getParentDirectoryPath.query(currentDirectory)
+      const parentPath = await trpcClient.file.getParentDirectoryPath.query(currentDirectory)
       if (closeWhenRoot && currentDirectory === parentPath) setOpen(false)
 
       setCurrentDirectory(parentPath)
@@ -244,7 +243,7 @@ function FileSelectorList() {
       const items = await ensureQueryFiles(parentPath)
       navigateToFirstItem(items)
     },
-    [trpc, currentDirectory, ensureQueryFiles, navigateToFirstItem, setCurrentDirectory, setInputPath, setOpen],
+    [trpcClient, currentDirectory, ensureQueryFiles, navigateToFirstItem, setCurrentDirectory, setInputPath, setOpen],
   )
 
   // 使用命令评分算法获取最相关的项目。
@@ -295,7 +294,7 @@ function FileSelectorList() {
   const checkAndNavigateToDirectory = useCallback(
     async (path: string) => {
       if (!path) return
-      const { directory, dirExists, isDirectory } = await trpc.file.checkPath.query(path)
+      const { directory, dirExists, isDirectory } = await trpcClient.file.checkPath.query(path)
       if (directory === currentDirectory) {
         navigateToItem({ path, items, isDirectory })
         return
@@ -306,7 +305,7 @@ function FileSelectorList() {
         setTimeout(() => navigateToItem({ path, items, isDirectory }))
       }
     },
-    [trpc, currentDirectory, ensureQueryFiles, items, navigateToItem, setCurrentDirectory],
+    [trpcClient, currentDirectory, ensureQueryFiles, items, navigateToItem, setCurrentDirectory],
   )
 
   const handleInput = useDebouncedCallback(checkAndNavigateToDirectory, 100)

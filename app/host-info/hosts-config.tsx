@@ -58,12 +58,15 @@ function HostsConfigContent() {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
 
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps -- queryFn intentionally syncs host form state and per-host disk caches from the scan result.
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: trpc.connection.bmc.scanHosts.queryKey(bmcHosts),
     queryFn: async ({ signal }) => {
       const data = await trpcClient.connection.bmc.scanHosts.query(bmcHosts, { signal, context: { stream: true } })
       setHostsConfig(data.map((d) => omit(d, ['disks'])))
-      data.map((host) => queryClient.setQueryData(trpc.connection.bmc.getHostDiskInfo.queryKey(host.id), host.disks))
+      data.forEach((host) =>
+        queryClient.setQueryData(trpc.connection.bmc.getHostDiskInfo.queryKey(host.id), host.disks),
+      )
       return data
     },
     enabled: bmcHosts.length > 0,
