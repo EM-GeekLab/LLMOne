@@ -120,9 +120,9 @@
     "@types/ssh2": "^1.15.6",
     "@types/ws": "^8.18.1",
     "@types/yargs": "^17.0.35",
-    "electron": "35.7.5",
-    "electron-builder": "^26.8.1",
-    "electron-serve": "^2.1.1",
+    "electron": "44.4.3",
+    "electron-builder": "^26.15.3",
+    "electron-serve": "^3.0.1",
     "eslint": "^9.39.5",
     "eslint-config-next": "15.5.25",
     "extract-zip": "^2.0.1",
@@ -133,5 +133,9 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
     "yargs": "^18.2.0"
+  },
+  "overrides": {
+    "node-abi": "4.35.0",
+    "nan": "2.29.0"
   }
 }
